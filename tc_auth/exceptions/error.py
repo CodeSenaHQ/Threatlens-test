@@ -61,3 +61,26 @@ class SessionNotFoundError(AuthError):
         self.field = field
         self.value = value
         super().__init__(f"Session not found by {field}")
+
+
+class PermissionDeniedError(AuthError):
+    status_code = 403
+
+    def __init__(
+        self,
+        role: str,
+        required: tuple[str, ...] | None = None,
+    ):
+        self.role = role
+        self.required = required
+
+        if required is None:
+            message = f"Permission denied for role '{role}'"
+        else:
+            allowed = ", ".join(required)
+            message = (
+                f"Role '{role}' is not permitted. "
+                f"Required: {allowed}"
+            )
+
+        super().__init__(message)

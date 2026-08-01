@@ -105,7 +105,7 @@ class AccountService:
 
 # UPDATE ACCOUNT
 
-    def update_account(
+    def update_user(
         self,
         account_id: int,
         *,
@@ -143,7 +143,7 @@ class AccountService:
 
 # DELETE ACCOUNT
 
-    def delete_account(
+    def delete_user(
         self,
         account_id: int,
     ):
@@ -156,7 +156,7 @@ class AccountService:
 
 # CHANGE PASSWORD
 
-    def change_password(
+    def update_password(
         self,
         account_id: int,
         password: str,
@@ -170,7 +170,7 @@ class AccountService:
 
 # CHANGE ROLE
 
-    def change_role(
+    def update_role(
         self,
         account_id: int,
         role: str,
@@ -184,7 +184,7 @@ class AccountService:
 
 # CHANGE STATUS
 
-    def change_status(
+    def update_status(
         self,
         account_id: int,
         status: str | None,

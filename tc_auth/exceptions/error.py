@@ -46,3 +46,18 @@ class OTPExpiredError(AuthError):
     def __init__(self):
         super().__init__("OTP expired")
         
+
+class InvalidTokenError(AuthError):
+    status_code = 401
+
+    def __init__(self):
+        super().__init__("Invalid or expired token")
+
+
+class SessionNotFoundError(AuthError):
+    status_code = 404
+
+    def __init__(self, field: str, value=None):
+        self.field = field
+        self.value = value
+        super().__init__(f"Session not found by {field}")

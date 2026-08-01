@@ -19,3 +19,30 @@ class InvalidCredentialsError(AuthError):
 
     def __init__(self):
         super().__init__("Invalid credentials")
+
+
+class EmailAlreadyExistsError(AuthError):
+    status_code = 409
+
+    def __init__(self):
+        super().__init__("Email already exists")
+
+class HandleAlreadyExistsError(AuthError):
+    status_code = 409
+
+    def __init__(self):
+        super().__init__("Handle already exists")
+
+class PhoneAlreadyExistsError(AuthError):
+    status_code = 409
+
+    def __init__(self):
+        super().__init__("Phone already exists")
+
+
+class OTPExpiredError(AuthError):
+    status_code = 410
+
+    def __init__(self):
+        super().__init__("OTP expired")
+        

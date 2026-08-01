@@ -1,5 +1,6 @@
 from tc_auth.db.models import Account
 from tc_auth.utils.get_helper import to_dict
+from tc_auth.exceptions.error import UserNotFoundError
 
 
 class GetUserService:
@@ -20,7 +21,7 @@ class GetUserService:
             )
 
             if account is None:
-                return None
+                raise UserNotFoundError(field=column.key, value=value)
 
             exclude = [] if include_password else ["password_hash"]
             return to_dict(account, exclude=exclude)
@@ -79,5 +80,3 @@ class GetUserService:
             phone,
             include_password,
         )
-
-    

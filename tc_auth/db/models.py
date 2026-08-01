@@ -30,11 +30,11 @@ class Account(Base):
         index=True,
     )
 
-    handle = Column(String(30), unique=True, nullable=True, index=True)
     name = Column(String(100), nullable=True)
+    handle = Column(String(30), nullable=True, index=True) 
 
-    email = Column(String(255), unique=True, nullable=True, index=True)
-    phone = Column(String(20), unique=True, nullable=True, index=True)
+    email = Column(String(255), nullable=True, index=True)
+    phone = Column(String(20), nullable=True, index=True)
 
     password_hash = Column(Text, nullable=True)
 
@@ -64,6 +64,12 @@ class Account(Base):
         "Session",
         back_populates="account",
         cascade="all, delete-orphan",
+    )
+
+    __table_args__ = (
+        UniqueConstraint("email", name="uq_accounts_email"),
+        UniqueConstraint("handle", name="uq_accounts_handle"),
+        UniqueConstraint("phone", name="uq_accounts_phone"),
     )
 
 

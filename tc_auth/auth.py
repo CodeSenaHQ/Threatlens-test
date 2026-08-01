@@ -9,6 +9,8 @@ from tc_auth.service.get_user import GetUserService
 from tc_auth.service.session import SessionService
 from tc_auth.service.auth_service import AuthService
 from tc_auth.dependencies.auth_deps import AuthDeps
+from tc_auth.dependencies.role_deps import RoleDeps
+from tc_auth.dependencies.status_deps import StatusDeps
 from tc_auth.service.account import AccountService
 from tc_auth.exceptions.error import AuthError
 
@@ -24,6 +26,8 @@ class Auth:
         self.session = SessionService(session_factory=self.session_factory)
         self.auth_service = AuthService(get_user=self.get_user, account=self.account, session=self.session)
         self.deps = AuthDeps(get_user=self.get_user, session=self.session)
+        self.role = RoleDeps(auth_deps=self.deps)
+        self.status = StatusDeps(auth_deps=self.deps)
 
         _handlers_registered = False
 

@@ -27,21 +27,8 @@ class Auth:
         self.deps = AuthDeps(get_user=self.get_user, session=self.session)
         self.role = RoleDeps(auth_deps=self.deps)
         self.status = StatusDeps(auth_deps=self.deps)
+        self.app.add_exception_handler(AuthError,auth_exception_handler,)
 
-        _handlers_registered = False
-
-
-
-    def _register_handlers(self):
-        if Auth._handlers_registered:
-            return
-
-        self.app.add_exception_handler(
-            AuthError,
-            auth_exception_handler,
-        )
-
-        Auth._handlers_registered = True
     
 
     def init(self):

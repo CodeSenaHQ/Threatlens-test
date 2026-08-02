@@ -63,24 +63,33 @@ class AccountService:
 
     def create_user(
         self,
-        name: str,
-        email: str,
-        password: str,
+        name: str | None = None,
+        email: str | None = None,
+        password: str | None = None,
         handle: str | None = None,
+        avatar_url: str | None = None,
         phone: str | None = None,
         role: str | None = None,
         status: str | None = None,
     ):
         with self.session_factory() as db:
 
-            account = Account(
-                name=name,
-                email=email,
-                password_hash=hash_password(password),
-            )
+            account = Account()
+
+            if name is not None:
+                account.name = name
+
+            if email is not None:
+                account.email = email
+
+            if password is not None:
+                account.password_hash = hash_password(password)
 
             if handle is not None:
                 account.handle = handle
+
+            if avatar_url is not None:
+                account.avatar_url = avatar_url
 
             if phone is not None:
                 account.phone = phone
@@ -100,18 +109,18 @@ class AccountService:
                 self._handle_integrity_error(db, e)
 
             return self.get_user.by_id(account.id)
-        
 
 
-# UPDATE ACCOUNT
+    # UPDATE USER
 
     def update_user(
         self,
         account_id: int,
         *,
         name: str | None = None,
-        handle: str | None = None,
         email: str | None = None,
+        handle: str | None = None,
+        avatar_url: str | None = None,
         phone: str | None = None,
     ):
         with self.session_factory() as db:
@@ -121,11 +130,14 @@ class AccountService:
             if name is not None:
                 account.name = name
 
+            if email is not None:
+                account.email = email
+
             if handle is not None:
                 account.handle = handle
 
-            if email is not None:
-                account.email = email
+            if avatar_url is not None:
+                account.avatar_url = avatar_url
 
             if phone is not None:
                 account.phone = phone
@@ -139,8 +151,7 @@ class AccountService:
 
             return self.get_user.by_id(account.id)
         
-
-
+        
 # DELETE ACCOUNT
 
     def delete_user(

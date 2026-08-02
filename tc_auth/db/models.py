@@ -15,13 +15,13 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import ForeignKey, UniqueConstraint
 from tc_auth.db.base import Base
 
-
-#=============================ACCOUNT=============================
+# ============================= ACCOUNT =============================
 
 class Account(Base):
     __tablename__ = "accounts"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+
     uid = Column(
         UUID(as_uuid=True),
         default=uuid.uuid4,
@@ -31,15 +31,44 @@ class Account(Base):
     )
 
     name = Column(String(100), nullable=True)
-    handle = Column(String(30), nullable=True, index=True) 
+    handle = Column(
+        String(30),
+        nullable=True,
+        index=True,
+    )
 
-    email = Column(String(255), nullable=True, index=True)
-    phone = Column(String(20), nullable=True, index=True)
+    email = Column(
+        String(255),
+        nullable=True,
+        index=True,
+    )
 
-    password_hash = Column(Text, nullable=True)
+    phone = Column(
+        String(20),
+        nullable=True,
+        index=True,
+    )
 
-    role = Column(String(50), default="user", nullable=False)
-    status = Column(String(100), nullable=True)
+    password_hash = Column(
+        Text,
+        nullable=True,
+    )
+
+    avatar_url = Column(
+        Text,
+        nullable=True,
+    )
+
+    role = Column(
+        String(50),
+        server_default="user",
+        nullable=False,
+    )
+
+    status = Column(
+        String(100),
+        nullable=True,
+    )
 
     created_at = Column(
         TIMESTAMP,
@@ -67,37 +96,53 @@ class Account(Base):
     )
 
     __table_args__ = (
-        UniqueConstraint("email", name="uq_accounts_email"),
-        UniqueConstraint("handle", name="uq_accounts_handle"),
-        UniqueConstraint("phone", name="uq_accounts_phone"),
+        UniqueConstraint(
+            "email",
+            name="uq_accounts_email",
+        ),
+        UniqueConstraint(
+            "handle",
+            name="uq_accounts_handle",
+        ),
+        UniqueConstraint(
+            "phone",
+            name="uq_accounts_phone",
+        ),
     )
 
 
-
-#=============================OAUTH_ACCOUNT=============================
+# ========================== OAUTH ACCOUNT ==========================
 
 class OAuthAccount(Base):
     __tablename__ = "oauth_accounts"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-
-    uid = Column(
-        UUID(as_uuid=True),
-        default=uuid.uuid4,
-        unique=True,
-        nullable=False,
+    id = Column(
+        Integer,
+        primary_key=True,
+        autoincrement=True,
     )
 
     account_id = Column(
         Integer,
-        ForeignKey("accounts.id", ondelete="CASCADE"),
+        ForeignKey(
+            "accounts.id",
+            ondelete="CASCADE",
+        ),
         nullable=False,
         index=True,
     )
 
-    provider = Column(String(30), nullable=False)
+    provider = Column(
+        String(30),
+        nullable=False,
+        index=True,
+    )
 
-    provider_user_id = Column(String(255), nullable=False)
+    provider_user_id = Column(
+        String(255),
+        nullable=False,
+        index=True,
+    )
 
     created_at = Column(
         TIMESTAMP,
@@ -116,9 +161,14 @@ class OAuthAccount(Base):
             "provider_user_id",
             name="uq_oauth_provider_user",
         ),
+        UniqueConstraint(
+            "account_id",
+            "provider",
+            name="uq_account_provider",
+        ),
     )
 
-
+    
 #=============================SESSION=============================
 
 class Session(Base):

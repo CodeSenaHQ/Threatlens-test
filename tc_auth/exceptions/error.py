@@ -40,11 +40,31 @@ class PhoneAlreadyExistsError(AuthError):
         super().__init__("Phone already exists")
 
 
-class OTPExpiredError(AuthError):
-    status_code = 410
-
+class OTPNotFoundError(AuthError):
     def __init__(self):
-        super().__init__("OTP expired")
+        super().__init__(
+            message="OTP not found.",
+            code="OTP_NOT_FOUND",
+            status_code=404,
+        )
+
+
+class OTPInvalidError(AuthError):
+    def __init__(self):
+        super().__init__(
+            message="Invalid OTP.",
+            code="INVALID_OTP",
+            status_code=401,
+        )
+
+
+class OTPExpiredError(AuthError):
+    def __init__(self):
+        super().__init__(
+            message="OTP has expired.",
+            code="OTP_EXPIRED",
+            status_code=401,
+        )
         
 
 class InvalidTokenError(AuthError):

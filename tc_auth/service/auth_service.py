@@ -21,31 +21,6 @@ class AuthService:
         self.account = account
         self.session = session
 
-    def _create_login_response(
-        self,
-        account: dict,
-        ip_address: str | None,
-        user_agent: str | None,
-    ):
-        session = self.session.create_session(
-            account_id=account["id"],
-            ip_address=ip_address,
-            user_agent=user_agent,
-        )
-
-        access_token = create_access_token(
-            {
-                "aid": account["id"],
-                "sid": session["session_id"],
-                "token": session["token"],
-            }
-        )
-
-        return {
-            "access_token": access_token,
-            "token_type": "Bearer",
-            "account": account,
-        }
 
     def _authenticate(
         self,
@@ -78,6 +53,34 @@ class AuthService:
         account.pop("password_hash", None)
 
         return account
+    
+
+    def create_login_response(
+        self,
+        account: dict,
+        ip_address: str | None,
+        user_agent: str | None,
+    ):
+        session = self.session.create_session(
+            account_id=account["id"],
+            ip_address=ip_address,
+            user_agent=user_agent,
+        )
+
+        access_token = create_access_token(
+            {
+                "aid": account["id"],
+                "sid": session["session_id"],
+                "token": session["token"],
+            }
+        )
+
+        return {
+            "access_token": access_token,
+            "token_type": "Bearer",
+            "account": account,
+        }
+
 
     def signup(
         self,
@@ -101,11 +104,12 @@ class AuthService:
             status=status,
         )
 
-        return self._create_login_response(
+        return self.create_login_response(
             account,
             ip_address,
             user_agent,
         )
+
 
     def login(
         self,
@@ -119,12 +123,13 @@ class AuthService:
             password,
         )
 
-        return self._create_login_response(
+        return self.create_login_response(
             account,
             ip_address,
             user_agent,
         )
     
+
     def logout(
         self,
         access_token: str,
@@ -136,6 +141,7 @@ class AuthService:
         self.session.destroy_session(
             payload["sid"]
         )
+
 
     def logout_all(
         self,

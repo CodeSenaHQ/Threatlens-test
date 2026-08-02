@@ -80,3 +80,21 @@ class GetUserService:
             phone,
             include_password,
         )
+    
+    
+    def find_by_email(
+        self,
+        email: str,
+    ):
+        with self.session_factory() as db:
+
+            account = (
+                db.query(Account)
+                .filter(Account.email == email)
+                .first()
+            )
+
+            if account is None:
+                return None
+
+            return self.get_user.by_id(account.id)

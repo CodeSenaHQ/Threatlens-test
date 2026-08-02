@@ -96,7 +96,7 @@ class SessionService:
             db.delete(session)
             db.commit()
 
-    def destroy_all_by_account(
+    def destroy_all(
         self,
         account_id: int,
     ):

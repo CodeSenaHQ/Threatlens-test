@@ -4,7 +4,7 @@ from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from tc_auth.exceptions.error import InvalidTokenError
-from tc_auth.jwt.tokens import verify_token
+from tc_auth.jwt_handler import verify_token
 from tc_auth.utils.hasher import verify_hash
 
 security_jwt = HTTPBearer()

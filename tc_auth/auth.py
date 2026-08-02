@@ -15,7 +15,6 @@ from tc_auth.service.account import AccountService
 from tc_auth.exceptions.error import AuthError
 
 
-
 class Auth:
     def __init__(self, engine: Engine , app: FastAPI):
         self.engine = engine
@@ -24,7 +23,7 @@ class Auth:
         self.get_user = GetUserService(session_factory=self.session_factory)
         self.account = AccountService(session_factory=self.session_factory, get_user=self.get_user)
         self.session = SessionService(session_factory=self.session_factory)
-        self.auth_service = AuthService(get_user=self.get_user, account=self.account, session=self.session)
+        self.service = AuthService(get_user=self.get_user, account=self.account, session=self.session)
         self.deps = AuthDeps(get_user=self.get_user, session=self.session)
         self.role = RoleDeps(auth_deps=self.deps)
         self.status = StatusDeps(auth_deps=self.deps)

@@ -1,4 +1,5 @@
-import time, jwt
+import time
+import jwt
 from tc_auth.exceptions.error import InvalidTokenError
 
 from tc_auth.config import (
@@ -29,5 +30,5 @@ def verify_token(token: str) -> dict:
             SECRET_KEY,
             algorithms=[ALGORITHM],
         )
-    except jwt.InvalidTokenError:
+    except Exception:
         raise InvalidTokenError(field="token", value=token)

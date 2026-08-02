@@ -1,6 +1,5 @@
 from tc_auth.db.models import OAuthAccount
 
-
 class OAuthService:
     def __init__(
         self,

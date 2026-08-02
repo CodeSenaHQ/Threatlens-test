@@ -35,8 +35,8 @@ class Auth:
         self.service = AuthService(get_user=self.get_user, account=self.account, session=self.session)
 
         self.oauth = OAuthService(get_user=self.get_user, session_factory=self.session_factory, account=self.account, auth_service=self.service)
-        self.google = GoogleOAuth(oauth=self.oauth)
-        self.github = GitHubOAuth(oauth=self.oauth)
+        self.google = GoogleOAuth(oauth_service=self.oauth)
+        self.github = GitHubOAuth(oauth_service=self.oauth)
 
         
         self.deps = AuthDeps(get_user=self.get_user, session=self.session)

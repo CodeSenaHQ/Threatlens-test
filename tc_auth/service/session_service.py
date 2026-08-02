@@ -67,7 +67,7 @@ class SessionService:
 
             return to_dict(session)
 
-    def all_by_account(
+    def by_account(
         self,
         account_id: int,
     ):
@@ -96,6 +96,7 @@ class SessionService:
             db.delete(session)
             db.commit()
 
+
     def destroy_all(
         self,
         account_id: int,
@@ -109,6 +110,8 @@ class SessionService:
             )
 
             db.commit()
+
+
 
     def cleanup_expired(self):
         with self.session_factory() as db:

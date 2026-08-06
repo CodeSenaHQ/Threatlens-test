@@ -24,8 +24,8 @@ from tc_auth.dependencies.status_deps import StatusDeps
 
 from tc_auth.email.mail import EmailService
 
-from tc_auth.api.otp_route import AuthRoutes
-from tc_auth.api.oauth_route import OAuthRoutes
+from tc_auth.api.login_route import AuthRoutes
+from tc_auth.api.account_route import AccountRoutes
 
 
 
@@ -51,7 +51,9 @@ class Auth:
 
         self.email = EmailService(otp_service=self.otp)
 
-        self.auth_routes = AuthRoutes(app=self.app, email_service=self.email, service=self.service)
+        self.auth_routes = AuthRoutes(app=self.app, email_service=self.email, auth_service=self.service , otp_service=self.otp)
+        self.account_routes = AccountRoutes(app=self.app, auth_service=self.service)
+
         # self.oauth_routes = OAuthRoutes(app=self.app, oauth_service=self.oauth, google=self.google, github=self.github)
         
         self.app.add_exception_handler(AuthError,auth_exception_handler,)

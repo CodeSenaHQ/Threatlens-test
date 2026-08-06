@@ -4,6 +4,7 @@ from tc_auth.schema.login import (
     SendOTPRequest,
     LoginPasswordRequest,
     LoginOTPRequest,
+    SignupRequest,
     SignupOTPRequest,
 )
 
@@ -25,7 +26,6 @@ class AuthRoutes:
         router = APIRouter()
 
         router.post("/send/email/otp/{purpose}")(self.send_email_otp)
-
         router.post("/signup/otp")(self.signup_with_otp)
         router.post("/login/otp")(self.login_with_otp)
         router.post("/login/password")(self.login_with_password)
@@ -47,7 +47,7 @@ class AuthRoutes:
         )
 
     # ==========================================================
-    # SIGNUP
+    # SIGNUP WITH OTP
     # ==========================================================
 
     def signup_with_otp(
@@ -68,9 +68,25 @@ class AuthRoutes:
             handle=body.handle,
             **self._request_meta(request),
         )
+    
+    # ==========================================================
+    # SIGNUP WITH PASSWORD
+    # ==========================================================
+
+    def signup_with_password(
+        self,
+        request: Request,
+        body: SignupRequest,
+    ):
+        return self.auth_service.signup(
+            name=body.name,
+            email=body.email,
+            handle=body.handle,
+            **self._request_meta(request),
+        )
 
     # ==========================================================
-    # LOGIN
+    # LOGIN WITH OTP
     # ==========================================================
 
     def login_with_otp(
@@ -92,6 +108,11 @@ class AuthRoutes:
             account=account,
             **self._request_meta(request),
         )
+
+
+    # ==========================================================
+    # LOGIN WITH PASSWORD
+    # ==========================================================
 
     def login_with_password(
         self,

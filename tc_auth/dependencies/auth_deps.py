@@ -15,6 +15,10 @@ class AuthDeps:
         self.get_user = get_user
         self.session = session
 
+    # ==========================================================
+    # PRIVATE
+    # ==========================================================
+
     def _authenticate(
         self,
         token: str,
@@ -24,6 +28,9 @@ class AuthDeps:
         session = self.session.by_id(
             payload["sid"]
         )
+
+        if session is None:
+            raise InvalidTokenError(field="session")
 
         if session["account_id"] != payload["aid"]:
             raise InvalidTokenError(field="account_id")
@@ -39,19 +46,11 @@ class AuthDeps:
 
         return payload, session
 
-    def get_current_user(
-        self,
-        credentials: HTTPAuthorizationCredentials = Depends(security_jwt),
-    ):
-        payload, _ = self._authenticate(
-            credentials.credentials
-        )
+    # ==========================================================
+    # CURRENT
+    # ==========================================================
 
-        return self.get_user.by_id(
-            payload["aid"]
-        )
-
-    def get_current_session(
+    def get_current(
         self,
         credentials: HTTPAuthorizationCredentials = Depends(security_jwt),
     ):
@@ -59,11 +58,34 @@ class AuthDeps:
             credentials.credentials
         )
 
-        user = self.get_current_user(
-            credentials
+        account = self.get_user.by_id(
+            payload["aid"]
         )
 
         return {
-            **user,
+            "account": account,
             "session": session,
+            "payload": payload,
         }
+
+    # ==========================================================
+    # HELPERS
+    # ==========================================================
+
+    def get_current_account(
+        self,
+        current=Depends(get_current),
+    ):
+        return current["account"]
+
+    def get_current_session(
+        self,
+        current=Depends(get_current),
+    ):
+        return current["session"]
+
+    def get_current_payload(
+        self,
+        current=Depends(get_current),
+    ):
+        return current["payload"]

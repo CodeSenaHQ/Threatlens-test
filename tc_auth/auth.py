@@ -24,6 +24,9 @@ from tc_auth.dependencies.status_deps import StatusDeps
 
 from tc_auth.email.mail import EmailService
 
+from tc_auth.api.otp_route import AuthRoutes
+from tc_auth.api.oauth_route import OAuthRoutes
+
 
 
 class Auth:
@@ -36,18 +39,20 @@ class Auth:
         self.account = AccountService(session_factory=self.session_factory, get_user=self.get_user)
         self.session = SessionService(session_factory=self.session_factory)
         self.service = AuthService(get_user=self.get_user, account=self.account, session=self.session)
-        self.otp = OTPService(session_factory=self.session_factory, get_user=self.get_user)
+        self.otp = OTPService(session_factory=self.session_factory)
 
-        self.oauth = OAuthService(get_user=self.get_user, session_factory=self.session_factory, account=self.account, auth_service=self.service, otp_service=self.otp)
+        self.oauth = OAuthService(get_user=self.get_user, session_factory=self.session_factory, account=self.account, auth_service=self.service)
         self.google = GoogleOAuth(oauth_service=self.oauth)
         self.github = GitHubOAuth(oauth_service=self.oauth)
-
         
         self.deps = AuthDeps(get_user=self.get_user, session=self.session)
         self.role = RoleDeps(auth_deps=self.deps)
         self.status = StatusDeps(auth_deps=self.deps)
 
         self.email = EmailService(otp_service=self.otp)
+
+        self.auth_routes = AuthRoutes(app=self.app, email_service=self.email, otp_service=self.otp)
+        # self.oauth_routes = OAuthRoutes(app=self.app, oauth_service=self.oauth, google=self.google, github=self.github)
         
         self.app.add_exception_handler(AuthError,auth_exception_handler,)
 
@@ -58,6 +63,4 @@ class Auth:
 
     def destroy(self):
         Base.metadata.drop_all(bind=self.engine)
-
-
 

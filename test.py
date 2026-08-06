@@ -1,6 +1,5 @@
 # from tc_auth.auth import Auth
 from sqlalchemy import create_engine
-import secrets
 from tc_auth.auth import Auth
 
 

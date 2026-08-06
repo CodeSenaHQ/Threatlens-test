@@ -1,5 +1,5 @@
-import random
-import time
+import random, time
+from datetime import datetime, timedelta
 
 from tc_auth.db.models import OTP
 from tc_auth.utils.hasher import hash_password, verify_hash
@@ -12,6 +12,8 @@ from tc_auth.exceptions.error import (
 
 class OTPService:
     def __init__(self, session_factory):
+        print("OTP_SERVICE")
+        print(id(self))
         self.session_factory = session_factory
 
     # ==========================================================
@@ -39,8 +41,8 @@ class OTPService:
                 OTP(
                     identifier=identifier,
                     purpose=purpose,
-                    otp_hash=hash_password(otp),
-                    expires_at=int(time.time()) + expiry,
+                    code_hash=hash_password(otp),
+                    expires_at = datetime.now() + timedelta(seconds=expiry),
                 )
             )
 
@@ -73,7 +75,7 @@ class OTPService:
             if record is None:
                 raise OTPNotFoundError()
 
-            if record.expires_at < int(time.time()):
+            if record.expires_at < datetime.now():
                 db.delete(record)
                 db.commit()
                 raise OTPExpiredError()

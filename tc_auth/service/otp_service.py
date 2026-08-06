@@ -89,7 +89,6 @@ class OTPService:
             db.delete(record)
             db.commit()
 
-            return True
 
     # ==========================================================
     # DELETE

@@ -1,20 +1,33 @@
 from fastapi import APIRouter , Depends
 
-
 class AccountRoutes:
-    def __init__(self, app, auth_service, account_service, otp_service, deps):
+    def __init__(self, app, session_service, account_service, deps):
         self.app = app
-        self.auth_service = auth_service
+        self.session_service = session_service
         self.account_service = account_service
-        self.otp_service = otp_service
+        self.deps = deps
+
         self.router = APIRouter()
+        self.register()
+        self.app.include_router(self.router)
 
-        self.router.post("/logout")(self.logout_route)
+    def register(self):
+        current = Depends(self.deps.get_current)
 
-        app.include_router(self.router)
+        @self.router.post("/logout")
+        def logout(user=current):
+            return self.session_service.destroy_session(user["session"]["id"])
 
-    def logout_route(self,  user =  Depends(self.deps.get_current)):
-        self.deps.get_current_user()
-        self.deps.get_current_account()
-        self.auth_service.logout()
-        return {"message": "Logout successful"}
+        @self.router.post("/logout-all")
+        def logout_all(user=current):
+            return self.session_service.destroy_all(user["account"]["id"])
+
+        @self.router.get("/me")
+        def me(user=current):
+            return user
+        
+        @self.router.put("/update/password")
+        def update_password(body: dict, user=current):
+            return self.account_service.update_password(account_id=user["account"]["id"], password=body["password"])
+
+    # ==========================================================

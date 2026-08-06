@@ -2,14 +2,13 @@ from fastapi import APIRouter , Depends
 
 class AccountRoutes:
     def __init__(self, app, session_service, account_service, deps):
-        self.app = app
         self.session_service = session_service
         self.account_service = account_service
         self.deps = deps
 
         self.router = APIRouter()
         self.register()
-        self.app.include_router(self.router)
+        app.include_router(self.router)
 
     def register(self):
         current = Depends(self.deps.get_current)

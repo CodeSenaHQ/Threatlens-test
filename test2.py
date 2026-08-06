@@ -13,7 +13,7 @@ auth.email.register(host="smtp.gmail.com", port=587, username="opencode.engine@g
 def run():
     import uvicorn
     uvicorn.run(
-        "test2:app",
+        app,
         host="0.0.0.0",
         port=8000,
         reload=False

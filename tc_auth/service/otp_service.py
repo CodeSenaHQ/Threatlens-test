@@ -12,8 +12,6 @@ from tc_auth.exceptions.error import (
 
 class OTPService:
     def __init__(self, session_factory):
-        print("OTP_SERVICE")
-        print(id(self))
         self.session_factory = session_factory
 
     # ==========================================================

@@ -27,6 +27,7 @@ class AuthRoutes:
 
         router.post("/send/email/otp/{purpose}")(self.send_email_otp)
         router.post("/signup/otp")(self.signup_with_otp)
+        router.post("/signup/password")(self.signup_with_password)
         router.post("/login/otp")(self.login_with_otp)
         router.post("/login/password")(self.login_with_password)
 

@@ -1,3 +1,6 @@
+import traceback
+
+
 from fastapi import FastAPI
 from sqlalchemy import Engine 
 
@@ -51,8 +54,8 @@ class Auth:
 
         self.email = EmailService(otp_service=self.otp)
 
-        self.auth_routes = AuthRoutes(app=self.app, email_service=self.email, auth_service=self.service , otp_service=self.otp)
-        self.account_routes = AccountRoutes(app=self.app, auth_service=self.service)
+        self.auth_routes = AuthRoutes(app=self.app, email_service=self.email, auth_service=self.service , otp_service=self.otp, get_user=self.get_user)
+        self.account_routes = AccountRoutes(app=self.app, session_service=self.session, account_service=self.account, deps=self.deps)
 
         # self.oauth_routes = OAuthRoutes(app=self.app, oauth_service=self.oauth, google=self.google, github=self.github)
         

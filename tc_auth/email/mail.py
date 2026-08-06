@@ -4,8 +4,6 @@ from email.message import EmailMessage
 
 class EmailService:
     def __init__(self, otp_service):
-        print("EMAIL_SERVICE")
-        print(id(self))
         self.otp = otp_service
 
         self.host = None

@@ -51,7 +51,7 @@ class Auth:
 
         self.email = EmailService(otp_service=self.otp)
 
-        self.auth_routes = AuthRoutes(app=self.app, email_service=self.email, otp_service=self.otp)
+        self.auth_routes = AuthRoutes(app=self.app, email_service=self.email, service=self.service)
         # self.oauth_routes = OAuthRoutes(app=self.app, oauth_service=self.oauth, google=self.google, github=self.github)
         
         self.app.add_exception_handler(AuthError,auth_exception_handler,)

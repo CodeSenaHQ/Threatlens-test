@@ -1,156 +1,115 @@
-from tc_auth.jwt_handler  import create_access_token, verify_token
-from tc_auth.utils.hasher import verify_password
-from tc_auth.utils.identifier import (
-    normalize_identifier,
-    get_identifier_type,
-)
-from tc_auth.exceptions.error import (
-    InvalidCredentialsError,
-    UserNotFoundError,
-)
+from fastapi import APIRouter, Request
 
 
-class AuthService:
+class AuthRoutes:
     def __init__(
         self,
+        app,
+        email_service,
+        auth_service,
+        otp_service,
         get_user,
-        account,
-        session,
     ):
+        self.email_service = email_service
+        self.auth_service = auth_service
+        self.otp_service = otp_service
         self.get_user = get_user
-        self.account = account
-        self.session = session
 
+        router = APIRouter()
 
-    def _authenticate(
+        router.post("/send/email/otp/{purpose}")(self.send_email_otp)
+
+        router.post("/signup/otp")(self.signup_with_otp)
+        router.post("/login/otp")(self.login_with_otp)
+        router.post("/login/password")(self.login_with_password)
+
+        app.include_router(router)
+
+    # ==========================================================
+    # EMAIL OTP
+    # ==========================================================
+
+    def send_email_otp(
         self,
-        identifier: str,
-        password: str,
+        purpose: str,
+        email: str,
     ):
-        identifier = normalize_identifier(identifier)
-
-        try:
-            if get_identifier_type(identifier) == "email":
-                account = self.get_user.by_email(
-                    identifier,
-                    include_password=True,
-                )
-            else:
-                account = self.get_user.by_handle(
-                    identifier,
-                    include_password=True,
-                )
-
-        except UserNotFoundError:
-            raise InvalidCredentialsError()
-
-        if not verify_password(
-            password,
-            account["password_hash"],
-        ):
-            raise InvalidCredentialsError()
-
-        account.pop("password_hash", None)
-
-        return account
-    
-
-    def create_login_response(
-        self,
-        account: dict,
-        ip_address: str | None,
-        user_agent: str | None,
-    ):
-        session = self.session.create_session(
-            account_id=account["id"],
-            ip_address=ip_address,
-            user_agent=user_agent,
+        return self.email_service.send_otp(
+            email=email,
+            purpose=purpose,
         )
 
-        access_token = create_access_token(
-            {
-                "aid": account["id"],
-                "sid": session["session_id"],
-                "token": session["token"],
-            }
-        )
+    # ==========================================================
+    # SIGNUP
+    # ==========================================================
 
-        return {
-            "access_token": access_token,
-            "token_type": "Bearer",
-            "account": account,
-        }
-
-
-    def signup(
+    def signup_with_otp(
         self,
-        name: str,
+        request: Request,
+        otp: str,
         email: str,
         password: str,
+        name: str,
         handle: str | None = None,
-        phone: str | None = None,
-        role: str | None = None,
-        status: str | None = None,
-        ip_address: str | None = None,
-        user_agent: str | None = None,
     ):
-        account = self.account.create_user(
+        self.otp_service.verify(
+            identifier=email,
+            purpose="signup",
+            otp=otp,
+        )
+
+        return self.auth_service.signup(
             name=name,
             email=email,
             password=password,
             handle=handle,
-            phone=phone,
-            role=role,
-            status=status,
+            **self._request_meta(request),
         )
 
-        return self.create_login_response(
-            account,
-            ip_address,
-            user_agent,
-        )
+    # ==========================================================
+    # LOGIN
+    # ==========================================================
 
-
-    def login(
+    def login_with_otp(
         self,
+        request: Request,
+        otp: str,
+        email: str,
+    ):
+        self.otp_service.verify(
+            identifier=email,
+            purpose="login",
+            otp=otp,
+        )
+
+        account = self.get_user.by_email(email=email)
+
+        return self.auth_service.create_login_response(
+            account=account,
+            **self._request_meta(request),
+        )
+
+    def login_with_password(
+        self,
+        request: Request,
         identifier: str,
         password: str,
-        ip_address: str | None = None,
-        user_agent: str | None = None,
     ):
-        account = self._authenticate(
-            identifier,
-            password,
+        return self.auth_service.login(
+            identifier=identifier,
+            password=password,
+            **self._request_meta(request),
         )
 
-        return self.create_login_response(
-            account,
-            ip_address,
-            user_agent,
-        )
-    
+    # ==========================================================
+    # PRIVATE
+    # ==========================================================
 
-    def logout(
+    def _request_meta(
         self,
-        access_token: str,
+        request: Request,
     ):
-        payload = verify_token(
-            access_token
-        )
-
-        self.session.destroy_session(
-            payload["sid"]
-        )
-
-
-    def logout_all(
-        self,
-        access_token: str,
-    ):
-        payload = verify_token(
-            access_token
-        )
-
-        self.session.destroy_all(
-            payload["aid"]
-        )
+        return {
+            "ip_address": request.client.host,
+            "user_agent": request.headers.get("user-agent", ""),
+        }

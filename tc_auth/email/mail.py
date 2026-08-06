@@ -142,22 +142,19 @@ class EmailService:
             purpose="login",
         )
     
-
     # ==========================================================
-    # PASSWORD RESET
+    # SIGNUP OTP
     # ==========================================================
 
-
-    def send_password_reset(
+    def send_signup_otp(
         self,
-        *,
         email: str,
     ):
         return self.send_otp(
             email=email,
-            purpose="reset_password",
+            purpose="signup",
         )
-
+    
     # ==========================================================
     # PRIVATE
     # ==========================================================

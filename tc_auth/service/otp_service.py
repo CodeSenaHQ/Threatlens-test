@@ -1,6 +1,6 @@
-import random, time
+import random
 from datetime import datetime, timedelta
-
+from tc_auth.utils.get_helper import to_list_dict
 from tc_auth.db.models import OTP
 from tc_auth.utils.hasher import simple_hash, verify_hash 
 from tc_auth.exceptions.error import (
@@ -8,6 +8,17 @@ from tc_auth.exceptions.error import (
     OTPInvalidError,
     OTPNotFoundError,
 )
+
+
+class OTPService:
+    def __init__(self, session_factory):
+        self.session_factory = session_factory
+
+    # ==========================================================
+    # CREATE
+    # ==========================================================
+import random
+from datetime import datetime, timedelta
 
 
 class OTPService:
@@ -27,6 +38,7 @@ class OTPService:
         length: int = 6,
     ):
         otp = self._generate_otp(length)
+        expires_at = datetime.now() + timedelta(seconds=expiry)
 
         with self.session_factory() as db:
 
@@ -40,7 +52,7 @@ class OTPService:
                     identifier=identifier,
                     purpose=purpose,
                     code_hash=simple_hash(otp),
-                    expires_at = datetime.now() + timedelta(seconds=expiry),
+                    expires_at=expires_at,
                 )
             )
 
@@ -48,7 +60,7 @@ class OTPService:
 
         return {
             "otp": otp,
-            "expires_at": int(time.time()) + expiry,
+            "expires_at": int(expires_at.timestamp()),
         }
 
     # ==========================================================
@@ -87,7 +99,6 @@ class OTPService:
             db.delete(record)
             db.commit()
 
-
     # ==========================================================
     # DELETE
     # ==========================================================
@@ -117,13 +128,15 @@ class OTPService:
     # CLEANUP
     # ==========================================================
 
-    def cleanup(self):
+    def cleanup(
+        self,
+    ):
         with self.session_factory() as db:
 
             deleted = (
                 db.query(OTP)
                 .filter(
-                    OTP.expires_at < int(time.time())
+                    OTP.expires_at < datetime.now()
                 )
                 .delete()
             )
@@ -131,6 +144,19 @@ class OTPService:
             db.commit()
 
             return deleted
+        
+
+    def get_all(self):
+        with self.session_factory() as db:
+            otps = db.query(OTP).all()
+            return to_list_dict(otps)
+
+
+
+    def clear_all(self):
+        with self.session_factory() as db:
+            db.query(OTP).delete(synchronize_session=False)
+            db.commit()
 
     # ==========================================================
     # PRIVATE

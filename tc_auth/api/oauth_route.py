@@ -21,7 +21,7 @@ class OAuthRoutes:
         router.get("/github/callback")(self.github_callback)
  
 
-        app.include_router(router)
+        app.include_router(router, prefix="/tc-auth", tags=["OAuth Login"])
 
     # ==========================================================
     # GOOGLE OAUTH

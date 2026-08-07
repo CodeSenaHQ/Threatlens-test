@@ -1,4 +1,5 @@
 from fastapi import Depends
+
 from tc_auth.exceptions.error import PermissionDeniedError
 
 
@@ -11,46 +12,53 @@ class RoleDeps:
         role: str,
     ):
         def dependency(
-            user: dict = Depends(
-                self.auth_deps.get_current_account
-            ),
+            current=Depends(self.auth_deps.get_current),
         ):
+            user = current["account"]
+
             if user["role"] != role:
-                raise PermissionDeniedError(user["role"],role)
+                raise PermissionDeniedError(
+                    user["role"],
+                    role,
+                )
 
             return user
 
         return dependency
-
 
     def allow(
         self,
         *roles: str,
     ):
         def dependency(
-            user: dict = Depends(
-                self.auth_deps.get_current_account
-            ),
+            current=Depends(self.auth_deps.get_current),
         ):
+            user = current["account"]
+
             if user["role"] not in roles:
-                raise PermissionDeniedError(user["role"],roles)
+                raise PermissionDeniedError(
+                    user["role"],
+                    roles,
+                )
 
             return user
 
         return dependency
-
 
     def block(
         self,
         *roles: str,
     ):
         def dependency(
-            user: dict = Depends(
-                self.auth_deps.get_current_account
-            ),
+            current=Depends(self.auth_deps.get_current),
         ):
+            user = current["account"]
+
             if user["role"] in roles:
-                raise PermissionDeniedError(user["role"],roles)
+                raise PermissionDeniedError(
+                    user["role"],
+                    roles,
+                )
 
             return user
 

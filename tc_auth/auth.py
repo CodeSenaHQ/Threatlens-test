@@ -32,6 +32,10 @@ from tc_auth.api.login_route import AuthRoutes
 from tc_auth.api.account_route import AccountRoutes
 from tc_auth.api.oauth_route import OAuthRoutes
 
+from tc_auth.api.dash_account import DashAccountRoutes
+from tc_auth.api.dash_oauth import DashOAuthRoutes
+from tc_auth.api.dash_session import DashSessionRoutes
+from tc_auth.api.dash_otp import DashOTPRoutes
 
 
 class Auth:
@@ -60,7 +64,10 @@ class Auth:
         self.account_routes = AccountRoutes(app=self.app, session_service=self.session, account_service=self.account, deps=self.deps)
         self.oauth_routes = OAuthRoutes(app=self.app, google=self.google, github=self.github)
 
-        # self.oauth_routes = OAuthRoutes(app=self.app, oauth_service=self.oauth, google=self.google, github=self.github)
+        self.dash_account_routes = DashAccountRoutes(app=self.app, account_service=self.account, role_deps=self.role)
+        self.dash_oauth_routes = DashOAuthRoutes(app=self.app, oauth_service=self.oauth, role_deps=self.role)
+        self.dash_session_routes = DashSessionRoutes(app=self.app, session_service=self.session, role_deps=self.role)
+        self.dash_otp_routes = DashOTPRoutes(app=self.app, otp_service=self.otp, role_deps=self.role)
         
         self.app.add_exception_handler(AuthError,auth_exception_handler,)
         self.app.add_middleware(SessionMiddleware, secret_key="session-secret-key")

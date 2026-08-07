@@ -12,26 +12,26 @@ class DashAccountRoutes:
 
         self.router = APIRouter()
         self.register()
-        app.include_router(self.router, prefix="/tc-auth/account", tags=["account"])
+        app.include_router(self.router, prefix="/tc-auth/account", tags=["Account ops"])
 
     def register(self):
         current = Depends(self.role_deps.require("superadmin"))
 
         @self.router.get("/")
-        def get_account(user=current):
+        def get_account(user = current):
             return self.account_service.get_all_accounts()
         
         @self.router.post("/")
         def create(body : SuperCreateSchema , user=current):
-            return self.account_service.create(body.model_dump())
+            return self.account_service.create(**body.model_dump())
 
         @self.router.patch("/")
         def update(body : SuperUpdateSchema, user=current):
-            return self.account_service.super_update(body.model_dump())
+            return self.account_service.super_update(**body.model_dump())
 
         @self.router.delete("/")
         def delete(body : SuperDeleteSchema, user=current):
-            return self.account_service.delete_user(body.model_dump())
+            return self.account_service.delete_user(**body.model_dump())
         
 
     # ==========================================================

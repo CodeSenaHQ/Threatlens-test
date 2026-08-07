@@ -31,7 +31,7 @@ class AuthRoutes:
         router.post("/login/otp")(self.login_with_otp)
         router.post("/login/password")(self.login_with_password)
 
-        app.include_router(router)
+        app.include_router(router, prefix="/tc-auth", tags=["Sign UP / IN"])
 
     # ==========================================================
     # EMAIL OTP

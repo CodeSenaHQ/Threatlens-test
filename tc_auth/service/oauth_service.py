@@ -1,6 +1,5 @@
 from tc_auth.db.models import OAuthAccount
-
-import inspect
+from tc_auth.utils.get_helper import to_list_dict
 
 class OAuthService:
     def __init__(
@@ -178,3 +177,13 @@ class OAuthService:
             )
 
             db.commit()
+
+
+    def get_all_oauth_links(self):
+        with self.session_factory() as db:
+            records = (
+                db.query(OAuthAccount)
+                .all()
+            )
+
+            return to_list_dict(records)

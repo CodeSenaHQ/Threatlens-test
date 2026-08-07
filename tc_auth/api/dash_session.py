@@ -1,0 +1,40 @@
+from fastapi import APIRouter , Depends
+from tc_auth.schema.sessions import (
+    DestroySession,
+    DestroyAllSession,
+)
+
+class DashSessionRoutes:
+    def __init__(self, app,  session_service, role_deps):
+        self.session_service = session_service
+        self.role_deps = role_deps
+        
+        self.router = APIRouter()
+        self.register()
+        app.include_router(self.router, prefix="/tc-auth/session", tags=["Session ops"])
+
+    def register(self):
+        current = Depends(self.role_deps.require("superadmin"))
+
+        @self.router.get("/")
+        def get_sessions(user=current):
+            return self.session_service.get_all_sessions()
+        
+        @self.router.delete("/")
+        def destroy_session(body : DestroySession , user=current):
+            return self.session_service.destroy_session(body.model_dump())
+
+        @self.router.delete("/all")
+        def destroy_all(body : DestroyAllSession, user=current):    
+            return self.session_service.destroy_all(body.model_dump())
+        
+        @self.router.delete("/cleanup")
+        def cleanup(user=current):
+            return self.session_service.cleanup_expired()
+        
+        @self.router.delete("/clear")
+        def clear(user=current):
+            return self.session_service.clear_all()
+
+        
+    # ==========================================================

@@ -8,7 +8,7 @@ class AccountRoutes:
 
         self.router = APIRouter()
         self.register()
-        app.include_router(self.router)
+        app.include_router(self.router, prefix="/tc-auth", tags=["Profile Routes"])
 
     def register(self):
         current = Depends(self.deps.get_current)

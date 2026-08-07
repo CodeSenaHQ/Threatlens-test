@@ -1,6 +1,8 @@
 from datetime import UTC, datetime, timedelta
 import secrets
 
+from tc_auth.utils.get_helper import to_list_dict
+
 from tc_auth.config import SESSION_DURATION_DAYS
 from tc_auth.db.models import Session
 from tc_auth.utils.get_helper import to_dict
@@ -124,4 +126,17 @@ class SessionService:
                 .delete(synchronize_session=False)
             )
 
+            db.commit()
+
+    def get_all_sessions(
+        self,
+        ):
+        with self.session_factory() as db:
+            sessions = db.query(Session).all()
+            return to_list_dict(sessions)
+        
+
+    def clear_all(self):
+        with self.session_factory() as db:
+            db.query(Session).delete(synchronize_session=False)
             db.commit()

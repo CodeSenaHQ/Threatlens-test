@@ -29,6 +29,7 @@ from tc_auth.email.mail import EmailService
 
 from tc_auth.api.login_route import AuthRoutes
 from tc_auth.api.account_route import AccountRoutes
+from tc_auth.api.oauth_route import OAuthRoutes
 
 
 
@@ -56,6 +57,7 @@ class Auth:
 
         self.auth_routes = AuthRoutes(app=self.app, email_service=self.email, auth_service=self.service , otp_service=self.otp, get_user=self.get_user)
         self.account_routes = AccountRoutes(app=self.app, session_service=self.session, account_service=self.account, deps=self.deps)
+        self.oauth_routes = OAuthRoutes(app=self.app, oauth_service=self.oauth, google=self.google, github=self.github)
 
         # self.oauth_routes = OAuthRoutes(app=self.app, oauth_service=self.oauth, google=self.google, github=self.github)
         

@@ -35,11 +35,15 @@ class AuthDeps:
         if session["account_id"] != payload["aid"]:
             raise InvalidTokenError(field="account_id")
 
-        if session["expires_at"] < datetime.now(UTC):
+        expires_at = datetime.fromisoformat(
+            session["expires_at"]
+        )
+
+        if expires_at < datetime.now():
             raise InvalidTokenError(field="session")
 
         if not verify_hash(
-            payload["st"],
+            payload["token"],
             session["token_hash"],
         ):
             raise InvalidTokenError(field="token")

@@ -2,7 +2,7 @@ import random, time
 from datetime import datetime, timedelta
 
 from tc_auth.db.models import OTP
-from tc_auth.utils.hasher import hash_password, verify_hash
+from tc_auth.utils.hasher import simple_hash, verify_hash 
 from tc_auth.exceptions.error import (
     OTPExpiredError,
     OTPInvalidError,
@@ -39,7 +39,7 @@ class OTPService:
                 OTP(
                     identifier=identifier,
                     purpose=purpose,
-                    code_hash=hash_password(otp),
+                    code_hash=simple_hash(otp),
                     expires_at = datetime.now() + timedelta(seconds=expiry),
                 )
             )
@@ -80,7 +80,7 @@ class OTPService:
 
             if not verify_hash(
                 otp,
-                record.otp_hash,
+                record.code_hash,
             ):
                 raise OTPInvalidError()
 

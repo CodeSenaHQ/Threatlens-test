@@ -1,31 +1,17 @@
 # from tc_auth.auth import Auth
 from sqlalchemy import create_engine
 from tc_auth.auth import Auth
-
-
-
-engine1 = create_engine("postgresql://workspace:admin@localhost:5432/tc_auth", echo=True)
-app = "test"
-
-
-
 from fastapi import FastAPI
 
+
+
+
+engine = create_engine("postgresql://workspace:admin@localhost:5432/tc_auth", echo=False)
+
 app = FastAPI()
-auth = Auth(engine1, app)
+auth = Auth(engine, app)
 
-@app.post("/login")
-def login(identifier: str, password: str):
-    return auth.service.login(identifier=identifier, password=password)
-
-@app.post("/signup")
-def signup(name: str, email: str, password: str):
-    return auth.service.signup(
-        name=name,
-        email=email,
-        password=password,
-    )
-    
+auth.init()
     
 
 
@@ -40,4 +26,5 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    # run()
+    pass

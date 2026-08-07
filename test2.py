@@ -8,6 +8,7 @@ auth = Auth(engine, app)
 
 
 
+
 def run():
     import uvicorn
     uvicorn.run(

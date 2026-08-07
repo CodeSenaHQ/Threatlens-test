@@ -12,7 +12,7 @@ class RoleDeps:
     ):
         def dependency(
             user: dict = Depends(
-                self.auth_deps.get_current_user
+                self.auth_deps.get_current_account
             ),
         ):
             if user["role"] != role:
@@ -29,7 +29,7 @@ class RoleDeps:
     ):
         def dependency(
             user: dict = Depends(
-                self.auth_deps.get_current_user
+                self.auth_deps.get_current_account
             ),
         ):
             if user["role"] not in roles:
@@ -46,7 +46,7 @@ class RoleDeps:
     ):
         def dependency(
             user: dict = Depends(
-                self.auth_deps.get_current_user
+                self.auth_deps.get_current_account
             ),
         ):
             if user["role"] in roles:

@@ -4,7 +4,7 @@ from tc_auth.schema.login import (
     SendOTPRequest,
     LoginPasswordRequest,
     LoginOTPRequest,
-    SignupRequest,
+    SignupPasswordRequest,
     SignupOTPRequest,
 )
 
@@ -77,12 +77,13 @@ class AuthRoutes:
     def signup_with_password(
         self,
         request: Request,
-        body: SignupRequest,
+        body: SignupPasswordRequest,
     ):
         return self.auth_service.signup(
             name=body.name,
             email=body.email,
             handle=body.handle,
+            password=body.password,
             **self._request_meta(request),
         )
 

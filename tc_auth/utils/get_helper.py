@@ -24,3 +24,6 @@ def to_dict(model, exclude=None):
         result[key] = value
 
     return result
+
+def to_list_dict(models, exclude=None):
+    return [to_dict(model, exclude=exclude) for model in models]

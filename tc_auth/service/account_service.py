@@ -1,6 +1,7 @@
 from sqlalchemy.exc import IntegrityError
 
 from tc_auth.utils.hasher import hash_password
+from tc_auth.utils.get_helper import to_list_dict
 from tc_auth.db.models import Account
 from tc_auth.exceptions.error import (
     EmailAlreadyExistsError,
@@ -8,6 +9,7 @@ from tc_auth.exceptions.error import (
     PhoneAlreadyExistsError,
     UserNotFoundError,
 )
+
 
 
 class AccountService:
@@ -205,3 +207,66 @@ class AccountService:
             account = self._get_account(db, account_id)
             account.status = status
             db.commit()
+
+
+# SUPER UPDATE USER
+
+    def super_update(
+        self,
+        account_id: int,
+        *,
+        name: str | None = None,
+        email: str | None = None,
+        handle: str | None = None,
+        avatar_url: str | None = None,
+        phone: str | None = None,
+        role: str | None = None,
+        status: str | None = None,
+        password: str | None = None,
+    ):
+        with self.session_factory() as db:
+
+            account = self._get_account(db, account_id)
+
+            if name is not None:
+                account.name = name
+
+            if email is not None:
+                account.email = email
+
+            if handle is not None:
+                account.handle = handle
+
+            if avatar_url is not None:
+                account.avatar_url = avatar_url
+
+            if phone is not None:
+                account.phone = phone
+
+            if role is not None:
+                account.role = role
+
+            if status is not None:
+                account.status = status
+
+            if password is not None:
+                account.password_hash = hash_password(password)
+
+
+
+            try:
+                db.commit()
+                db.refresh(account)
+
+            except IntegrityError as e:
+                self._handle_integrity_error(db, e)
+
+            return self.get_user.by_id(account.id)
+        
+
+    def get_all_accounts(
+        self,
+        ):
+        with self.session_factory() as db:
+            accounts = db.query(Account).all()
+            return to_list_dict(accounts)

@@ -15,10 +15,11 @@ class LoginOTPRequest(BaseModel):
     otp: str = Field(min_length=6, max_length=6)
 
 
-class SignupRequest(BaseModel):
+class SignupPasswordRequest(BaseModel):
     name: str
     email: EmailStr
     handle: str | None = None
+    password: str = Field(min_length=8)
 
 
 class SignupOTPRequest(BaseModel):

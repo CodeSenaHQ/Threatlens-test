@@ -12,7 +12,7 @@ class StatusDeps:
     ):
         def dependency(
             user: dict = Depends(
-                self.auth_deps.get_current_user
+                self.auth_deps.get_current_account
             ),
         ):
             if user["status"] != status:
@@ -31,7 +31,7 @@ class StatusDeps:
     ):
         def dependency(
             user: dict = Depends(
-                self.auth_deps.get_current_user
+                self.auth_deps.get_current_account
             ),
         ):
             if user["status"] not in statuses:
@@ -50,7 +50,7 @@ class StatusDeps:
     ):
         def dependency(
             user: dict = Depends(
-                self.auth_deps.get_current_user
+                self.auth_deps.get_current_account
             ),
         ):
             if user["status"] in statuses:

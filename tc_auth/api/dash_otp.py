@@ -22,11 +22,11 @@ class DashOTPRoutes:
         
         @self.router.post("/")
         def create_otp(body : CreateOTP , user=current):
-            return self.otp_service.create(body.model_dump())
+            return self.otp_service.create(**body.model_dump())
 
         @self.router.delete("/")
         def delete_otp(body : DeleteOTP, user=current):    
-            return self.otp_service.revoke(body.model_dump())
+            return self.otp_service.revoke(**body.model_dump())
         
         @self.router.delete("/cleanup")
         def cleanup(user=current):

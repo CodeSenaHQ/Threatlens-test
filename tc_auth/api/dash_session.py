@@ -22,11 +22,11 @@ class DashSessionRoutes:
         
         @self.router.delete("/")
         def destroy_session(body : DestroySession , user=current):
-            return self.session_service.destroy_session(body.model_dump())
+            return self.session_service.destroy_session(**body.model_dump())
 
         @self.router.delete("/all")
         def destroy_all(body : DestroyAllSession, user=current):    
-            return self.session_service.destroy_all(body.model_dump())
+            return self.session_service.destroy_all(**body.model_dump())
         
         @self.router.delete("/cleanup")
         def cleanup(user=current):

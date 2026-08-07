@@ -22,12 +22,12 @@ class DashOAuthRoutes:
         
         @self.router.post("/")
         def create(body : CreateOAuth , user=current):
-            return self.oauth_service.link_account(body.model_dump())
+            return self.oauth_service.link_account(**body.model_dump())
 
 
         @self.router.delete("/")
         def delete(body : DeleteOAuth, user=current):
-            return self.oauth_service.unlink_account(body.model_dump())
+            return self.oauth_service.unlink_account(**body.model_dump())
         
 
     # ==========================================================

@@ -2,11 +2,27 @@ import time
 import jwt
 from tc_auth.exceptions.error import InvalidTokenError
 
-from tc_auth.config import (
-    SECRET_KEY,
-    ALGORITHM,
-    SESSION_DURATION_DAYS,
-)
+
+SECRET_KEY = "this-is-my-super-secret-key-for-jwt-auth"
+ALGORITHM = "HS256"
+SESSION_DURATION_DAYS = 1
+
+def config(
+        secret_key: str,
+        algorithm: str,
+        session_duration_days: int,
+    ) -> None:
+    global SECRET_KEY, ALGORITHM, SESSION_DURATION_DAYS
+    SECRET_KEY = secret_key
+    ALGORITHM = algorithm
+    SESSION_DURATION_DAYS = session_duration_days
+
+def load():
+    return {
+        "secret_key": SECRET_KEY,
+        "algorithm": ALGORITHM,
+        "session_duration_days": SESSION_DURATION_DAYS,
+    }
 
 
 def create_access_token(data: dict) -> str:
@@ -31,4 +47,4 @@ def verify_token(token: str) -> dict:
             algorithms=[ALGORITHM],
         )
     except Exception:
-        raise InvalidTokenError(field="token", value=token)
+        raise InvalidTokenError()

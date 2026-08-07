@@ -3,7 +3,7 @@ import secrets
 
 from tc_auth.utils.get_helper import to_list_dict
 
-from tc_auth.config import SESSION_DURATION_DAYS
+from tc_auth.jwt_handler import SESSION_DURATION_DAYS
 from tc_auth.db.models import Session
 from tc_auth.utils.get_helper import to_dict
 from tc_auth.utils.hasher import simple_hash

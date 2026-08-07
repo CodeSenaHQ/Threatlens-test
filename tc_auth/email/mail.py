@@ -17,11 +17,22 @@ class EmailService:
 
         self.use_tls = True
 
+    def load(self):
+        return {
+            "host": self.host,
+            "port": self.port,
+            "username": self.username,
+            "password": self.password,
+            "sender": self.sender,
+            "sender_name": self.sender_name,
+            "use_tls": self.use_tls,
+        }
+
     # ==========================================================
-    # REGISTER
+    # CONFIGURE
     # ==========================================================
 
-    def register(
+    def config(
         self,
         *,
         host: str,

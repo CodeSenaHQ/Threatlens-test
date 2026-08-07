@@ -8,8 +8,19 @@ class GoogleOAuth:
         self.oauth_service = oauth_service
         self.client = None
         self.redirect_uri = None
+        self.client_id = None
+        self.client_secret = None
 
-    def register(
+    def load(
+        self,
+        ):
+        return {
+            "client_id": self.client_id,
+            "client_secret": self.client_secret,
+            "redirect_uri": self.redirect_uri,
+        }
+
+    def config(
         self,
         *,
         client_id: str,
@@ -17,6 +28,8 @@ class GoogleOAuth:
         redirect_uri: str,
     ):
         self.redirect_uri = redirect_uri
+        self.client_id = client_id
+        self.client_secret = client_secret
 
         oauth = OAuth()
 

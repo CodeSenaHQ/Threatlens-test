@@ -1,5 +1,7 @@
 from tc_auth.db.models import OAuthAccount
 
+import inspect
+
 class OAuthService:
     def __init__(
         self,
@@ -45,11 +47,13 @@ class OAuthService:
                 avatar_url=avatar_url,
             )
 
-        return self.auth_service.create_login_response(
+        result = self.auth_service.create_login_response(
             account=account,
             ip_address=ip_address,
             user_agent=user_agent,
         )
+        
+        return result
 
     # ==========================================================
     # PRIVATE
@@ -67,7 +71,7 @@ class OAuthService:
         account = None
 
         if email is not None:
-            account = self.account.find_by_email(email)
+            account = self.get_user.find_by_email(email)
 
         if account is None:
             account = self.account.create_user(

@@ -97,4 +97,4 @@ class GetUserService:
             if account is None:
                 return None
 
-            return self.get_user.by_id(account.id)
+            return self.by_id(account.id)

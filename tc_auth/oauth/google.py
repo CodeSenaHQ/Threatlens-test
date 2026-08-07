@@ -1,5 +1,6 @@
 from authlib.integrations.starlette_client import OAuth
 from fastapi import Request
+import inspect
 
 
 class GoogleOAuth:
@@ -40,6 +41,7 @@ class GoogleOAuth:
             self.redirect_uri,
         )
 
+
     async def callback(
         self,
         request: Request,
@@ -53,7 +55,7 @@ class GoogleOAuth:
 
         user = token["userinfo"]
 
-        return self.oauth_service.login(
+        result = self.oauth_service.login(
             provider="google",
             provider_user_id=user["sub"],
             name=user.get("name"),
@@ -62,3 +64,5 @@ class GoogleOAuth:
             ip_address=ip_address,
             user_agent=user_agent,
         )
+
+        return result

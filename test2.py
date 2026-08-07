@@ -6,8 +6,6 @@ engine = create_engine("postgresql://workspace:admin@localhost:5432/tc_auth", ec
 app = FastAPI()
 auth = Auth(engine, app)
 
-auth.email.register(host="smtp.gmail.com", port=587, username="opencode.engine@gmail.com", password="weyi ogpy niel cvut",sender="opencode.engine@gmail.com", use_tls=True)
-
 
 
 def run():

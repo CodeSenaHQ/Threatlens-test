@@ -1,3 +1,5 @@
+import inspect
+from unittest import result
 from fastapi import APIRouter, Request
 
 class OAuthRoutes:
@@ -25,38 +27,39 @@ class OAuthRoutes:
     # GOOGLE OAUTH
     # ==========================================================
 
-    def google_login(
+    async def google_login(
         self,
         request : Request,
     ):
-        return self.google.login(request)
+        return await self.google.login(request)
     
-    def google_callback(
+    
+    async def google_callback(
         self,
         request : Request,
     ):
         meta = self._request_meta(request)
-        return self.google.callback(request, **meta)
+        return await self.google.callback(request, **meta)
+
     
     # ==========================================================
     # GITHUB OAUTH
     # ==========================================================
 
-    def github_login(
+    async def github_login(
         self,
         request : Request,
     ):
-        return self.github.login(request)
+        return await self.github.login(request)
     
     
-    def github_callback(
+    async def github_callback(
         self,
         request : Request,
     ):
         meta = self._request_meta(request)
-        return self.github.callback(request, **meta)
-
-
+        return await self.github.callback(request, **meta)
+        
     # ==========================================================
     # PRIVATE
     # ==========================================================

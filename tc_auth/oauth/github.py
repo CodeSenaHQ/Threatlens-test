@@ -31,7 +31,7 @@ class GitHubOAuth:
             },
         )
 
-    async def authorize(
+    async def login(
         self,
         request: Request,
     ):

@@ -33,3 +33,8 @@ class SuperDeleteSchema(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     account_id: int
+
+
+class UpdatePassword(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    password: str

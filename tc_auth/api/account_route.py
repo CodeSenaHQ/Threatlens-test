@@ -1,4 +1,7 @@
 from fastapi import APIRouter , Depends
+from tc_auth.schema.account import UpdatePassword
+
+
 
 class AccountRoutes:
     def __init__(self, app, session_service, account_service, deps):
@@ -26,7 +29,7 @@ class AccountRoutes:
             return user
         
         @self.router.put("/update/password")
-        def update_password(body: dict, user=current):
+        def update_password(body: UpdatePassword, user=current):
             return self.account_service.update_password(account_id=user["account"]["id"], password=body["password"])
 
     # ==========================================================

@@ -7,7 +7,7 @@ class CreateOTP(BaseModel):
 
     identifier: str
     purpose: Literal["login", "signup", "reset"]  = "login"
-    expires: int = 60 * 5  # 5 minutes
+    expiry: int = 60 * 5  # 5 minutes
 
 
 class DeleteOTP(BaseModel):

@@ -1,4 +1,5 @@
 from sqlalchemy.exc import IntegrityError
+from uuid import UUID
 
 from tc_auth.utils.hasher import hash_password
 from tc_auth.utils.get_helper import to_list_dict
@@ -17,6 +18,18 @@ class AccountService:
         self.session_factory = session_factory
         self.get_user = get_user
 
+    # ==========================================================
+    # PRIVATE
+    # ==========================================================
+
+    _QUERY_FIELDS = {
+        "id": Account.id,
+        "uid": Account.uid,
+        "phone": Account.phone,
+        "email": Account.email,
+        "name": Account.name,
+        "handle": Account.handle,
+    }
 
 #===========================Internal Helpers===========================
 # GET ACCOUNT BY ID & UserNotFoundError HANDLER
@@ -262,11 +275,61 @@ class AccountService:
                 self._handle_integrity_error(db, e)
 
             return self.get_user.by_id(account.id)
-        
+ 
 
-    def get_all_accounts(
-        self,
-        ):
+    def get_all(self, page: int = 1, limit: int = 10):
         with self.session_factory() as db:
-            accounts = db.query(Account).all()
+            offset = (page - 1) * limit
+
+            accounts = (
+                db.query(Account)
+                .order_by(Account.id.desc())
+                .offset(offset)
+                .limit(limit)
+                .all()  
+            )
+
             return to_list_dict(accounts)
+
+
+
+    def query(self, field: str, value: str):
+        column = self._QUERY_FIELDS.get(field)
+
+        if column is None:
+            raise ValueError(f"Invalid query field: {field}")
+
+        with self.session_factory() as db:
+
+            if field == "id":
+                try:
+                    parsed_value = int(value)
+                except ValueError:
+                    raise ValueError("id must be an integer")
+
+                accounts = (
+                    db.query(Account)
+                    .filter(Account.id == parsed_value)
+                    .all()
+                )
+
+            elif field == "uid":
+                try:
+                    parsed_value = UUID(value)
+                except ValueError:
+                    raise ValueError("uid must be a valid UUID")
+
+                accounts = (
+                    db.query(Account)
+                    .filter(Account.uid == parsed_value)
+                    .all()
+                )
+
+            else:
+                accounts = (
+                    db.query(Account)
+                    .filter(column.ilike(f"%{value}%"))
+                    .all()
+                )
+
+            return to_list_dict(accounts)   

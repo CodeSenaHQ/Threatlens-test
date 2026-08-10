@@ -7,12 +7,13 @@ from tc_auth.schema.dashboard import (
 )
 
 class DashboardRoute:
-    def __init__(self, app , email_service , github_service, google_service, jwt_service, role_deps):
+    def __init__(self, app , email_service , github_service, google_service, jwt_service, role_deps, dashboard_service):
         self.email_service = email_service
         self.github_service = github_service
         self.google_service = google_service
         self.jwt_service = jwt_service
         self.role_deps = role_deps
+        self.dashboard_service = dashboard_service
 
         self.router = APIRouter()
 
@@ -31,6 +32,9 @@ class DashboardRoute:
                 "google": self.google_service.load(),
                 "jwt": self.jwt_service.load(),
             }
+        @self.router.get("/counts")
+        def load_Counts(user=current):
+            return self.dashboard_service.get_counts()
             
         @self.router.post("/email")
         def configure_email(config: EmailConfig, user=current):

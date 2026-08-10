@@ -1,4 +1,4 @@
-from fastapi import APIRouter , Depends
+from fastapi import APIRouter , Depends, Query
 from tc_auth.schema.sessions import (
     DestroySession,
     DestroyAllSession,
@@ -17,8 +17,26 @@ class DashSessionRoutes:
         current = Depends(self.role_deps.require("superadmin"))
 
         @self.router.get("/")
-        def get_sessions(user=current):
-            return self.session_service.get_all_sessions()
+        def get_sessions(
+            user=current,
+            page: int = Query(1, ge=1),
+            limit: int = Query(10, ge=1, le=100)
+        ):
+            return self.session_service.get_all(
+                page=page,
+                limit=limit
+            )
+        
+        @self.router.get("/query")
+        def query(
+            user=current,
+            field: str = Query(...),
+            value: str = Query(...)
+        ):
+            return self.session_service.query(
+                field=field,
+                value=value
+            )
         
         @self.router.delete("/")
         def destroy_session(body : DestroySession , user=current):

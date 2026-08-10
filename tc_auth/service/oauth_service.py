@@ -1,6 +1,7 @@
 from tc_auth.db.models import OAuthAccount
 from tc_auth.utils.get_helper import to_list_dict
 
+
 class OAuthService:
     def __init__(
         self,
@@ -57,6 +58,10 @@ class OAuthService:
     # ==========================================================
     # PRIVATE
     # ==========================================================
+    _QUERY_FIELDS = {
+        "id": OAuthAccount.id,
+        "provider_id": OAuthAccount.provider_user_id,
+    }
 
     def _find_or_create_account(
         self,
@@ -179,11 +184,39 @@ class OAuthService:
             db.commit()
 
 
-    def get_all_oauth_links(self):
+    def get_all(self, page: int = 1, limit: int = 10):
         with self.session_factory() as db:
-            records = (
+            offset = (page - 1) * limit
+
+            oauth_links = (
                 db.query(OAuthAccount)
+                .order_by(OAuthAccount.id.desc())
+                .offset(offset)
+                .limit(limit)
+                .all()  
+            )
+
+            return to_list_dict(oauth_links)
+
+
+
+    def query(self, field: str, value: str):
+        column = self._QUERY_FIELDS.get(field)
+
+        if column is None:
+            raise ValueError(f"Invalid query field: {field}")
+
+        if field == "id":
+            try:
+                value = int(value)
+            except ValueError:
+                raise ValueError("id must be an integer")
+
+        with self.session_factory() as db:
+            oauth_records = (
+                db.query(OAuthAccount)
+                .filter(column == value)
                 .all()
             )
 
-            return to_list_dict(records)
+            return to_list_dict(oauth_records)

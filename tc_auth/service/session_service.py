@@ -14,6 +14,14 @@ class SessionService:
     def __init__(self, session_factory):
         self.session_factory = session_factory
 
+
+    _QUERY_FIELDS = {
+        "id": Session.account_id,
+        "sid": Session.id,
+        "token": Session.token_hash,
+        "ip": Session.ip_address,
+    }
+
     def _get_session(
         self,
         db,
@@ -128,13 +136,49 @@ class SessionService:
 
             db.commit()
 
-    def get_all_sessions(
-        self,
-        ):
+    def get_all(self, page: int = 1, limit: int = 10):
         with self.session_factory() as db:
-            sessions = db.query(Session).all()
+            offset = (page - 1) * limit
+
+            sessions = (
+                db.query(Session)
+                .order_by(Session.id.desc())
+                .offset(offset)
+                .limit(limit)
+                .all()
+            )
+
             return to_list_dict(sessions)
         
+    def query(self, field: str, value: str):
+        column = self._QUERY_FIELDS.get(field)
+
+        if column is None:
+            raise ValueError(f"Invalid query field: {field}")
+
+        with self.session_factory() as db:
+
+            if field in ("id", "sid"):
+                try:
+                    parsed_value = int(value)
+                except ValueError:
+                    raise ValueError(f"{field} must be an integer")
+
+                sessions = (
+                    db.query(Session)
+                    .filter(column == parsed_value)
+                    .all()
+                )
+
+            else:
+                sessions = (
+                    db.query(Session)
+                    .filter(column.ilike(f"%{value}%"))
+                    .all()
+                )
+
+            return to_list_dict(sessions)
+            
 
     def clear_all(self):
         with self.session_factory() as db:

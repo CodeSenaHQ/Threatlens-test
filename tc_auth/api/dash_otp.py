@@ -1,4 +1,4 @@
-from fastapi import APIRouter , Depends
+from fastapi import APIRouter, Depends, Query
 from tc_auth.schema.otp import (
     CreateOTP,
     DeleteOTP,
@@ -17,8 +17,25 @@ class DashOTPRoutes:
         current = Depends(self.role_deps.require("superadmin"))
 
         @self.router.get("/")
-        def get_otps(user=current):
-            return self.otp_service.get_all()
+        def get_otp_codes(
+            user=current,
+            page: int = Query(1, ge=1),
+            limit: int = Query(10, ge=1, le=100)
+        ):
+            return self.otp_service.get_all(
+                page=page,
+                limit=limit
+            )
+        
+        @self.router.get("/query")
+        def query_otp_codes(
+            user=current,
+            identifier: str = Query(..., description="OTP identifier")
+        ):
+            return self.otp_service.query(
+                identifier=identifier
+            )
+        
         
         @self.router.post("/")
         def create_otp(body : CreateOTP , user=current):

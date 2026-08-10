@@ -1,4 +1,4 @@
-from fastapi import APIRouter , Depends
+from fastapi import APIRouter, Depends, Query
 from tc_auth.schema.account import (
     SuperCreateSchema,
     SuperUpdateSchema,
@@ -18,12 +18,30 @@ class DashAccountRoutes:
         current = Depends(self.role_deps.require("superadmin"))
 
         @self.router.get("/")
-        def get_account(user = current):
-            return self.account_service.get_all_accounts()
+        def get_accounts(
+            user=current,
+            page: int = Query(1, ge=1),
+            limit: int = Query(10, ge=1, le=100)
+        ):
+            return self.account_service.get_all(
+                page=page,
+                limit=limit
+            )
+        
+        @self.router.get("/query")
+        def query_account(
+            user=current,
+            field: str = Query(...),
+            value: str = Query(...)
+        ):
+            return self.account_service.query(
+                field=field,
+                value=value
+            )
         
         @self.router.post("/")
         def create(body : SuperCreateSchema , user=current):
-            return self.account_service.create(**body.model_dump())
+            return self.account_service.create_user(**body.model_dump())
 
         @self.router.patch("/")
         def update(body : SuperUpdateSchema, user=current):

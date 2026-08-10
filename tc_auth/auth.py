@@ -18,6 +18,7 @@ from tc_auth.service.oauth_service import OAuthService
 from tc_auth.service.session_service import SessionService
 from tc_auth.service.account_service import AccountService
 from tc_auth.service.get_user_service import GetUserService
+from tc_auth.service.dashboard_service import DashboardService
 
 from tc_auth.oauth.google import GoogleOAuth
 from tc_auth.oauth.github import GitHubOAuth
@@ -49,6 +50,7 @@ class Auth:
         self.session = SessionService(session_factory=self.session_factory)
         self.service = AuthService(get_user=self.get_user, account=self.account, session=self.session)
         self.otp = OTPService(session_factory=self.session_factory)
+        self.dashboard = DashboardService(session_factory=self.session_factory)
 
         self.oauth = OAuthService(get_user=self.get_user, session_factory=self.session_factory, account=self.account, auth_service=self.service)
         self.google = GoogleOAuth(oauth_service=self.oauth)
@@ -69,7 +71,7 @@ class Auth:
         self.dash_oauth_routes = DashOAuthRoutes(app=self.app, oauth_service=self.oauth, role_deps=self.role)
         self.dash_session_routes = DashSessionRoutes(app=self.app, session_service=self.session, role_deps=self.role)
         self.dash_account_routes = DashAccountRoutes(app=self.app, account_service=self.account, role_deps=self.role)
-        self.dashboard_routes = DashboardRoute(app=self.app, email_service=self.email, github_service=self.github, google_service=self.google, jwt_service=self.jwt, role_deps=self.role)
+        self.dashboard_routes = DashboardRoute(app=self.app, email_service=self.email, github_service=self.github, google_service=self.google, jwt_service=self.jwt, role_deps=self.role, dashboard_service=self.dashboard)
         
         self.app.add_exception_handler(AuthError,auth_exception_handler,)
         self.app.add_exception_handler(AuthError,auth_exception_handler,)

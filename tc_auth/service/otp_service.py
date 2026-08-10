@@ -10,13 +10,6 @@ from tc_auth.exceptions.error import (
 )
 
 
-class OTPService:
-    def __init__(self, session_factory):
-        self.session_factory = session_factory
-
-    # ==========================================================
-    # CREATE
-    # ==========================================================
 import random
 from datetime import datetime, timedelta
 
@@ -146,11 +139,34 @@ class OTPService:
             return deleted
         
 
-    def get_all(self):
+    def get_all(self, page: int = 1, limit: int = 10):
         with self.session_factory() as db:
-            otps = db.query(OTP).all()
+            offset = (page - 1) * limit
+
+            otps = (
+                db.query(OTP)
+                .order_by(OTP.id.desc())
+                .offset(offset)
+                .limit(limit)
+                .all()
+            )
+
+            return to_list_dict(otps)
+        
+    def query(self, identifier: str):
+        with self.session_factory() as db:
+            otps = (
+                db.query(OTP)
+                .filter(OTP.identifier == identifier)
+                .order_by(OTP.id.desc())
+                .all()
+            )
+
             return to_list_dict(otps)
 
+    # ==========================================================
+    # CLEAR ALL
+    # ==========================================================
 
 
     def clear_all(self):

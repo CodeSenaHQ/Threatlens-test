@@ -1,11 +1,27 @@
 from tc_auth.db.models import Account
 from tc_auth.utils.get_helper import to_dict
 from tc_auth.exceptions.error import UserNotFoundError
+from uuid import UUID
+
+
 
 
 class GetUserService:
     def __init__(self, session_factory):
         self.session_factory = session_factory
+
+    # ==========================================================
+    # PRIVATE
+    # ==========================================================
+
+
+    _QUERY_FIELDS = {
+        "id": Account.id,
+        "uid": Account.uid,
+        "phone": Account.phone,
+        "email": Account.email,
+        "handle": Account.handle,
+    }
 
     def _get_by(
         self,
@@ -25,6 +41,11 @@ class GetUserService:
 
             exclude = [] if include_password else ["password_hash"]
             return to_dict(account, exclude=exclude)
+        
+
+    # ==========================================================
+    # PUBLIC
+    # ==========================================================
 
     def by_id(
         self,
@@ -98,3 +119,28 @@ class GetUserService:
                 return None
 
             return self.by_id(account.id)
+            
+
+            
+    def query(self, field: str, value: str):
+        column = self._QUERY_FIELDS.get(field)
+
+        if column is None:
+            raise ValueError(f"Invalid query field: {field}")
+
+        if field == "id":
+            try:
+                value = int(value)
+            except ValueError:
+                raise ValueError("id must be an integer")
+
+        elif field == "uid":
+            try:
+                value = UUID(value)
+            except ValueError:
+                raise ValueError("uid must be a valid UUID")
+
+        return self._get_by(
+            column=column,
+            value=value,
+        )

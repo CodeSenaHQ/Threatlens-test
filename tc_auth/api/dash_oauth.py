@@ -1,4 +1,4 @@
-from fastapi import APIRouter , Depends
+from fastapi import APIRouter, Depends, Query
 from tc_auth.schema.oauth import (
     CreateOAuth,
     DeleteOAuth,
@@ -17,8 +17,26 @@ class DashOAuthRoutes:
         current = Depends(self.role_deps.require("superadmin"))
 
         @self.router.get("/")
-        def get_account(user=current):
-            return self.oauth_service.get_all_oauth_links()
+        def get_oauth_links(
+            user=current,
+            page: int = Query(1, ge=1),
+            limit: int = Query(10, ge=1, le=100)
+        ):
+            return self.oauth_service.get_all(
+                page=page,
+                limit=limit
+            )
+        
+        @self.router.get("/query")
+        def query(
+            user=current,
+            field: str = Query(...),
+            value: str = Query(...)
+        ):
+            return self.oauth_service.query(
+                field=field,
+                value=value
+            )
         
         @self.router.post("/")
         def create(body : CreateOAuth , user=current):

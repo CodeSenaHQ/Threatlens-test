@@ -4,15 +4,17 @@ from tc_auth.schema.dashboard import (
     OAuthConfig,
     EmailConfig,
     JWTConfig,
+    OAuthRedirect,
 )
 
 class DashboardRoute:
-    def __init__(self, app , email_service , github_service, google_service, jwt_service, role_deps, dashboard_service):
+    def __init__(self, app , email_service , github_service, google_service, jwt_service, role_deps, dashboard_service, oauth_service):
         self.email_service = email_service
         self.github_service = github_service
         self.google_service = google_service
         self.jwt_service = jwt_service
         self.role_deps = role_deps
+        self.oauth_service = oauth_service
         self.dashboard_service = dashboard_service
 
         self.router = APIRouter()
@@ -31,10 +33,17 @@ class DashboardRoute:
                 "github": self.github_service.load(),
                 "google": self.google_service.load(),
                 "jwt": self.jwt_service.load(),
+                "redirect": self.oauth_service.load(),
             }
+        
+        
         @self.router.get("/counts")
         def load_Counts(user=current):
             return self.dashboard_service.get_counts()
+        
+        @self.router.post("/redirect")
+        def configure_oauth(config: OAuthRedirect, user=current):
+            return self.oauth_service.redirect(**config.model_dump())
             
         @self.router.post("/email")
         def configure_email(config: EmailConfig, user=current):

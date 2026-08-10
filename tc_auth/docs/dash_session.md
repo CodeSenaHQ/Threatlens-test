@@ -2,11 +2,28 @@
 
 Base path: `/tc-auth/session`
 
+
 All routes in this group require the `superadmin` role.
+
+Authentication:
+
+- Header: `Authorization: Bearer <access_token>`
+
+Notes & conditions:
+
+- Tokens are JWTs that embed `aid` (account id) and `sid` (session id). The admin routes operate on raw session records and may reveal token hashes; treat returned session rows as sensitive.
+- `clear` and `cleanup` are destructive — use with care.
 
 ## GET `/`
 
-Returns every session record.
+Returns a paginated list of session records.
+
+Query parameters:
+
+- `page` (int, default=1)
+- `limit` (int, default=10)
+
+Returns every session record page-by-page.
 
 ### Response
 
@@ -35,6 +52,30 @@ const res = await fetch(`${baseUrl}/tc-auth/session/`, {
 });
 
 const data = await res.json();
+```
+
+## GET `/query`
+
+Performs a lookup for session records.
+
+Query parameters:
+
+- `field` (string) — supported fields: `id`, `sid`, `token`, `ip`.
+- `value` (string) — value to match (for numeric fields use integer strings).
+
+### Response
+
+Returns matching session records (array).
+
+### Fetch example
+
+```js
+const res = await fetch(`${baseUrl}/tc-auth/session/query?field=sid&value=9`, {
+  method: "GET",
+  headers: { Authorization: `Bearer ${accessToken}` },
+});
+
+const results = await res.json();
 ```
 
 ## DELETE `/`

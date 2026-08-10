@@ -2,11 +2,30 @@
 
 Base path: `/tc-auth/otp`
 
+
 All routes in this group require the `superadmin` role.
+
+Authentication & security notes:
+
+- Header: `Authorization: Bearer <access_token>`
+- OTPs are sensitive; avoid exposing OTP codes in logs in production. The admin `/otp/` POST returns the OTP value for convenience in non-production/testing use only.
+- Use rate limiting and monitoring to prevent OTP abuse.
+
+Common errors:
+
+- `404` — OTP not found when verifying (`OTPNotFoundError`).
+- `401` — invalid or expired OTP (`OTPInvalidError`, `OTPExpiredError`).
 
 ## GET `/`
 
-Returns all OTP records.
+Returns a paginated list of OTP records.
+
+Query parameters:
+
+- `page` (int, default=1)
+- `limit` (int, default=10)
+
+Returns all OTP records page-by-page.
 
 ### Response
 
@@ -35,6 +54,29 @@ const res = await fetch(`${baseUrl}/tc-auth/otp/`, {
 });
 
 const data = await res.json();
+```
+
+## GET `/query`
+
+Lookup OTP records by identifier.
+
+Query parameters:
+
+- `identifier` (string) — the OTP identifier to search for (usually an email).
+
+### Response
+
+Returns matching OTP records (array).
+
+### Fetch example
+
+```js
+const res = await fetch(`${baseUrl}/tc-auth/otp/query?identifier=jane%40example.com`, {
+  method: "GET",
+  headers: { Authorization: `Bearer ${accessToken}` },
+});
+
+const results = await res.json();
 ```
 
 ## POST `/`

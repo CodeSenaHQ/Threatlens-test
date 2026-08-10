@@ -4,7 +4,16 @@ Base path: `/tc-auth`
 
 These routes operate on the current authenticated account.
 
-All routes require `Authorization: Bearer <access_token>`.
+Authentication:
+
+- Header: `Authorization: Bearer <access_token>`
+- The `access_token` is returned by login/signup flows and must be valid and unexpired.
+
+Common errors:
+
+- `401 Unauthorized` — invalid or expired token.
+- `403 Forbidden` — permission denied where applicable.
+- `422` — invalid request body.
 
 ## POST `/logout`
 

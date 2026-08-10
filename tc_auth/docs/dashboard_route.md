@@ -4,6 +4,17 @@ Base path: `/tc-auth/config`
 
 All routes in this group require an authenticated user with the `superadmin` role.
 
+Authentication:
+
+- Header: `Authorization: Bearer <access_token>`
+- Token must be a valid access token created by the library (see login responses).
+
+Common error responses:
+
+- `401 Unauthorized` — invalid or expired token (see `InvalidTokenError`).
+- `403 Forbidden` — the authenticated account is not `superadmin` (permission denied).
+- `400` / `422` — invalid request body or validation failures.
+
 ## GET `/load/`
 
 Returns the current in-memory configuration for email, GitHub OAuth, Google OAuth, and JWT.
@@ -36,6 +47,10 @@ Returns the current in-memory configuration for email, GitHub OAuth, Google OAut
 		"algorithm": "HS256",
 		"session_duration_days": 1
 	}
+	,
+	"redirect": {
+		"frontend_url": "https://app.example.com/auth/callback"
+	}
 }
 ```
 
@@ -51,6 +66,11 @@ const res = await fetch(`${baseUrl}/tc-auth/config/load/`, {
 
 const data = await res.json();
 ```
+
+Notes & conditions:
+
+- Config changes are stored in-memory on the running service instance. To make them persistent, wire the config calls to your persistent store, or re-run `config` on startup from environment variables.
+- Keep `secret_key` and `client_secret` values confidential and rotate them where appropriate.
 
 ## POST `/email`
 
@@ -92,6 +112,60 @@ await fetch(`${baseUrl}/tc-auth/config/email`, {
 		sender_name: "Auth Module",
 		use_tls: true,
 	}),
+});
+```
+
+## GET `/counts`
+
+Returns basic dashboard counts (users, active sessions, oauth links, etc.).
+
+### Response
+
+```json
+{
+	"users": 123,
+	"sessions": 42,
+	"oauth_links": 7,
+	"otps": 3
+}
+```
+
+### Fetch example
+
+```js
+const res = await fetch(`${baseUrl}/tc-auth/config/counts`, {
+	method: "GET",
+	headers: { Authorization: `Bearer ${accessToken}` },
+});
+const counts = await res.json();
+```
+
+## POST `/redirect`
+
+Sets the frontend OAuth redirect/base callback URL used by the OAuth flow.
+
+### Body
+
+```json
+{
+	"frontend_url": "https://app.example.com/auth/callback"
+}
+```
+
+### Response
+
+Returns `null` on success.
+
+### Fetch example
+
+```js
+await fetch(`${baseUrl}/tc-auth/config/redirect`, {
+	method: "POST",
+	headers: {
+		Authorization: `Bearer ${accessToken}`,
+		"Content-Type": "application/json",
+	},
+	body: JSON.stringify({ frontend_url: "https://app.example.com/auth/callback" }),
 });
 ```
 

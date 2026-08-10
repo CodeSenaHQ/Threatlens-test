@@ -2,11 +2,28 @@
 
 Base path: `/tc-auth/oauth`
 
+
 All routes in this group require the `superadmin` role.
+
+Authentication:
+
+- Header: `Authorization: Bearer <access_token>`
+
+Provider notes:
+
+- Ensure `provider` values match those used by the OAuth adapters (e.g. `google`, `github`).
+- Linking an OAuth provider that already exists for a user will raise database uniqueness errors.
 
 ## GET `/`
 
-Returns every OAuth link record.
+Returns a paginated list of OAuth link records.
+
+Query parameters:
+
+- `page` (int, default=1) — page number (>=1)
+- `limit` (int, default=10) — page size (1..100)
+
+Returns every OAuth link record page-by-page.
 
 ### Response
 
@@ -25,7 +42,7 @@ Returns every OAuth link record.
 ### Fetch example
 
 ```js
-const res = await fetch(`${baseUrl}/tc-auth/oauth/`, {
+const res = await fetch(`${baseUrl}/tc-auth/oauth/?page=1&limit=20`, {
   method: "GET",
   headers: {
     Authorization: `Bearer ${accessToken}`,
@@ -103,4 +120,27 @@ await fetch(`${baseUrl}/tc-auth/oauth/`, {
     provider: "google",
   }),
 });
+```
+
+## GET `/query`
+
+Performs a lookup for OAuth link records.
+
+Query parameters:
+
+- `field` (string) — supported fields (e.g. `id`, `account_id`, `provider`, `provider_user_id`)
+- `value` (string) — value to match
+
+### Response
+
+Returns matching OAuth link records (array).
+
+### Fetch example
+
+```js
+const res = await fetch(`${baseUrl}/tc-auth/oauth/query?field=account_id&value=1`, {
+  method: "GET",
+  headers: { Authorization: `Bearer ${accessToken}` },
+});
+const results = await res.json();
 ```

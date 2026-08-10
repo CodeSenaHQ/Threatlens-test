@@ -9,6 +9,12 @@ class OAuthConfig(BaseModel):
     redirect_uri: HttpUrl
 
 
+class OAuthRedirect(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    frontend_url: HttpUrl
+
+
 class EmailConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

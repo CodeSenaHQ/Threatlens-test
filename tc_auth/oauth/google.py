@@ -1,6 +1,6 @@
 from authlib.integrations.starlette_client import OAuth
 from fastapi import Request
-import inspect
+from fastapi.responses import RedirectResponse
 
 
 class GoogleOAuth:
@@ -78,4 +78,7 @@ class GoogleOAuth:
             user_agent=user_agent,
         )
 
-        return result
+        return RedirectResponse(
+            f"{self.oauth_service.frontend_url}/oauth/callback"
+            f"?access_token={result['access_token']}"
+        )

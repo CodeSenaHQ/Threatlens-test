@@ -2,11 +2,30 @@
 
 Base path: `/tc-auth/account`
 
+
 All routes in this group require the `superadmin` role.
+
+Authentication & permissions:
+
+- Header: `Authorization: Bearer <access_token>`
+- The calling account must have `role` == `superadmin`.
+
+Common errors:
+
+- `401 Unauthorized` — invalid token.
+- `403 Forbidden` — insufficient role.
+- `409 Conflict` — attempting to create or update with duplicate email/handle/phone (see `EmailAlreadyExistsError` / `HandleAlreadyExistsError` / `PhoneAlreadyExistsError`).
 
 ## GET `/`
 
-Returns every account in the system.
+Returns a paginated list of accounts.
+
+Query parameters:
+
+- `page` (int, default=1) — page number (>=1)
+- `limit` (int, default=10) — page size (1..100)
+
+Returns every account in the system page-by-page.
 
 ### Response
 
@@ -31,7 +50,7 @@ Returns every account in the system.
 ### Fetch example
 
 ```js
-const res = await fetch(`${baseUrl}/tc-auth/account/`, {
+const res = await fetch(`${baseUrl}/tc-auth/account/?page=1&limit=20`, {
   method: "GET",
   headers: {
     Authorization: `Bearer ${accessToken}`,
@@ -151,6 +170,29 @@ Returns `null` on success.
 
 ### Fetch example
 
+
+## GET `/query`
+
+Performs a quick lookup by a supported field.
+
+Query parameters:
+
+- `field` (string) — the field to query (e.g. `id`, `uid`, `email`, `handle`)
+- `value` (string) — the value to search for
+
+### Response
+
+Returns matching account records (array).
+
+### Fetch example
+
+```js
+const res = await fetch(`${baseUrl}/tc-auth/account/query?field=email&value=jane%40example.com`, {
+  method: "GET",
+  headers: { Authorization: `Bearer ${accessToken}` },
+});
+const results = await res.json();
+```
 ```js
 await fetch(`${baseUrl}/tc-auth/account/`, {
   method: "DELETE",

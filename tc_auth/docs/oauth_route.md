@@ -4,7 +4,22 @@ Base path: `/tc-auth`
 
 These routes start and finish the Google and GitHub OAuth flow.
 
-The login endpoints usually redirect the browser to the provider. In a frontend app, navigation is typically a better fit than raw fetch, but fetch examples are included here for completeness.
+Authentication & flow notes:
+
+- The `/google/login` and `/github/login` endpoints respond with a redirect to the provider's authorization URL. In browser-based frontends prefer using `window.location` or a popup.
+- The provider will redirect back to `/tc-auth/google/callback` or `/tc-auth/github/callback` with a code. The backend exchanges the code and returns the standard login payload.
+- The OAuth client credentials and `redirect_uri` are configured using the admin endpoints under `/tc-auth/config`.
+
+Provider registration requirements (frontend):
+
+- Register the redirect URI exactly as configured in the dashboard (`redirect_uri`). Use HTTPS in production.
+- For GitHub: register the `Authorization callback URL` in your GitHub OAuth App settings.
+- For Google: register the `Authorized redirect URI` in the Google Cloud Console OAuth 2.0 Client IDs.
+
+Errors & edge cases:
+
+- `400` / `422` — malformed callback or missing query args.
+- `401` — if token exchange or internal verification fails; ensure client secrets match.
 
 ## GET `/google/login`
 

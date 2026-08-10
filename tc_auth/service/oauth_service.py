@@ -10,10 +10,18 @@ class OAuthService:
         account,
         auth_service,
     ):
+        self.frontend_url = "https://auth.codesena.me"
         self.get_user = get_user
         self.session_factory = session_factory
         self.account = account
         self.auth_service = auth_service
+
+
+    def redirect(self, url: str):
+        self.frontend_url = url
+
+    def load(self):
+        return self.frontend_url
 
     # ==========================================================
     # LOGIN

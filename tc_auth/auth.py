@@ -71,7 +71,7 @@ class Auth:
         self.dash_oauth_routes = DashOAuthRoutes(app=self.app, oauth_service=self.oauth, role_deps=self.role)
         self.dash_session_routes = DashSessionRoutes(app=self.app, session_service=self.session, role_deps=self.role)
         self.dash_account_routes = DashAccountRoutes(app=self.app, account_service=self.account, role_deps=self.role)
-        self.dashboard_routes = DashboardRoute(app=self.app, email_service=self.email, github_service=self.github, google_service=self.google, jwt_service=self.jwt, role_deps=self.role, dashboard_service=self.dashboard)
+        self.dashboard_routes = DashboardRoute(app=self.app, email_service=self.email, github_service=self.github, google_service=self.google, jwt_service=self.jwt, role_deps=self.role, dashboard_service=self.dashboard, oauth_service=self.oauth)
         
         self.app.add_exception_handler(AuthError,auth_exception_handler,)
         self.app.add_exception_handler(AuthError,auth_exception_handler,)

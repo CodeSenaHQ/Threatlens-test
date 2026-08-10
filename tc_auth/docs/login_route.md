@@ -4,6 +4,17 @@ Base path: `/tc-auth`
 
 These routes handle signup, login, and email OTP delivery.
 
+Authentication:
+
+- Public endpoints: OTP send and signup/login are intentionally unauthenticated.
+- The signup and login endpoints return an `access_token` which must be used with protected routes.
+
+Common error responses:
+
+- `400` / `422` — validation errors (see field constraints below).
+- `401 Unauthorized` — invalid credentials or invalid OTP (`InvalidCredentialsError`, `OTPInvalidError`).
+- `404 Not Found` — user not found when expected (`UserNotFoundError`).
+
 Common success payload for signup and login:
 
 ```json
@@ -25,6 +36,19 @@ Common success payload for signup and login:
   }
 }
 ```
+
+Validation & conditions:
+
+- `SendOTPRequest.email` must be a valid email address.
+- `LoginPasswordRequest.identifier` must be a non-empty string (email or handle).
+- `LoginOTPRequest.otp` is 6 characters long.
+- `SignupPasswordRequest.password` and `SignupOTPRequest.password` must be at least 8 characters.
+- OTP `purpose` must match the flow (e.g. `signup` for `/signup/otp`).
+
+Security notes:
+
+- OTPs are single-use and expire after the configured expiry. Do not log OTP values in production.
+- Rate-limit OTP sends on the frontend/backends to prevent abuse.
 
 ## POST `/send/email/otp/{purpose}`
 
@@ -63,6 +87,9 @@ const res = await fetch(`${baseUrl}/tc-auth/send/email/otp/signup`, {
 
 const data = await res.json();
 ```
+Notes:
+
+- `purpose` must be one of `login`, `signup`, `reset`, `verify` (the backend expects `verify` in some internal helpers).
 
 ## POST `/signup/otp`
 
@@ -103,7 +130,6 @@ const res = await fetch(`${baseUrl}/tc-auth/signup/otp`, {
 
 const data = await res.json();
 ```
-
 ## POST `/signup/password`
 
 Creates a new account using a password only.
@@ -210,4 +236,44 @@ const res = await fetch(`${baseUrl}/tc-auth/login/password`, {
 });
 
 const data = await res.json();
+
+## POST `/forgot/password`
+
+This endpoint verifies a reset OTP and updates the account password, then returns a login payload.
+
+### Important: schema mismatch
+
+In the current implementation the route is annotated with `LoginPasswordRequest` but the handler expects `email`, `otp`, and `password`. Use the body shown below (the backend reads `body.email` and `body.otp`). This should be corrected in code to use a dedicated `ForgotPasswordRequest` schema.
+
+### Body (use this shape)
+
+```json
+{
+  "email": "jane@example.com",
+  "otp": "123456",
+  "password": "new-password123"
+}
 ```
+
+### Response
+
+Returns the standard login payload with `access_token`, `token_type`, and `account` on success.
+
+### Fetch example
+
+```js
+const res = await fetch(`${baseUrl}/tc-auth/forgot/password`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    email: "jane@example.com",
+    otp: "123456",
+    password: "new-password123",
+  }),
+});
+
+const data = await res.json();
+```
+ 

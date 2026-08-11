@@ -1,4 +1,5 @@
 from authlib.integrations.starlette_client import OAuth
+from fastapi.responses import RedirectResponse
 from fastapi import Request
 
 
@@ -48,7 +49,9 @@ class GitHubOAuth:
     async def login(
         self,
         request: Request,
+        frontend_url: str,
     ):
+        request.session["frontend_url"] = frontend_url
         return await self.client.authorize_redirect(
             request,
             self.redirect_uri,
@@ -61,9 +64,9 @@ class GitHubOAuth:
         ip_address: str | None = None,
         user_agent: str | None = None,
     ):
-        token = await self.client.authorize_access_token(
-            request,
-        )
+        frontend_url = request.session.get("frontend_url")
+        token = await self.client.authorize_access_token(request)
+        request.session.pop("frontend_url", None)
 
         user = await self.client.get(
             "user",
@@ -88,7 +91,7 @@ class GitHubOAuth:
                     email = item["email"]
                     break
 
-        return self.oauth_service.login(
+        result = self.oauth_service.login(
             provider="github",
             provider_user_id=str(user["id"]),
             name=user.get("name"),
@@ -96,4 +99,10 @@ class GitHubOAuth:
             avatar_url=user.get("avatar_url"),
             ip_address=ip_address,
             user_agent=user_agent,
+        )
+
+        
+        return RedirectResponse(
+            f"{frontend_url}/oauth/callback"
+            f"?access_token={result['access_token']}"
         )

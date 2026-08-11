@@ -168,8 +168,18 @@ class AuthRoutes:
         self,
         request: Request,
     ):
+        ip = (
+            request.headers.get("cf-connecting-ip")
+            or request.headers.get("x-forwarded-for")
+            or (
+                request.client.host
+                if request.client
+                else None
+            )
+        )
+
         return {
-            "ip_address": request.client.host,
+            "ip_address": ip,
             "user_agent": request.headers.get(
                 "user-agent",
                 "",

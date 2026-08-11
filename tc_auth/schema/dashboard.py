@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, HttpUrl
+from pydantic import BaseModel, ConfigDict
 
 
 class OAuthConfig(BaseModel):
@@ -6,13 +6,13 @@ class OAuthConfig(BaseModel):
 
     client_id: str
     client_secret: str
-    redirect_uri: HttpUrl
+    redirect_uri: str
 
 
 class OAuthRedirect(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    frontend_url: HttpUrl
+    frontend_url: str
 
 
 class EmailConfig(BaseModel):

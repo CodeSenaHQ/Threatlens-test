@@ -106,6 +106,7 @@ class GetUserService:
     def find_by_email(
         self,
         email: str,
+        include_password: bool = False,
     ):
         with self.session_factory() as db:
 
@@ -117,30 +118,7 @@ class GetUserService:
 
             if account is None:
                 return None
-
-            return self.by_id(account.id)
             
-
+            exclude = [] if include_password else ["password_hash"]
+            return to_dict(account, exclude=exclude)
             
-    def query(self, field: str, value: str):
-        column = self._QUERY_FIELDS.get(field)
-
-        if column is None:
-            raise ValueError(f"Invalid query field: {field}")
-
-        if field == "id":
-            try:
-                value = int(value)
-            except ValueError:
-                raise ValueError("id must be an integer")
-
-        elif field == "uid":
-            try:
-                value = UUID(value)
-            except ValueError:
-                raise ValueError("uid must be a valid UUID")
-
-        return self._get_by(
-            column=column,
-            value=value,
-        )

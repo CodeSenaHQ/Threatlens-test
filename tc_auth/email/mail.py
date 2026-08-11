@@ -1,5 +1,6 @@
 import smtplib
 from email.message import EmailMessage
+from tc_auth.email.template import templates
 
 
 class EmailService:
@@ -110,14 +111,17 @@ class EmailService:
             expiry=expiry,
         )
 
+        template = templates.get(purpose)
+        body = template(
+            otp=result["otp"],
+            expiry=expiry,
+        )
+
         self.send(
             to=email,
             subject="Verification Code",
-            body=(
-                f"Your verification code is "
-                f"{result['otp']}.\n\n"
-                f"It expires in {expiry // 60} minutes."
-            ),
+            body=body,
+            html=True,
         )
 
         return {

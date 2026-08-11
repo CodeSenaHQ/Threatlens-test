@@ -30,8 +30,9 @@ class OAuthRoutes:
     async def google_login(
         self,
         request : Request,
+        frontend_url: str,
     ):
-        return await self.google.login(request)
+        return await self.google.login(request,frontend_url=frontend_url)
     
     
     async def google_callback(
@@ -49,8 +50,9 @@ class OAuthRoutes:
     async def github_login(
         self,
         request : Request,
+        frontend_url: str,
     ):
-        return await self.github.login(request)
+        return await self.github.login(request,frontend_url=frontend_url)
     
     
     async def github_callback(

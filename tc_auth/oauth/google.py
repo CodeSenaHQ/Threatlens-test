@@ -45,10 +45,13 @@ class GoogleOAuth:
             },
         )
 
+            
     async def login(
         self,
         request: Request,
+        frontend_url: str,
     ):
+        request.session["frontend_url"] = frontend_url
         return await self.client.authorize_redirect(
             request,
             self.redirect_uri,
@@ -62,9 +65,9 @@ class GoogleOAuth:
         ip_address: str | None = None,
         user_agent: str | None = None,
     ):
-        token = await self.client.authorize_access_token(
-            request,
-        )
+        frontend_url = request.session.get("frontend_url")
+        token = await self.client.authorize_access_token(request)
+        request.session.pop("frontend_url", None)
 
         user = token["userinfo"]
 
@@ -79,6 +82,6 @@ class GoogleOAuth:
         )
 
         return RedirectResponse(
-            f"{self.oauth_service.frontend_url}/oauth/callback"
+            f"{frontend_url}/oauth/callback"
             f"?access_token={result['access_token']}"
         )

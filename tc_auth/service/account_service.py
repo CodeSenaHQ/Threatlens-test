@@ -265,8 +265,6 @@ class AccountService:
             if password is not None:
                 account.password_hash = hash_password(password)
 
-
-
             try:
                 db.commit()
                 db.refresh(account)
@@ -274,8 +272,6 @@ class AccountService:
             except IntegrityError as e:
                 self._handle_integrity_error(db, e)
 
-            return self.get_user.by_id(account.id)
- 
 
     def get_all(self, page: int = 1, limit: int = 10):
         with self.session_factory() as db:

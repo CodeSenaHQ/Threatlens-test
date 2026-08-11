@@ -28,7 +28,7 @@ auth.email.config(
     host="smtp.gmail.com", 
     port=587, 
     username="opencode.engine@gmail.com", 
-    password="weyi ogpy niel cvut", 
+    password="test", 
     sender="opencode.engine@gmail.com", 
     sender_name="Total Chaos", # Default is Sender 
     use_tls=True               # Default is True

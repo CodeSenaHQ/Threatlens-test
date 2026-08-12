@@ -1,5 +1,5 @@
 from tc_auth.db.models import OAuthAccount
-from tc_auth.utils.get_helper import to_list_dict
+from tc_auth.utils.get_helper import to_list_dict, to_dict
 
 
 class OAuthService:
@@ -62,6 +62,7 @@ class OAuthService:
     _QUERY_FIELDS = {
         "id": OAuthAccount.id,
         "provider_id": OAuthAccount.provider_user_id,
+        "account_id": OAuthAccount.account_id,
     }
 
     def _find_or_create_account(
@@ -165,7 +166,7 @@ class OAuthService:
             db.commit()
             db.refresh(oauth)
 
-            return oauth
+            return to_dict(oauth)
 
 
     def unlink_account(
@@ -209,7 +210,7 @@ class OAuthService:
         if column is None:
             raise ValueError(f"Invalid query field: {field}")
 
-        if field == "id":
+        if field in ["id","account_id"]:
             try:
                 value = int(value)
             except ValueError:

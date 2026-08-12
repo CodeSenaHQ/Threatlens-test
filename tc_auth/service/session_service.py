@@ -76,6 +76,7 @@ class SessionService:
             session = self._get_session(db, session_id)
 
             return to_dict(session)
+        
 
     def by_account(
         self,

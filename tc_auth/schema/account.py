@@ -38,3 +38,13 @@ class SuperDeleteSchema(BaseModel):
 class UpdatePassword(BaseModel):
     model_config = ConfigDict(extra="forbid")
     password: str
+
+
+class UpdateSchema(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str | None = None
+    email: EmailStr | None = None
+    handle: str | None = None
+    avatar_url: str | None = None
+    phone: str | None = None

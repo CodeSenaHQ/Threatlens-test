@@ -129,28 +129,3 @@ class AuthService:
             user_agent,
         )
     
-
-    def logout(
-        self,
-        access_token: str,
-    ):
-        payload = verify_token(
-            access_token
-        )
-
-        self.session.destroy_session(
-            payload["sid"]
-        )
-
-
-    def logout_all(
-        self,
-        access_token: str,
-    ):
-        payload = verify_token(
-            access_token
-        )
-
-        self.session.destroy_all(
-            payload["aid"]
-        )

@@ -136,7 +136,7 @@ class AuthRoutes:
     def forgot_password(
         self,
         request: Request,
-        body: LoginPasswordRequest,
+        body: LoginOTPRequest,
     ):
         
         self.otp_service.verify(

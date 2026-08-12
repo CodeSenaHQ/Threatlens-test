@@ -115,15 +115,12 @@ class OTPService:
 
             db.commit()
 
-            return bool(deleted)
 
     # ==========================================================
     # CLEANUP
     # ==========================================================
 
-    def cleanup(
-        self,
-    ):
+    def cleanup(self):
         with self.session_factory() as db:
 
             deleted = (
@@ -136,7 +133,6 @@ class OTPService:
 
             db.commit()
 
-            return deleted
         
 
     def get_all(self, page: int = 1, limit: int = 10):
@@ -152,17 +148,18 @@ class OTPService:
             )
 
             return to_list_dict(otps)
-        
+
+
     def query(self, identifier: str):
         with self.session_factory() as db:
             otps = (
                 db.query(OTP)
-                .filter(OTP.identifier == identifier)
+                .filter(OTP.identifier.ilike(f"%{identifier}%"))
                 .order_by(OTP.id.desc())
                 .all()
             )
-
             return to_list_dict(otps)
+
 
     # ==========================================================
     # CLEAR ALL

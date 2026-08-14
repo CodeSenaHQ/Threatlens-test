@@ -1,5 +1,4 @@
 from pydantic import BaseModel, EmailStr, ConfigDict
-from typing import Literal
 
 
 class SuperUpdateSchema(BaseModel):

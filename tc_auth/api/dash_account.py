@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Query
-from tc_auth.schema.account import (
+from ..schema import (
     SuperCreateSchema,
     SuperUpdateSchema,
     SuperDeleteSchema,

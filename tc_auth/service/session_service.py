@@ -1,13 +1,13 @@
 from datetime import UTC, datetime, timedelta
 import secrets
 
-from tc_auth.utils.get_helper import to_list_dict
+from ..utils.get_helper import to_list_dict
 
-from tc_auth.jwt_handler import SESSION_DURATION_DAYS
-from tc_auth.db.models import Session
-from tc_auth.utils.get_helper import to_dict
-from tc_auth.utils.hasher import simple_hash
-from tc_auth.exceptions.error import SessionNotFoundError
+from ..jwt_handler import SESSION_DURATION_DAYS
+from ..db.models import Session
+from ..utils.get_helper import to_dict
+from ..utils.hasher import simple_hash
+from ..exceptions.error import SessionNotFoundError
 
 
 class SessionService:

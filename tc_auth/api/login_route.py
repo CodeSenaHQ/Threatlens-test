@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request
 
-from tc_auth.schema.login import (
+from ..schema import (
     SendOTPRequest,
     LoginPasswordRequest,
     LoginOTPRequest,

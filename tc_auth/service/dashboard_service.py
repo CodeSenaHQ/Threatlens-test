@@ -1,4 +1,4 @@
-from tc_auth.db.models import Account, OAuthAccount, Session, OTP
+from ..db.models import Account, OAuthAccount, Session, OTP
 
 
 class DashboardService:

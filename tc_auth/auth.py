@@ -2,42 +2,51 @@
 from fastapi import FastAPI
 from sqlalchemy import Engine 
 
-from tc_auth.exceptions.error import AuthError
-from tc_auth.exceptions.handler import auth_exception_handler
-
-from tc_auth.email.mail import EmailService
 from starlette.middleware.sessions import SessionMiddleware
+from . import jwt_handler
 
-import tc_auth.db.models
-from tc_auth.db.base import Base
-from tc_auth.db.session import create_session_factory
+from .db import (
+    Base,
+    create_session_factory,
+)
 
-from tc_auth.service.otp_service import OTPService
-from tc_auth.service.auth_service import AuthService
-from tc_auth.service.oauth_service import OAuthService
-from tc_auth.service.session_service import SessionService
-from tc_auth.service.account_service import AccountService
-from tc_auth.service.get_user_service import GetUserService
-from tc_auth.service.dashboard_service import DashboardService
+from .email import EmailService
+from .exceptions import (
+    AuthError,
+    auth_exception_handler,
+)
 
-from tc_auth.oauth.google import GoogleOAuth
-from tc_auth.oauth.github import GitHubOAuth
+from .oauth import (
+    GoogleOAuth,
+    GitHubOAuth,
+)
 
-from tc_auth.dependencies.auth_deps import AuthDeps
-from tc_auth.dependencies.role_deps import RoleDeps
-from tc_auth.dependencies.status_deps import StatusDeps
+from .service import (
+    OTPService,
+    AuthService,
+    OAuthService,
+    SessionService,
+    AccountService,
+    GetUserService,
+    DashboardService,
+)
 
-from tc_auth.api.login_route import AuthRoutes
-from tc_auth.api.oauth_route import OAuthRoutes
-from tc_auth.api.account_route import AccountRoutes
-from tc_auth import jwt_handler as jwt_service
+from .dependencies import (
+    AuthDeps,
+    RoleDeps,
+    StatusDeps,
+)
 
-from tc_auth.api.dashboard_route import DashboardRoute
-from tc_auth.api.dash_otp import DashOTPRoutes
-from tc_auth.api.dash_oauth import DashOAuthRoutes
-from tc_auth.api.dash_account import DashAccountRoutes
-from tc_auth.api.dash_session import DashSessionRoutes
-
+from .api import (
+    AuthRoutes,
+    OAuthRoutes,
+    AccountRoutes,
+    DashboardRoute,
+    DashOTPRoutes,
+    DashOAuthRoutes,
+    DashAccountRoutes,
+    DashSessionRoutes,
+)
 
 class Auth:
     def __init__(self, engine: Engine , app: FastAPI):
@@ -60,7 +69,7 @@ class Auth:
         self.role = RoleDeps(auth_deps=self.deps)
         self.status = StatusDeps(auth_deps=self.deps)
 
-        self.jwt = jwt_service
+        self.jwt = jwt_handler
         self.email = EmailService(otp_service=self.otp)
 
         self.oauth_routes = OAuthRoutes(app=self.app, google=self.google, github=self.github)

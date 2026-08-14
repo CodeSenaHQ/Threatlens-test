@@ -1,5 +1,5 @@
-from tc_auth.db.models import OAuthAccount
-from tc_auth.utils.get_helper import to_list_dict, to_dict
+from ..db.models import OAuthAccount
+from ..utils.get_helper import to_list_dict, to_dict
 
 
 class OAuthService:

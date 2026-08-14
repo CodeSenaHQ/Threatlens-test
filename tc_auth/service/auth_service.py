@@ -1,10 +1,10 @@
-from tc_auth.jwt_handler  import create_access_token, verify_token
-from tc_auth.utils.hasher import verify_password
-from tc_auth.utils.identifier import (
+from ..jwt_handler  import create_access_token
+from ..utils.hasher import verify_password
+from ..utils.identifier import (
     normalize_identifier,
     get_identifier_type,
 )
-from tc_auth.exceptions.error import (
+from ..exceptions.error import (
     InvalidCredentialsError,
     UserNotFoundError,
 )

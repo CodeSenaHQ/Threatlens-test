@@ -1,5 +1,5 @@
 from fastapi import Depends
-from tc_auth.exceptions.error import PermissionDeniedError
+from ..exceptions.error import PermissionDeniedError
 
 
 class StatusDeps:

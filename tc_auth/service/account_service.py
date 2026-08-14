@@ -1,10 +1,10 @@
 from sqlalchemy.exc import IntegrityError
 from uuid import UUID
 
-from tc_auth.utils.hasher import hash_password
-from tc_auth.utils.get_helper import to_list_dict
-from tc_auth.db.models import Account
-from tc_auth.exceptions.error import (
+from ..utils.hasher import hash_password
+from ..utils.get_helper import to_list_dict
+from ..db.models import Account
+from ..exceptions.error import (
     EmailAlreadyExistsError,
     HandleAlreadyExistsError,
     PhoneAlreadyExistsError,

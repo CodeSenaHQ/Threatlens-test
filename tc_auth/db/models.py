@@ -13,7 +13,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy import ForeignKey, UniqueConstraint
-from tc_auth.db.base import Base
+from ..db.base import Base
 
 # ============================= ACCOUNT =============================
 

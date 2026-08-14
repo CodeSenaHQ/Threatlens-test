@@ -1,18 +1,13 @@
 import random
 from datetime import datetime, timedelta
-from tc_auth.utils.get_helper import to_list_dict
-from tc_auth.db.models import OTP
-from tc_auth.utils.hasher import simple_hash, verify_hash 
-from tc_auth.exceptions.error import (
+from ..utils.get_helper import to_list_dict
+from ..db.models import OTP
+from ..utils.hasher import simple_hash, verify_hash 
+from ..exceptions.error import (
     OTPExpiredError,
     OTPInvalidError,
     OTPNotFoundError,
 )
-
-
-import random
-from datetime import datetime, timedelta
-
 
 class OTPService:
     def __init__(self, session_factory):

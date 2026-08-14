@@ -3,9 +3,9 @@ from datetime import UTC, datetime
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from tc_auth.exceptions.error import InvalidTokenError
-from tc_auth.jwt_handler import verify_token
-from tc_auth.utils.hasher import verify_hash
+from ..exceptions.error import InvalidTokenError
+from ..jwt_handler import verify_token
+from ..utils.hasher import verify_hash
 
 security_jwt = HTTPBearer()
 

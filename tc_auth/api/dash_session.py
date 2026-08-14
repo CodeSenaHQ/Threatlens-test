@@ -1,5 +1,5 @@
 from fastapi import APIRouter , Depends, Query
-from tc_auth.schema.sessions import (
+from ..schema import (
     DestroySession,
     DestroyAllSession,
 )

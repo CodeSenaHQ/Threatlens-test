@@ -1,6 +1,6 @@
 import time
 import jwt
-from tc_auth.exceptions.error import InvalidTokenError
+from .exceptions.error import InvalidTokenError
 
 
 SECRET_KEY = "this-is-my-super-secret-key-for-jwt-auth"

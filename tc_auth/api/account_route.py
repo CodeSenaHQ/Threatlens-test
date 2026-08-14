@@ -1,5 +1,5 @@
 from fastapi import APIRouter , Depends
-from tc_auth.schema.account import UpdatePassword, UpdateSchema
+from ..schema import UpdatePassword, UpdateSchema
 
 
 

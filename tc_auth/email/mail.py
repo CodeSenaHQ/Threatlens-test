@@ -1,6 +1,6 @@
 import smtplib
 from email.message import EmailMessage
-from tc_auth.email.template import templates
+from ..email.template import templates
 
 
 class EmailService:

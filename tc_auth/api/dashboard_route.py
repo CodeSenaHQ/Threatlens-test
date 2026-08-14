@@ -1,7 +1,7 @@
 from fastapi import APIRouter , Depends
 from datetime import datetime
 
-from tc_auth.schema.dashboard import (
+from ..schema import (
     OAuthConfig,
     EmailConfig,
     JWTConfig,

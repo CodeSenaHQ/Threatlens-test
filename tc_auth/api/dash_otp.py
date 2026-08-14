@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Query
-from tc_auth.schema.otp import (
+from ..schema import (
     CreateOTP,
     DeleteOTP,
 )

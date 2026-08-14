@@ -4,6 +4,9 @@ sqlalchemy
 psycopg2-binary
 authlib
 starlette
+itsdangerous
+httpx
+email-validator
 PyJWT
 python-jose
 bcrypt

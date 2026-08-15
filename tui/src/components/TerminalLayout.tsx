@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Text } from 'ink';
+import Spinner from 'ink-spinner';
 import { useTerminalSize } from '../hooks/useTerminalSize.js';
 import { useSecuritySession } from '../state/securitySession.js';
 
@@ -65,7 +66,7 @@ export const TerminalLayout: React.FC<TerminalLayoutProps> = ({
       paddingX={1}
       marginY={1}
     >
-      {/* Top Minimalist Header */}
+      {/* Top Minimalist Header with Animated Beacon */}
       <Box flexDirection="row" justifyContent="space-between" marginBottom={1}>
         <Box flexDirection="row" alignItems="center">
           <Text bold color="yellow">
@@ -79,15 +80,20 @@ export const TerminalLayout: React.FC<TerminalLayoutProps> = ({
             {breadcrumb.toLowerCase()}
           </Text>
         </Box>
-        <Box flexDirection="row">
+        <Box flexDirection="row" alignItems="center">
           {targetUrl ? (
             <Text color="gray">
               target › <Text color="cyan" bold>{targetUrl}</Text>
             </Text>
           ) : (
-            <Text dimColor color="gray">
-              standalone mode
-            </Text>
+            <Box flexDirection="row" alignItems="center">
+              <Text color="cyan">
+                <Spinner type="dots" />
+              </Text>
+              <Text dimColor color="gray">
+                {' '}threat engine live
+              </Text>
+            </Box>
           )}
         </Box>
       </Box>
@@ -133,7 +139,7 @@ export const TerminalLayout: React.FC<TerminalLayoutProps> = ({
 
         {/* Card Footer Key Hints */}
         <Box flexDirection="row" justifyContent="space-between" marginTop={1}>
-          <Box flexDirection="row">
+          <Box flexDirection="row" alignItems="center">
             <Text color={getStatusColor()} bold>
               ● {statusText.toUpperCase()}
             </Text>

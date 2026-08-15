@@ -2,6 +2,8 @@
  * Proof Engine design: technical editorial futurism using proof-blue signals,
  * trace rails, frosted attestation surfaces, and concise operational language.
  */
+import { AuthModal } from "../components/AuthModal";
+import { useAuth } from "../contexts/AuthContext";
 import { motion, useInView } from "framer-motion";
 import {
   Activity,
@@ -18,6 +20,7 @@ import {
   GitBranch,
   Link2,
   LockKeyhole,
+  LogOut,
   Menu,
   Network,
   ScanSearch,
@@ -75,9 +78,12 @@ function Brand({ compact = false }: { compact?: boolean }) {
   );
 }
 
+import { Link } from "wouter";
+
 function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     const update = () => setScrolled(window.scrollY > 12);
@@ -102,9 +108,26 @@ function Navbar() {
             <Github size={18} />
             <span>GitHub</span>
           </a>
-          <a className="button button-primary nav-cta" href="#get-started">
-            Get Started <ArrowRight size={16} />
-          </a>
+
+          {user ? (
+            <div className="user-profile-badge">
+              <div className="user-avatar">
+                {user.name ? user.name[0].toUpperCase() : user.handle ? user.handle[0].toUpperCase() : "U"}
+              </div>
+              <div className="user-info">
+                <span className="user-name">{user.name || user.handle}</span>
+                <span className="user-role">@{user.handle || "user"}</span>
+              </div>
+              <button onClick={() => logout()} className="button button-ghost logout-button" title="Sign Out">
+                <LogOut size={16} />
+              </button>
+            </div>
+          ) : (
+            <Link href="/signup" className="button button-primary nav-cta">
+              Sign Up <ArrowRight size={16} />
+            </Link>
+          )}
+
           <button className="mobile-menu-button" type="button" onClick={() => setOpen(!open)} aria-expanded={open} aria-label="Toggle navigation">
             {open ? <X size={22} /> : <Menu size={22} />}
           </button>
@@ -114,7 +137,13 @@ function Navbar() {
         <a onClick={closeMenu} href="#product">Product</a>
         <a onClick={closeMenu} href="#how-it-works">How It Works</a>
         <a onClick={closeMenu} href="#trust">Trust</a>
-        <a onClick={closeMenu} href="#get-started" className="button button-primary">Get Started <ArrowRight size={16} /></a>
+        {user ? (
+          <button onClick={() => { logout(); closeMenu(); }} className="button button-ghost text-red-400">
+            Sign Out (@{user.handle})
+          </button>
+        ) : (
+          <Link onClick={closeMenu} href="/signup" className="button button-primary">Sign Up <ArrowRight size={16} /></Link>
+        )}
       </div>
     </header>
   );
@@ -255,7 +284,7 @@ function Hero() {
           </motion.div>
           <motion.p variants={appear}>AI-powered security testing that detects threats, finds real vulnerabilities, and turns every security result into verifiable proof.</motion.p>
           <motion.div variants={appear} className="hero-actions">
-            <a className="button button-primary button-large" href="#get-started">Get Started <ArrowRight size={18} /></a>
+            <Link className="button button-primary button-large" href="/signup">Get Started <ArrowRight size={18} /></Link>
             <a className="button button-ghost button-large" href="#how-it-works">See How It Works <ChevronRight size={17} /></a>
           </motion.div>
           <motion.div variants={appear} className="hero-capabilities">

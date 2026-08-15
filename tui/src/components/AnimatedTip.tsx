@@ -11,40 +11,24 @@ const TIPS = [
   'Press Tab or type / at any time to open the quick command palette',
 ];
 
-const BULLET_COLORS = ['#F59E0B', '#D97706', '#B45309', '#FBBF24', '#FDE68A'];
-
 export const AnimatedTip: React.FC = () => {
   const [tipIndex, setTipIndex] = useState(0);
-  const [pulseFrame, setPulseFrame] = useState(0);
 
-  // Cycle tips every 4.5 seconds
+  // Cycle tips gently every 5 seconds (clean, zero flickering)
   useEffect(() => {
     const tipTimer = setInterval(() => {
       setTipIndex((prev) => (prev + 1) % TIPS.length);
-    }, 4500);
+    }, 5000);
 
     return () => clearInterval(tipTimer);
   }, []);
 
-  // Pulse bullet color smoothly
-  useEffect(() => {
-    const pulseTimer = setInterval(() => {
-      setPulseFrame((prev) => (prev + 1) % BULLET_COLORS.length);
-    }, 200);
-
-    return () => clearInterval(pulseTimer);
-  }, []);
-
-  const bulletColor = BULLET_COLORS[pulseFrame] || '#F59E0B';
   const currentTip = TIPS[tipIndex] || TIPS[0];
 
   return (
     <Box flexDirection="row" alignItems="center" justifyContent="center" marginY={1}>
-      <Text color={bulletColor} bold>
-        ●{' '}
-      </Text>
       <Text color="yellow" bold>
-        Tip{' '}
+        ● Tip{' '}
       </Text>
       <Text color="gray">
         {currentTip}

@@ -72,14 +72,13 @@ export const MainMenu: React.FC = () => {
   const { push } = useNavigation();
   const { exit } = useApp();
   const { targetUrl } = useSecuritySession();
-  const { columns, rows } = useTerminalSize();
+  const { columns } = useTerminalSize();
 
   const [inputQuery, setInputQuery] = useState('');
   const [showMenu, setShowMenu] = useState(true);
 
   const isInteractive = Boolean(process.stdin?.isTTY);
   const width = Math.max(60, columns > 2 ? columns - 2 : 78);
-  const height = Math.max(18, rows > 2 ? rows - 1 : 24);
 
   const handleSelect = (item: CommandItem) => {
     if (item.value === 'exit') {
@@ -154,9 +153,8 @@ export const MainMenu: React.FC = () => {
     <Box
       flexDirection="column"
       width={width}
-      height={height}
       paddingX={2}
-      justifyContent="space-between"
+      marginY={1}
     >
       {/* Top Section with Animated Logo */}
       <Box flexDirection="column" alignItems="center">
@@ -164,7 +162,7 @@ export const MainMenu: React.FC = () => {
       </Box>
 
       {/* Center Interactive OpenCode-style Prompt & Menu */}
-      <Box flexDirection="column" alignItems="center" flexGrow={1} justifyContent="center">
+      <Box flexDirection="column" alignItems="center" marginY={1}>
         {/* OpenCode Prompt Card Box */}
         <Box
           flexDirection="column"
@@ -252,7 +250,7 @@ export const MainMenu: React.FC = () => {
       </Box>
 
       {/* Bottom Statusline */}
-      <Box flexDirection="row" justifyContent="space-between">
+      <Box flexDirection="row" justifyContent="space-between" marginTop={1}>
         <Box flexDirection="row">
           <Text dimColor color="gray">
             ThreatLensGo:main

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Box, Text } from 'ink';
 import { useTerminalSize } from '../hooks/useTerminalSize.js';
 
@@ -12,7 +12,7 @@ const LARGE_LOGO = [
   '   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚══════╝╚═╝  ╚═══╝╚══════╝  ╚═════╝  ╚═════╝ ',
 ];
 
-// Compact 3-line ANSI block art for "THREATLENSGO" (52 cols) for narrower terminals
+// Compact 3-line ANSI block art for "THREATLENSGO" (52 cols) for standard terminals
 const COMPACT_LOGO = [
   '▀█▀ █ █ █▀▄ █▀▀ █▀█ ▀█▀ █   █▀▀ █▄ █ █▀▀  █▀▀ █▀█',
   ' █  █▀█ █▀▄ █▀▀ █▀█  █  █   █▀▀ █ ▀█ ▄██  █ █ █ █',
@@ -20,37 +20,20 @@ const COMPACT_LOGO = [
 ];
 
 const GRADIENT_COLORS = [
-  '#FFFFFF',
-  '#F0FDF4',
-  '#CCFBF1',
-  '#99F6E4',
-  '#5EEAD4',
-  '#2DD4BF',
-  '#14B8A6',
-  '#0D9488',
   '#38BDF8',
+  '#2DD4BF',
+  '#34D399',
   '#60A5FA',
   '#818CF8',
   '#A78BFA',
-  '#C084FC',
-  '#E879F9',
-  '#F472B6',
-  '#FB7185',
+  '#38BDF8',
+  '#2DD4BF',
 ];
 
 export const AnimatedLogo: React.FC<{ subtitle?: string }> = ({
   subtitle = 'OFFENSIVE SECURITY & VULNERABILITY ASSESSMENT',
 }) => {
   const { columns } = useTerminalSize();
-  const [frame, setFrame] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setFrame((prev) => (prev + 1) % 1000);
-    }, 120);
-
-    return () => clearInterval(timer);
-  }, []);
 
   const logoLines = columns >= 114 ? LARGE_LOGO : COMPACT_LOGO;
 
@@ -65,7 +48,7 @@ export const AnimatedLogo: React.FC<{ subtitle?: string }> = ({
                   if (char === ' ') {
                     return <Text key={charIndex}> </Text>;
                   }
-                  const colorIndex = (charIndex + lineIndex * 2 + frame) % GRADIENT_COLORS.length;
+                  const colorIndex = Math.floor((charIndex / line.length) * GRADIENT_COLORS.length);
                   const color = GRADIENT_COLORS[colorIndex] || '#38BDF8';
 
                   return (

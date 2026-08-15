@@ -1,15 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text } from 'ink';
+import { useTerminalSize } from '../hooks/useTerminalSize.js';
 
-// Chunky modern lowercase block letters for "threatlensgo" inspired by OpenCode
-const LOGO_LINES = [
-  '  █   █                         █     █                                ',
-  ' ████ █                         █     █                                ',
-  '  █   ████  █ █  ███  ███  ████ █     ███  █ █  ███   ███   ████  ███  ',
-  '  █   █  █  ██  █  █  █ █  █  █ █     █ █  ██  █  █  █     █  █  █ █  ',
-  '  ██  █  █  █   ████  ███  ████ ████  ███  █   ████  ███   ████  ███  ',
-  '                                                             █         ',
-  '                                                            ██         ',
+// Ultra-clean, crystal-clear 6-line block art for "THREATLENSGO" (104 cols)
+const LARGE_LOGO = [
+  '████████╗██╗  ██╗██████╗ ███████╗ █████╗ ████████╗██╗     ███████╗███╗   ██╗███████╗  ██████╗  ██████╗ ',
+  '╚══██╔══╝██║  ██║██╔══██╗██╔════╝██╔══██╗╚══██╔══╝██║     ██╔════╝████╗  ██║██╔════╝ ██╔════╝ ██╔═══██╗',
+  '   ██║   ███████║██████╔╝█████╗  ███████║   ██║   ██║     █████╗  ██╔██╗ ██║███████╗ ██║  ███╗██║   ██║',
+  '   ██║   ██╔══██║██╔══██╗██╔══╝  ██╔══██║   ██║   ██║     ██╔══╝  ██║╚██╗██║╚════██║ ██║   ██║██║   ██║',
+  '   ██║   ██║  ██║██║  ██║███████╗██║  ██║   ██║   ███████╗███████╗██║ ╚████║███████║ ╚██████╔╝╚██████╔╝',
+  '   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚══════╝╚═╝  ╚═══╝╚══════╝  ╚═════╝  ╚═════╝ ',
+];
+
+// Compact 3-line ANSI block art for "THREATLENSGO" (52 cols) for narrower terminals
+const COMPACT_LOGO = [
+  '▀█▀ █ █ █▀▄ █▀▀ █▀█ ▀█▀ █   █▀▀ █▄ █ █▀▀  █▀▀ █▀█',
+  ' █  █▀█ █▀▄ █▀▀ █▀█  █  █   █▀▀ █ ▀█ ▄██  █ █ █ █',
+  ' ▀  ▀ ▀ ▀ ▀ ▀▀▀ ▀ ▀  ▀  ▀▀▀ ▀▀▀ ▀  ▀ ▀▀▀  ▀▀▀ ▀▀▀',
 ];
 
 const GRADIENT_COLORS = [
@@ -34,6 +41,7 @@ const GRADIENT_COLORS = [
 export const AnimatedLogo: React.FC<{ subtitle?: string }> = ({
   subtitle = 'OFFENSIVE SECURITY & VULNERABILITY ASSESSMENT',
 }) => {
+  const { columns } = useTerminalSize();
   const [frame, setFrame] = useState(0);
 
   useEffect(() => {
@@ -44,18 +52,19 @@ export const AnimatedLogo: React.FC<{ subtitle?: string }> = ({
     return () => clearInterval(timer);
   }, []);
 
+  const logoLines = columns >= 114 ? LARGE_LOGO : COMPACT_LOGO;
+
   return (
     <Box flexDirection="column" alignItems="center" marginY={1}>
       <Box flexDirection="row" alignItems="flex-end">
         <Box flexDirection="column">
-          {LOGO_LINES.map((line, lineIndex) => {
+          {logoLines.map((line, lineIndex) => {
             return (
               <Box key={lineIndex} flexDirection="row">
                 {line.split('').map((char, charIndex) => {
                   if (char === ' ') {
                     return <Text key={charIndex}> </Text>;
                   }
-                  // Calculate wave color shift based on char position and frame
                   const colorIndex = (charIndex + lineIndex * 2 + frame) % GRADIENT_COLORS.length;
                   const color = GRADIENT_COLORS[colorIndex] || '#38BDF8';
 
@@ -70,8 +79,8 @@ export const AnimatedLogo: React.FC<{ subtitle?: string }> = ({
           })}
         </Box>
 
-        {/* Small by CodeSena text on the right side of the title */}
-        <Box paddingBottom={2} marginLeft={1}>
+        {/* Small by CodeSena on right side */}
+        <Box paddingBottom={columns >= 114 ? 1 : 0} marginLeft={2}>
           <Text color="cyan" bold>
             by CodeSena
           </Text>

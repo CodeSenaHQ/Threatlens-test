@@ -1,40 +1,44 @@
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 
-export interface ScreenEntry {
-  screen: string;
-  props?: Record<string, unknown>;
-}
+export type Screen =
+  | { type: 'login' }
+  | { type: 'mainMenu' }
+  | { type: 'gitAnalysis' }
+  | { type: 'securityMenu' }
+  | { type: 'ddos' }
+  | { type: 'sqli' }
+  | { type: 'xss' }
+  | { type: 'exfil' }
+  | { type: 'rateLimit' }
+  | { type: 'proxy' };
+
+export type ScreenType = Screen['type'];
 
 export interface NavigationContextType {
-  currentScreen: string;
-  currentProps?: Record<string, unknown>;
-  stack: ScreenEntry[];
+  current: Screen;
+  stack: Screen[];
   canGoBack: boolean;
-  push: (screen: string, props?: Record<string, unknown>) => void;
+  push: (screen: Screen) => void;
   pop: () => boolean;
-  replace: (screen: string, props?: Record<string, unknown>) => void;
-  reset: (screen: string, props?: Record<string, unknown>) => void;
+  replace: (screen: Screen) => void;
+  reset: (screen: Screen) => void;
 }
 
 const NavigationContext = createContext<NavigationContextType | null>(null);
 
 export interface NavigationProviderProps {
-  initialScreen?: string;
-  initialProps?: Record<string, unknown>;
+  initialScreen?: Screen;
   children: React.ReactNode;
 }
 
 export const NavigationProvider: React.FC<NavigationProviderProps> = ({
-  initialScreen = 'home',
-  initialProps,
+  initialScreen = { type: 'login' },
   children,
 }) => {
-  const [stack, setStack] = useState<ScreenEntry[]>([
-    { screen: initialScreen, props: initialProps },
-  ]);
+  const [stack, setStack] = useState<Screen[]>([initialScreen]);
 
-  const push = useCallback((screen: string, props?: Record<string, unknown>) => {
-    setStack((prev) => [...prev, { screen, props }]);
+  const push = useCallback((screen: Screen) => {
+    setStack((prev) => [...prev, screen]);
   }, []);
 
   const pop = useCallback((): boolean => {
@@ -49,27 +53,26 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
     return popped;
   }, []);
 
-  const replace = useCallback((screen: string, props?: Record<string, unknown>) => {
+  const replace = useCallback((screen: Screen) => {
     setStack((prev) => {
       const next = [...prev];
       if (next.length > 0) {
-        next[next.length - 1] = { screen, props };
+        next[next.length - 1] = screen;
         return next;
       }
-      return [{ screen, props }];
+      return [screen];
     });
   }, []);
 
-  const reset = useCallback((screen: string, props?: Record<string, unknown>) => {
-    setStack([{ screen, props }]);
+  const reset = useCallback((screen: Screen) => {
+    setStack([screen]);
   }, []);
 
-  const current = stack[stack.length - 1] || { screen: initialScreen, props: initialProps };
+  const current = stack[stack.length - 1] ?? initialScreen;
 
   const value = useMemo<NavigationContextType>(
     () => ({
-      currentScreen: current.screen,
-      currentProps: current.props,
+      current,
       stack,
       canGoBack: stack.length > 1,
       push,

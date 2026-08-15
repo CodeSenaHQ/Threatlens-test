@@ -1,21 +1,53 @@
 import React from 'react';
-import { Box, Text } from 'ink';
+import { Box } from 'ink';
 import { NavigationProvider, useNavigation } from './state/navigation.js';
-import { HomeScreen } from './screens/index.js';
+import {
+  LoginScreen,
+  MainMenuScreen,
+  GitAnalysisScreen,
+  SecurityMenuScreen,
+  DdosScreen,
+  SqliScreen,
+  XssScreen,
+  ExfilScreen,
+  RateLimitScreen,
+  ProxyScreen,
+} from './screens/index.js';
 
-const ScreenRenderer: React.FC = () => {
-  const { currentScreen } = useNavigation();
+export const ScreenRenderer: React.FC = () => {
+  const { current } = useNavigation();
 
-  switch (currentScreen) {
-    case 'home':
-    default:
-      return <HomeScreen />;
+  switch (current.type) {
+    case 'login':
+      return <LoginScreen />;
+    case 'mainMenu':
+      return <MainMenuScreen />;
+    case 'gitAnalysis':
+      return <GitAnalysisScreen />;
+    case 'securityMenu':
+      return <SecurityMenuScreen />;
+    case 'ddos':
+      return <DdosScreen />;
+    case 'sqli':
+      return <SqliScreen />;
+    case 'xss':
+      return <XssScreen />;
+    case 'exfil':
+      return <ExfilScreen />;
+    case 'rateLimit':
+      return <RateLimitScreen />;
+    case 'proxy':
+      return <ProxyScreen />;
+    default: {
+      const _exhaustiveCheck: never = current;
+      return <LoginScreen />;
+    }
   }
 };
 
 export const App: React.FC = () => {
   return (
-    <NavigationProvider initialScreen="home">
+    <NavigationProvider initialScreen={{ type: 'login' }}>
       <Box flexDirection="column">
         <ScreenRenderer />
       </Box>

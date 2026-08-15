@@ -1,10 +1,12 @@
 import React from 'react';
 import { Box } from 'ink';
 import { NavigationProvider, useNavigation } from './state/navigation.js';
+import { SecuritySessionProvider } from './state/securitySession.js';
 import {
   LoginScreen,
   MainMenuScreen,
   GitAnalysisScreen,
+  TargetUrlScreen,
   SecurityMenuScreen,
   DdosScreen,
   SqliScreen,
@@ -24,6 +26,8 @@ export const ScreenRenderer: React.FC = () => {
       return <MainMenuScreen />;
     case 'gitAnalysis':
       return <GitAnalysisScreen />;
+    case 'targetUrl':
+      return <TargetUrlScreen />;
     case 'securityMenu':
       return <SecurityMenuScreen />;
     case 'ddos':
@@ -48,9 +52,11 @@ export const ScreenRenderer: React.FC = () => {
 export const App: React.FC = () => {
   return (
     <NavigationProvider initialScreen={{ type: 'login' }}>
-      <Box flexDirection="column">
-        <ScreenRenderer />
-      </Box>
+      <SecuritySessionProvider>
+        <Box flexDirection="column">
+          <ScreenRenderer />
+        </Box>
+      </SecuritySessionProvider>
     </NavigationProvider>
   );
 };

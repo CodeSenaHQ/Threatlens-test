@@ -4,6 +4,7 @@ export type Screen =
   | { type: 'login' }
   | { type: 'mainMenu' }
   | { type: 'gitAnalysis' }
+  | { type: 'targetUrl' }
   | { type: 'securityMenu' }
   | { type: 'ddos' }
   | { type: 'sqli' }

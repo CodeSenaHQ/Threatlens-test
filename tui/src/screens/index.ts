@@ -1,7 +1,8 @@
 export { LoginScreen } from './LoginScreen.js';
 export { MainMenu, MainMenuScreen } from './MainMenu.js';
 export { GitAnalysisScreen } from './GitAnalysisScreen.js';
-export { SecurityMenuScreen } from './SecurityMenuScreen.js';
+export { SecurityMenu, SecurityMenuScreen } from './security/SecurityMenu.js';
+export { TargetUrlScreen } from './security/TargetUrlScreen.js';
 export { DdosScreen } from './DdosScreen.js';
 export { SqliScreen } from './SqliScreen.js';
 export { XssScreen } from './XssScreen.js';

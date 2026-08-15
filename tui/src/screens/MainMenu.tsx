@@ -1,8 +1,8 @@
 import React from 'react';
 import { Box, useApp, useInput } from 'ink';
-import SelectInput from 'ink-select-input';
 import { useNavigation } from '../state/navigation.js';
 import { TerminalLayout } from '../components/TerminalLayout.js';
+import { Select } from '../components/Select.js';
 
 type MenuAction = 'gitAnalysis' | 'securityMenu';
 
@@ -13,7 +13,7 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   {
-    label: '1. Git Repository Analysis (Public Repo Audits & Secret Detection)',
+    label: '1. Git Repository Analysis (Public Repo Audits & Leaked Secrets)',
     value: 'gitAnalysis',
   },
   {
@@ -47,16 +47,16 @@ export const MainMenu: React.FC = () => {
 
   return (
     <TerminalLayout
-      title="MAIN NAVIGATION"
-      subtitle="Select a security module to initialize testing operations"
+      title="Main Navigation"
+      subtitle="Select an operational workflow to begin analysis"
       breadcrumb="MAIN MENU"
-      borderColor="green"
+      accentColor="yellow"
       statusText="READY FOR SELECTION"
       statusType="ready"
-      keyHints="[↑/↓] Navigate  •  [Enter] Select  •  [Esc] Quit"
+      keyHints="↑↓ navigate · enter select · esc quit"
     >
       <Box marginY={1} flexDirection="column">
-        <SelectInput
+        <Select
           items={menuItems}
           onSelect={handleSelect}
           isFocused={isInteractive}

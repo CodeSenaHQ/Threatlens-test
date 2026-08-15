@@ -53,19 +53,19 @@ export const LoginScreen: React.FC = () => {
 
   return (
     <TerminalLayout
-      title="AUTHENTICATION"
-      subtitle="Enter security operator credentials to access ThreatLens"
-      breadcrumb="AUTH"
-      borderColor="cyan"
-      statusText={error ? 'AUTHENTICATION FAILED' : 'AWAITING CREDENTIALS'}
+      title="Operator Authentication"
+      subtitle="Sign in to access security test suites and vulnerability scanning"
+      breadcrumb="AUTHENTICATION"
+      accentColor="yellow"
+      statusText={error ? 'AUTHENTICATION FAILED' : 'AWAITING OPERATOR INPUT'}
       statusType={error ? 'error' : 'ready'}
-      keyHints="[Tab] Switch field  •  [Enter] Next/Submit"
+      keyHints="tab switch field · enter next/submit"
     >
       <Box flexDirection="column" marginY={1}>
         <Box flexDirection="row" marginY={1}>
-          <Box width={16}>
-            <Text bold color={activeField === 'username' ? 'cyan' : 'white'}>
-              Username:
+          <Box width={14}>
+            <Text bold color={activeField === 'username' ? 'yellow' : 'gray'}>
+              {activeField === 'username' ? '› ' : '  '}Username:
             </Text>
           </Box>
           <TextInput
@@ -83,9 +83,9 @@ export const LoginScreen: React.FC = () => {
         </Box>
 
         <Box flexDirection="row" marginY={1}>
-          <Box width={16}>
-            <Text bold color={activeField === 'password' ? 'cyan' : 'white'}>
-              Password:
+          <Box width={14}>
+            <Text bold color={activeField === 'password' ? 'yellow' : 'gray'}>
+              {activeField === 'password' ? '› ' : '  '}Password:
             </Text>
           </Box>
           <TextInput
@@ -102,7 +102,7 @@ export const LoginScreen: React.FC = () => {
         </Box>
 
         {error ? (
-          <Box marginTop={1}>
+          <Box marginTop={1} paddingLeft={2}>
             <Text color="red" bold>
               ✗ {error}
             </Text>

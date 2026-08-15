@@ -1,10 +1,10 @@
 import React from 'react';
 import { Box, useInput } from 'ink';
-import SelectInput from 'ink-select-input';
 import { useNavigation } from '../../state/navigation.js';
 import { useSecuritySession } from '../../state/securitySession.js';
 import { TargetUrlScreen } from './TargetUrlScreen.js';
 import { TerminalLayout } from '../../components/TerminalLayout.js';
+import { Select } from '../../components/Select.js';
 
 type SecurityOptionValue = 'ddos' | 'sqli' | 'xss' | 'exfil' | 'rateLimit' | 'proxy';
 
@@ -15,19 +15,19 @@ interface SecurityMenuItem {
 
 const securityOptions: SecurityMenuItem[] = [
   {
-    label: '1. DDoS Testing (Flood, Slowloris, Burst-spike simulations)',
+    label: '1. DDoS Testing (Flood, Slowloris, and Burst-spike stress load simulations)',
     value: 'ddos',
   },
   {
-    label: '2. SQL Injection (Error, Union, and Blind Boolean/Time injection probes)',
+    label: '2. SQL Injection (Error-based, Union-based, and Blind Boolean/Time probes)',
     value: 'sqli',
   },
   {
-    label: '3. Cross-Site Scripting (XSS) (Reflected, Stored, and DOM-based vectors)',
+    label: '3. Cross-Site Scripting (XSS) (Reflected, Stored, and DOM script sink analysis)',
     value: 'xss',
   },
   {
-    label: '4. Data Exfiltration (API response & error message leak detection)',
+    label: '4. Data Exfiltration (API response & error message sensitive leak detection)',
     value: 'exfil',
   },
   {
@@ -85,16 +85,16 @@ export const SecurityMenu: React.FC = () => {
 
   return (
     <TerminalLayout
-      title="SECURITY TESTING SUITE"
+      title="Security Testing Suite"
       subtitle="Select an offensive security assessment module to configure and execute"
       breadcrumb="SECURITY"
-      borderColor="magenta"
+      accentColor="yellow"
       statusText="SESSION ACTIVE"
       statusType="ready"
-      keyHints="[↑/↓] Navigate  •  [Enter] Select  •  [Esc] Back to Main Menu"
+      keyHints="↑↓ navigate · enter select · esc back to main menu"
     >
       <Box marginY={1} flexDirection="column">
-        <SelectInput
+        <Select
           items={securityOptions}
           onSelect={handleSelect}
           isFocused={isInteractive}

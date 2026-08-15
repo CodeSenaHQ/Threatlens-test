@@ -21,17 +21,17 @@ export const ProxyScreen: React.FC = () => {
 
   return (
     <TerminalLayout
-      title="PROXY INTERCEPTION & TAMPERING"
+      title="Proxy Interception & Tampering"
       subtitle="Inspect live HTTP/S traffic flows, modify headers, and repeat requests"
       breadcrumb="SECURITY > PROXY"
-      borderColor="cyan"
+      accentColor="yellow"
       statusText="MODULE UNDER DEVELOPMENT"
       statusType="warning"
-      keyHints="[Esc] Return to Security Menu"
+      keyHints="esc return to security menu"
     >
-      <Box flexDirection="column" marginY={1} paddingX={1}>
-        <Text color="white">
-          Active Target: <Text color="cyan" bold>{targetUrl || 'Not configured'}</Text>
+      <Box flexDirection="column" marginY={1} paddingLeft={1}>
+        <Text color="gray">
+          • Active Target: <Text color="cyan" bold>{targetUrl || 'Not configured'}</Text>
         </Text>
         <Box marginTop={1}>
           <Text color="gray">

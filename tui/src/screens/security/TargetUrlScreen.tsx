@@ -47,19 +47,19 @@ export const TargetUrlScreen: React.FC = () => {
 
   return (
     <TerminalLayout
-      title="TARGET ENDPOINT CONFIGURATION"
+      title="Target Endpoint Configuration"
       subtitle="Define the root target base URL for this security assessment session"
       breadcrumb="SECURITY > TARGET CONFIG"
-      borderColor="magenta"
-      statusText={error ? 'INVALID TARGET URL' : 'AWAITING TARGET CONFIGURATION'}
+      accentColor="yellow"
+      statusText={error ? 'INVALID TARGET URL' : 'AWAITING TARGET'}
       statusType={error ? 'error' : 'ready'}
-      keyHints="[Enter] Proceed to Security Suite  •  [Esc] Back to Main Menu"
+      keyHints="enter proceed to suite · esc back to main menu"
     >
       <Box flexDirection="column" marginY={1}>
         <Box flexDirection="row" marginY={1}>
           <Box width={20}>
-            <Text bold color="magenta">
-              Target Base URL:
+            <Text bold color="yellow">
+              › Target URL:
             </Text>
           </Box>
           <Box flexGrow={1}>
@@ -77,7 +77,7 @@ export const TargetUrlScreen: React.FC = () => {
         </Box>
 
         {error ? (
-          <Box marginTop={1}>
+          <Box marginTop={1} paddingLeft={2}>
             <Text color="red" bold>
               ✗ {error}
             </Text>

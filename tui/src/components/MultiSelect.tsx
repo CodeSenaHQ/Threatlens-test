@@ -77,31 +77,44 @@ export function MultiSelect<V extends string = string>({
         const isHovered = index === cursorIndex;
         const isChecked = selectedIndexSet.has(item.value);
 
+        // Check if label contains description in parentheses e.g. "Title (Description)"
+        const match = item.label.match(/^(.*?)\s*\((.*?)\)$/);
+        let title = item.label;
+        let desc: string | null = null;
+
+        if (match && match[1] && match[2]) {
+          title = match[1];
+          desc = match[2];
+        }
+
         return (
-          <Box
-            key={item.key ?? item.value}
-            flexDirection="row"
-            paddingX={1}
-          >
+          <Box key={item.key ?? item.value} flexDirection="row" marginY={0}>
             <Box width={3}>
-              <Text color={isHovered ? 'cyan' : 'gray'}>
+              <Text color={isHovered ? 'yellow' : 'gray'} bold={isHovered}>
                 {isHovered ? '❯' : ' '}
               </Text>
             </Box>
-            <Box width={5}>
+            <Box width={4}>
               <Text color={isChecked ? 'green' : 'gray'} bold={isChecked}>
                 [{isChecked ? '✔' : ' '}]
               </Text>
             </Box>
-            <Text color={isHovered ? 'cyan' : 'white'} bold={isHovered}>
-              {item.label}
-            </Text>
+            <Box flexDirection="row" flexWrap="wrap">
+              <Text color={isHovered ? 'yellow' : 'white'} bold={isHovered}>
+                {title}
+              </Text>
+              {desc ? (
+                <Text dimColor color="gray">
+                  {' '}─ {desc}
+                </Text>
+              ) : null}
+            </Box>
           </Box>
         );
       })}
 
       {validationError ? (
-        <Box marginTop={1} paddingLeft={1}>
+        <Box marginTop={1} paddingLeft={3}>
           <Text color="red" bold>✗ {validationError}</Text>
         </Box>
       ) : null}

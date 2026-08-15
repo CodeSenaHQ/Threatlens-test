@@ -21,17 +21,17 @@ export const RateLimitScreen: React.FC = () => {
 
   return (
     <TerminalLayout
-      title="RATE LIMITING ASSESSMENT"
-      subtitle="Verify endpoint throttling thresholds, burst capacities, and 429 Too Many Requests enforcement"
+      title="Rate Limiting Assessment"
+      subtitle="Verify endpoint throttling thresholds, burst capacities, and 429 response enforcement"
       breadcrumb="SECURITY > RATE LIMIT"
-      borderColor="blue"
+      accentColor="yellow"
       statusText="MODULE UNDER DEVELOPMENT"
       statusType="warning"
-      keyHints="[Esc] Return to Security Menu"
+      keyHints="esc return to security menu"
     >
-      <Box flexDirection="column" marginY={1} paddingX={1}>
-        <Text color="white">
-          Active Target: <Text color="cyan" bold>{targetUrl || 'Not configured'}</Text>
+      <Box flexDirection="column" marginY={1} paddingLeft={1}>
+        <Text color="gray">
+          • Active Target: <Text color="cyan" bold>{targetUrl || 'Not configured'}</Text>
         </Text>
         <Box marginTop={1}>
           <Text color="gray">

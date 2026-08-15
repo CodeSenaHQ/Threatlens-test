@@ -47,19 +47,19 @@ export const GitAnalysisScreen: React.FC = () => {
 
   return (
     <TerminalLayout
-      title="GIT REPOSITORY ANALYSIS"
-      subtitle="Deep-scan source code repositories for leaked secrets, API keys, and CVEs"
+      title="Git Repository Analysis"
+      subtitle="Deep-scan source code repositories for secrets, keys, and CVEs"
       breadcrumb="GIT SCAN"
-      borderColor="yellow"
+      accentColor="yellow"
       statusText={confirmation ? 'REQUEST CAPTURED' : error ? 'INPUT ERROR' : 'AWAITING REPOSITORY URL'}
       statusType={confirmation ? 'success' : error ? 'error' : 'ready'}
-      keyHints="[Enter] Submit  •  [Esc] Back to Main Menu"
+      keyHints="enter submit · esc back to main menu"
     >
       <Box flexDirection="column" marginY={1}>
         <Box flexDirection="row" marginY={1}>
-          <Box width={32}>
+          <Box width={28}>
             <Text bold color="yellow">
-              Public Git Repository URL:
+              › Public Git URL:
             </Text>
           </Box>
           <Box flexGrow={1}>
@@ -77,7 +77,7 @@ export const GitAnalysisScreen: React.FC = () => {
         </Box>
 
         {error ? (
-          <Box marginTop={1}>
+          <Box marginTop={1} paddingLeft={2}>
             <Text color="red" bold>
               ✗ {error}
             </Text>
@@ -90,7 +90,7 @@ export const GitAnalysisScreen: React.FC = () => {
               ✓ {confirmation}
             </Text>
             {submittedUrl ? (
-              <Box marginTop={1}>
+              <Box marginTop={0}>
                 <Text color="gray">Captured Target: </Text>
                 <Text color="cyan" bold>{submittedUrl}</Text>
               </Box>

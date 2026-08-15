@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Box, Text, useInput } from 'ink';
-import SelectInput from 'ink-select-input';
 import TextInput from 'ink-text-input';
 import { useNavigation } from '../../state/navigation.js';
 import { useSecuritySession } from '../../state/securitySession.js';
 import { MultiSelect } from '../../components/MultiSelect.js';
 import { TerminalLayout } from '../../components/TerminalLayout.js';
+import { Select } from '../../components/Select.js';
 
 type Step = 1 | 2 | 3 | 4;
 type HttpMethod = 'GET' | 'POST';
@@ -110,13 +110,15 @@ export const SqliScreen: React.FC = () => {
 
   return (
     <TerminalLayout
-      title={`SQL INJECTION TESTING [STEP ${step}/4]`}
-      subtitle="Fuzz query and body inputs to uncover syntax errors, union leakages, and blind execution delays"
+      title="SQL Injection Assessment"
+      subtitle="Fuzz query and body inputs to uncover syntax errors, union leakages, and blind delays"
       breadcrumb="SECURITY > SQLI"
-      borderColor="red"
-      statusText={capturedMessage ? 'INJECTION SUITE DISPATCHED' : `CONFIGURING STEP ${step} OF 4`}
+      step={step}
+      totalSteps={4}
+      accentColor="yellow"
+      statusText={capturedMessage ? 'INJECTION SUITE DISPATCHED' : `STEP ${step} OF 4`}
       statusType={capturedMessage ? 'success' : 'ready'}
-      keyHints={`[↑/↓] Navigate  •  [Enter] Select/Confirm  •  [Esc] ${step === 1 ? 'Exit to Security Menu' : 'Previous step'}`}
+      keyHints={`↑↓ navigate · space toggle · enter confirm · esc ${step === 1 ? 'exit' : 'back'}`}
     >
       {/* Step 1: HTTP Method */}
       {step === 1 && (
@@ -125,7 +127,7 @@ export const SqliScreen: React.FC = () => {
             Select HTTP Request Method:
           </Text>
           <Box marginTop={1}>
-            <SelectInput
+            <Select
               items={[
                 { label: '1. GET (Inspect query parameters & URL strings)', value: 'GET' as HttpMethod },
                 { label: '2. POST (Inspect request bodies, form submissions & JSON payloads)', value: 'POST' as HttpMethod },
@@ -145,10 +147,10 @@ export const SqliScreen: React.FC = () => {
           </Text>
           {!isEnteringParamName ? (
             <Box marginTop={1}>
-              <SelectInput
+              <Select
                 items={[
-                  { label: '1. Auto-discover parameters from target endpoint responses', value: 'Auto-discover' as ParamSource },
-                  { label: '2. Specify custom target parameter name manually', value: 'Specify param name' as ParamSource },
+                  { label: '1. Auto-discover parameters (Extract inputs from target endpoint responses)', value: 'Auto-discover' as ParamSource },
+                  { label: '2. Specify param name (Target a specific parameter manually)', value: 'Specify param name' as ParamSource },
                 ]}
                 onSelect={handleParamSourceSelect}
                 isFocused={isInteractive}
@@ -158,7 +160,7 @@ export const SqliScreen: React.FC = () => {
             <Box flexDirection="column" marginTop={1}>
               <Box flexDirection="row">
                 <Box width={26}>
-                  <Text color="yellow">Target Parameter Name:</Text>
+                  <Text color="yellow">› Target Param Name:</Text>
                 </Box>
                 <Box flexGrow={1}>
                   <TextInput
@@ -174,7 +176,7 @@ export const SqliScreen: React.FC = () => {
                 </Box>
               </Box>
               {paramError ? (
-                <Box marginTop={1}>
+                <Box marginTop={1} paddingLeft={2}>
                   <Text color="red" bold>✗ {paramError}</Text>
                 </Box>
               ) : null}
@@ -187,7 +189,7 @@ export const SqliScreen: React.FC = () => {
       {step === 3 && (
         <Box flexDirection="column" marginY={1}>
           <Text bold color="white">
-            Select Injection Categories to Test (Space to toggle, Enter to confirm):
+            Select Injection Categories to Test:
           </Text>
           <Box marginTop={1}>
             <MultiSelect<InjectionCategory>
@@ -212,7 +214,7 @@ export const SqliScreen: React.FC = () => {
           <Text bold color="white">
             Review Configuration Summary:
           </Text>
-          <Box flexDirection="column" marginY={1} borderStyle="single" borderColor="gray" paddingX={2} paddingY={1}>
+          <Box flexDirection="column" marginY={1} paddingLeft={2}>
             <Text color="gray">
               • Target Base URL: <Text color="cyan" bold>{targetUrl}</Text>
             </Text>
@@ -232,7 +234,7 @@ export const SqliScreen: React.FC = () => {
             </Text>
           </Box>
           <Box marginTop={1}>
-            <SelectInput
+            <Select
               items={[
                 { label: 'Confirm & Run SQLi Tests', value: 'confirm' as const },
                 { label: 'Back to edit', value: 'back' as const },
@@ -245,7 +247,7 @@ export const SqliScreen: React.FC = () => {
       )}
 
       {capturedMessage ? (
-        <Box marginTop={1}>
+        <Box marginTop={1} paddingLeft={2}>
           <Text color="green" bold>
             ✓ {capturedMessage}
           </Text>

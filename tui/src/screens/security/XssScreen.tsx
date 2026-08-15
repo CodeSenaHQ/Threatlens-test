@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Box, Text, useInput } from 'ink';
-import SelectInput from 'ink-select-input';
 import { useNavigation } from '../../state/navigation.js';
 import { useSecuritySession } from '../../state/securitySession.js';
 import { MultiSelect } from '../../components/MultiSelect.js';
 import { TerminalLayout } from '../../components/TerminalLayout.js';
+import { Select } from '../../components/Select.js';
 
 type Step = 1 | 2 | 3;
 type XssType = 'Reflected' | 'Stored' | 'DOM-based';
@@ -68,19 +68,21 @@ export const XssScreen: React.FC = () => {
 
   return (
     <TerminalLayout
-      title={`CROSS-SITE SCRIPTING (XSS) TESTING [STEP ${step}/3]`}
+      title="Cross-Site Scripting (XSS) Testing"
       subtitle="Analyze sanitization routines across reflected inputs, persistent sinks, and DOM scripts"
       breadcrumb="SECURITY > XSS"
-      borderColor="yellow"
-      statusText={capturedMessage ? 'XSS SUITE DISPATCHED' : `CONFIGURING STEP ${step} OF 3`}
+      step={step}
+      totalSteps={3}
+      accentColor="yellow"
+      statusText={capturedMessage ? 'XSS SUITE DISPATCHED' : `STEP ${step} OF 3`}
       statusType={capturedMessage ? 'success' : 'ready'}
-      keyHints={`[↑/↓] Navigate  •  [Enter] Select/Confirm  •  [Esc] ${step === 1 ? 'Exit to Security Menu' : 'Previous step'}`}
+      keyHints={`↑↓ navigate · space toggle · enter confirm · esc ${step === 1 ? 'exit' : 'back'}`}
     >
       {/* Step 1: XSS Types MultiSelect */}
       {step === 1 && (
         <Box flexDirection="column" marginY={1}>
           <Text bold color="white">
-            Select XSS Types to Test (Space to toggle, Enter to confirm):
+            Select XSS Types to Test:
           </Text>
           <Box marginTop={1}>
             <MultiSelect<XssType>
@@ -105,7 +107,7 @@ export const XssScreen: React.FC = () => {
             Select Primary Injection Point:
           </Text>
           <Box marginTop={1}>
-            <SelectInput
+            <Select
               items={[
                 { label: '1. Query param (URL parameters & search query inputs)', value: 'Query param' as InjectionPoint },
                 { label: '2. Form field (Request body inputs & multipart form values)', value: 'Form field' as InjectionPoint },
@@ -124,7 +126,7 @@ export const XssScreen: React.FC = () => {
           <Text bold color="white">
             Review Configuration Summary:
           </Text>
-          <Box flexDirection="column" marginY={1} borderStyle="single" borderColor="gray" paddingX={2} paddingY={1}>
+          <Box flexDirection="column" marginY={1} paddingLeft={2}>
             <Text color="gray">
               • Target Base URL: <Text color="cyan" bold>{targetUrl}</Text>
             </Text>
@@ -136,7 +138,7 @@ export const XssScreen: React.FC = () => {
             </Text>
           </Box>
           <Box marginTop={1}>
-            <SelectInput
+            <Select
               items={[
                 { label: 'Confirm & Run XSS Tests', value: 'confirm' as const },
                 { label: 'Back to edit', value: 'back' as const },
@@ -149,7 +151,7 @@ export const XssScreen: React.FC = () => {
       )}
 
       {capturedMessage ? (
-        <Box marginTop={1}>
+        <Box marginTop={1} paddingLeft={2}>
           <Text color="green" bold>
             ✓ {capturedMessage}
           </Text>

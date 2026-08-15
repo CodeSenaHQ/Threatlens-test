@@ -7,10 +7,12 @@ export interface TerminalLayoutProps {
   title: string;
   subtitle?: string;
   breadcrumb?: string;
+  step?: number;
+  totalSteps?: number;
   statusText?: string;
   statusType?: 'ready' | 'success' | 'warning' | 'error';
   keyHints?: string;
-  borderColor?: string;
+  accentColor?: string;
   children: React.ReactNode;
 }
 
@@ -18,17 +20,19 @@ export const TerminalLayout: React.FC<TerminalLayoutProps> = ({
   title,
   subtitle,
   breadcrumb = 'THREATLENS',
+  step,
+  totalSteps,
   statusText = 'READY',
   statusType = 'ready',
-  keyHints = '[Enter] Select  •  [Esc] Back',
-  borderColor = 'cyan',
+  keyHints = '↑↓ navigate · enter select · esc back',
+  accentColor = 'cyan',
   children,
 }) => {
-  const { columns, rows } = useTerminalSize();
+  const { columns } = useTerminalSize();
   const { targetUrl } = useSecuritySession();
 
-  const width = Math.max(70, columns > 4 ? columns - 2 : 78);
-  const minBodyHeight = Math.max(10, rows - 9);
+  // Keep width well-proportioned: between 72 and 100 columns for maximum readability
+  const width = Math.min(Math.max(72, columns > 4 ? columns - 2 : 78), 104);
 
   const getStatusColor = () => {
     switch (statusType) {
@@ -44,71 +48,82 @@ export const TerminalLayout: React.FC<TerminalLayoutProps> = ({
     }
   };
 
+  // Render step progress dots e.g. [● ● ○]
+  const renderStepDots = () => {
+    if (!step || !totalSteps) return null;
+    const dots: string[] = [];
+    for (let i = 1; i <= totalSteps; i++) {
+      dots.push(i <= step ? '●' : '○');
+    }
+    return `[ ${dots.join(' ')} ]`;
+  };
+
   return (
-    <Box flexDirection="column" width={width}>
+    <Box flexDirection="column" width={width} borderStyle="round" borderColor="gray" paddingX={2} paddingY={1}>
       {/* Top Header Bar */}
-      <Box
-        flexDirection="row"
-        justifyContent="space-between"
-        borderStyle="single"
-        borderColor="gray"
-        paddingX={1}
-      >
+      <Box flexDirection="row" justifyContent="space-between" marginBottom={1}>
         <Box flexDirection="row">
-          <Text bold color="cyan">
-            ◈ THREATLENS ◈{' '}
+          <Text bold color="yellow">
+            ◈ THREATLENS
           </Text>
-          <Text color="gray">|</Text>
-          <Text color="white" bold>
-            {' '}{breadcrumb.toUpperCase()}
+          <Text color="gray"> │ </Text>
+          <Text color="gray" bold>
+            {breadcrumb.toUpperCase()}
           </Text>
         </Box>
         <Box flexDirection="row">
           {targetUrl ? (
-            <Text color="yellow">
-              TARGET: <Text color="white" bold>{targetUrl}</Text>
+            <Text color="gray">
+              TARGET › <Text color="cyan" bold>{targetUrl}</Text>
             </Text>
           ) : (
             <Text dimColor color="gray">
-              SESSION: STANDALONE
+              SECURITY AUDIT TUI
             </Text>
           )}
         </Box>
       </Box>
 
-      {/* Main Content Card Container */}
-      <Box
-        flexDirection="column"
-        borderStyle="round"
-        borderColor={borderColor}
-        paddingX={2}
-        paddingY={1}
-        minHeight={minBodyHeight}
-      >
-        {/* Screen Title & Subtitle */}
-        <Box flexDirection="column" marginBottom={1}>
-          <Text bold color={borderColor}>
-            {title}
-          </Text>
-          {subtitle ? (
-            <Text color="gray">{subtitle}</Text>
-          ) : null}
-        </Box>
+      {/* Screen Title & Subtitle Area */}
+      <Box flexDirection="column" marginBottom={1}>
+        {step && totalSteps ? (
+          <Box flexDirection="row" marginBottom={0}>
+            <Text color="yellow" bold>
+              ● STEP {step} OF {totalSteps}
+            </Text>
+            <Text color="gray">  {renderStepDots()}</Text>
+          </Box>
+        ) : null}
 
-        {/* Child Screen Content */}
-        <Box flexDirection="column" flexGrow={1}>
-          {children}
-        </Box>
+        <Text bold color={accentColor}>
+          {title}
+        </Text>
+        {subtitle ? (
+          <Text color="gray">{subtitle}</Text>
+        ) : null}
       </Box>
 
-      {/* Bottom Status & Keymap Bar */}
-      <Box
-        flexDirection="row"
-        justifyContent="space-between"
-        borderStyle="single"
-        borderColor="gray"
-        paddingX={1}
-      >
+      {/* Divider */}
+      <Box marginBottom={1}>
+        <Text dimColor color="gray">
+          {'─'.repeat(Math.max(10, width - 6))}
+        </Text>
+      </Box>
+
+      {/* Main Content Area */}
+      <Box flexDirection="column" marginY={0}>
+        {children}
+      </Box>
+
+      {/* Bottom Divider */}
+      <Box marginTop={1}>
+        <Text dimColor color="gray">
+          {'─'.repeat(Math.max(10, width - 6))}
+        </Text>
+      </Box>
+
+      {/* Footer Status & Keymap */}
+      <Box flexDirection="row" justifyContent="space-between" marginTop={1}>
         <Box flexDirection="row">
           <Text color={getStatusColor()} bold>
             ● {statusText.toUpperCase()}

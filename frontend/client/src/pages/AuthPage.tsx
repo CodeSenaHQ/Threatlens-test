@@ -51,7 +51,7 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
 
   const handleOAuthLogin = (provider: "github" | "google") => {
     const frontendUrl = window.location.origin;
-    const backendBase = import.meta.env.VITE_API_BASE_URL || "";
+    const backendBase = import.meta.env.VITE_API_BASE_URL || "https://app.totalchaos.online";
     window.location.href = `${backendBase}/tc-auth/${provider}/login?frontend_url=${encodeURIComponent(frontendUrl)}`;
   };
 
@@ -154,11 +154,6 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
           <h1 className="text-3xl sm:text-4xl font-bold font-display tracking-tight text-[#fbfcff]">
             {mode === "signup" ? "Join the ThreatLens Community" : "Welcome back to ThreatLens AI"}
           </h1>
-          <p className="mt-3 text-sm text-[#9ab4ce] max-w-md mx-auto">
-            {mode === "signup"
-              ? "ThreatLens AI actively detects security threats, validates vulnerabilities, and generates independently verifiable proof."
-              : "Sign in to access your security attestation records, active scans, and verified commit reports."}
-          </p>
         </div>
 
         {/* Auth Card Container */}

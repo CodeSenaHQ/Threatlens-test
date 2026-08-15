@@ -94,28 +94,13 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
         }
       } else {
         // Sign Up
-        if (!email || !name) {
-          toast.error("Please enter your name and email address");
+        if (!email || !name || !password) {
+          toast.error("Please fill in your name, email, and password");
           setLoading(false);
           return;
         }
         const derivedHandle = handle.trim() || email.split("@")[0].replace(/[^a-zA-Z0-9_]/g, "");
-
-        if (method === "otp") {
-          if (!otp) {
-            toast.error("Please enter the OTP code sent to your email");
-            setLoading(false);
-            return;
-          }
-          await signupWithOtp(name, email, password || "Pass@12345", otp, derivedHandle);
-        } else {
-          if (!password) {
-            toast.error("Please choose a password");
-            setLoading(false);
-            return;
-          }
-          await signupWithPassword(name, email, derivedHandle, password);
-        }
+        await signupWithPassword(name, email, derivedHandle, password);
       }
       setLocation("/");
     } catch (err: any) {
@@ -238,25 +223,35 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
                 <div className="flex-grow border-t border-[#233346]" />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              {mode === "signin" ? (
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setMethod("password")}
+                    className="flex items-center justify-center gap-2 py-2.5 px-3 border border-[#2d4057] bg-[#0c1726] hover:bg-[#142337] text-xs font-semibold text-[#4cc9ff] transition-all"
+                  >
+                    <Lock className="w-3.5 h-3.5" /> Email &amp; Password
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMethod("otp")}
+                    className="flex items-center justify-center gap-2 py-2.5 px-3 border border-[#2d4057] bg-[#0c1726] hover:bg-[#142337] text-xs font-semibold text-[#4cc9ff] transition-all"
+                  >
+                    <KeyRound className="w-3.5 h-3.5" /> Email OTP Code
+                  </button>
+                </div>
+              ) : (
                 <button
                   type="button"
                   onClick={() => setMethod("password")}
-                  className="flex items-center justify-center gap-2 py-2.5 px-3 border border-[#2d4057] bg-[#0c1726] hover:bg-[#142337] text-xs font-semibold text-[#4cc9ff] transition-all"
+                  className="w-full flex items-center justify-center gap-2.5 py-3 px-4 border border-[#2d4057] bg-[#0c1726] hover:bg-[#142337] hover:border-[#4cc9ff]/40 text-xs font-semibold text-[#4cc9ff] transition-all"
                 >
-                  <Lock className="w-3.5 h-3.5" /> Email &amp; Password
+                  <Lock className="w-4 h-4" /> Continue with Email &amp; Password
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setMethod("otp")}
-                  className="flex items-center justify-center gap-2 py-2.5 px-3 border border-[#2d4057] bg-[#0c1726] hover:bg-[#142337] text-xs font-semibold text-[#4cc9ff] transition-all"
-                >
-                  <KeyRound className="w-3.5 h-3.5" /> Email OTP Code
-                </button>
-              </div>
+              )}
             </div>
           ) : (
-            /* Email Password / OTP Form */
+            /* Form */
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="flex items-center justify-between pb-2 border-b border-[#1e2f44]">
                 <span className="text-xs font-mono text-[#4cc9ff] uppercase tracking-wider">
@@ -367,7 +362,7 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
                       type="button"
                       variant="outline"
                       disabled={loading}
-                      onClick={() => handleSendOtp(mode === "signup" ? "signup" : "login")}
+                      onClick={() => handleSendOtp("login")}
                       className="border-[#2d4057] bg-[#111f31] text-xs text-[#4cc9ff] hover:bg-[#1a2d46]"
                     >
                       {otpSent ? "Resend" : "Send OTP"}

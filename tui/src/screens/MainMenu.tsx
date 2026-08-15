@@ -6,8 +6,6 @@ import { useSecuritySession } from '../state/securitySession.js';
 import { useTerminalSize } from '../hooks/useTerminalSize.js';
 import { AnimatedLogo } from '../components/AnimatedLogo.js';
 import { AnimatedTip } from '../components/AnimatedTip.js';
-import { CyberRadar } from '../components/CyberRadar.js';
-import { useLiveTypewriter } from '../components/LiveTypewriter.js';
 import { Select } from '../components/Select.js';
 
 type CommandAction =
@@ -78,8 +76,6 @@ export const MainMenu: React.FC = () => {
 
   const [inputQuery, setInputQuery] = useState('');
   const [showMenu, setShowMenu] = useState(true);
-
-  const typedSuggestion = useLiveTypewriter(!inputQuery);
 
   const isInteractive = Boolean(process.stdin?.isTTY);
   const width = Math.max(60, columns > 2 ? columns - 2 : 78);
@@ -192,7 +188,7 @@ export const MainMenu: React.FC = () => {
                 }}
                 onSubmit={handleInputSubmit}
                 focus={isInteractive}
-                placeholder={typedSuggestion ? `Ask or /: "${typedSuggestion}"` : 'Ask anything or type / for commands...'}
+                placeholder="Ask anything or type / for commands... &quot;Scan repo or run DDoS attack&quot;"
               />
             </Box>
           </Box>
@@ -247,13 +243,8 @@ export const MainMenu: React.FC = () => {
           </Box>
         ) : null}
 
-        {/* Animated Cyber Radar Widget */}
-        <Box marginTop={1}>
-          <CyberRadar />
-        </Box>
-
         {/* Animated Tip Carousel */}
-        <Box marginTop={0}>
+        <Box marginTop={1}>
           <AnimatedTip />
         </Box>
       </Box>

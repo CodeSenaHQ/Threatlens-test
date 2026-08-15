@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Box, Text } from 'ink';
 import SelectInput, { ItemProps, IndicatorProps } from 'ink-select-input';
 
@@ -9,26 +9,11 @@ export interface SelectOption<V extends string = string> {
   key?: string;
 }
 
-const INDICATOR_GLYPHS = ['❯', '›', '▶', '❯'];
-
 const CustomIndicator: React.FC<IndicatorProps> = ({ isSelected }) => {
-  const [frame, setFrame] = useState(0);
-
-  useEffect(() => {
-    if (!isSelected) return;
-    const timer = setInterval(() => {
-      setFrame((prev) => (prev + 1) % INDICATOR_GLYPHS.length);
-    }, 280);
-
-    return () => clearInterval(timer);
-  }, [isSelected]);
-
-  const glyph = isSelected ? INDICATOR_GLYPHS[frame] || '❯' : ' ';
-
   return (
     <Box width={3}>
       <Text color={isSelected ? 'yellow' : 'gray'} bold={isSelected}>
-        {glyph}{' '}
+        {isSelected ? '❯' : ' '}
       </Text>
     </Box>
   );

@@ -1,5 +1,5 @@
 export { LoginScreen } from './LoginScreen.js';
-export { MainMenuScreen } from './MainMenuScreen.js';
+export { MainMenu, MainMenuScreen } from './MainMenu.js';
 export { GitAnalysisScreen } from './GitAnalysisScreen.js';
 export { SecurityMenuScreen } from './SecurityMenuScreen.js';
 export { DdosScreen } from './DdosScreen.js';

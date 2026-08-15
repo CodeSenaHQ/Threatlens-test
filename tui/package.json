@@ -1,7 +1,7 @@
 {
   "name": "security-tui",
   "version": "0.1.0",
-  "description": "Terminal UI for ThreatLens Security",
+  "description": "Terminal UI for ThreatLensGo Security",
   "type": "module",
   "bin": {
     "security-tui": "./dist/index.js"

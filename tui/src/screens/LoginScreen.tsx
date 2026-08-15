@@ -6,7 +6,7 @@ import { useNavigation } from '../state/navigation.js';
 import { TerminalLayout } from '../components/TerminalLayout.js';
 import { Select } from '../components/Select.js';
 
-type AuthMethod = 'github' | 'google' | 'credentials' | 'token';
+type AuthMethod = 'github' | 'google' | 'credentials';
 
 interface MethodOption {
   label: string;
@@ -26,10 +26,6 @@ const AUTH_METHODS: MethodOption[] = [
     label: '3. Operator Credentials (Sign in with Username & Password)',
     value: 'credentials',
   },
-  {
-    label: '4. API Access Token (Sign in with ThreatLens Token)',
-    value: 'token',
-  },
 ];
 
 export const LoginScreen: React.FC = () => {
@@ -40,7 +36,6 @@ export const LoginScreen: React.FC = () => {
   const [activeField, setActiveField] = useState<'username' | 'password'>('username');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [token, setToken] = useState('');
   const [error, setError] = useState('');
 
   // OAuth Device Flow state
@@ -100,17 +95,6 @@ export const LoginScreen: React.FC = () => {
     setError('');
     push({ type: 'mainMenu' });
   }, [username, password, push]);
-
-  // Handle Token Login
-  const handleTokenLogin = useCallback(() => {
-    const trimmedToken = token.trim();
-    if (!trimmedToken) {
-      setError('Access Token cannot be empty.');
-      return;
-    }
-    setError('');
-    push({ type: 'mainMenu' });
-  }, [token, push]);
 
   useInput(
     (_input, key) => {
@@ -282,38 +266,6 @@ export const LoginScreen: React.FC = () => {
               focus={isInteractive && activeField === 'password'}
               mask="*"
               placeholder="••••••••"
-            />
-          </Box>
-
-          {error ? (
-            <Box marginTop={1} paddingLeft={2}>
-              <Text color="red" bold>
-                ✗ {error}
-              </Text>
-            </Box>
-          ) : null}
-        </Box>
-      )}
-
-      {/* 4. API Token Login */}
-      {method === 'token' && (
-        <Box flexDirection="column" marginY={1}>
-          <Box flexDirection="row" marginY={1}>
-            <Box width={16}>
-              <Text bold color="yellow">
-                › Access Token:
-              </Text>
-            </Box>
-            <TextInput
-              value={token}
-              onChange={(val) => {
-                setToken(val);
-                if (error) setError('');
-              }}
-              onSubmit={handleTokenLogin}
-              focus={isInteractive}
-              placeholder="thrt_pat_xxxxxxxxxxxxxxxxxxxx"
-              mask="*"
             />
           </Box>
 

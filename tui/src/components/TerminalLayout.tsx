@@ -19,7 +19,7 @@ export interface TerminalLayoutProps {
 export const TerminalLayout: React.FC<TerminalLayoutProps> = ({
   title,
   subtitle,
-  breadcrumb = 'THREATLENS',
+  breadcrumb = 'THREATLENSGO',
   step,
   totalSteps,
   statusText = 'READY',
@@ -73,7 +73,7 @@ export const TerminalLayout: React.FC<TerminalLayoutProps> = ({
         <Box flexDirection="row" justifyContent="space-between" marginBottom={1}>
           <Box flexDirection="row">
             <Text bold color="yellow">
-              threatlens
+              threatlensgo
             </Text>
             <Text color="gray"> › </Text>
             <Text color="white" bold>
@@ -152,7 +152,7 @@ export const TerminalLayout: React.FC<TerminalLayoutProps> = ({
       <Box flexDirection="row" justifyContent="space-between" marginTop={1}>
         <Box flexDirection="row">
           <Text dimColor color="gray">
-            ThreatLens:main
+            ThreatLensGo:main
           </Text>
         </Box>
         <Box flexDirection="row">

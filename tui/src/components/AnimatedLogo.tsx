@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text } from 'ink';
 
-// Chunky modern lowercase block letters for "threatlens" inspired by OpenCode
+// Chunky modern lowercase block letters for "threatlensgo" inspired by OpenCode
 const LOGO_LINES = [
-  '  █   █                         █     █                       ',
-  ' ████ █                         █     █                       ',
-  '  █   ████  █ █  ███  ███  ████ █     ███  █ █  ███   ███     ',
-  '  █   █  █  ██  █  █  █ █  █  █ █     █ █  ██  █  █  █       ',
-  '  ██  █  █  █   ████  ███  ████ ████  ███  █   ████  ███     ',
-  '                                                          ',
+  '  █   █                         █     █                                ',
+  ' ████ █                         █     █                                ',
+  '  █   ████  █ █  ███  ███  ████ █     ███  █ █  ███   ███   ████  ███  ',
+  '  █   █  █  ██  █  █  █ █  █  █ █     █ █  ██  █  █  █     █  █  █ █  ',
+  '  ██  █  █  █   ████  ███  ████ ████  ███  █   ████  ███   ████  ███  ',
+  '                                                             █         ',
+  '                                                            ██         ',
 ];
 
 const GRADIENT_COLORS = [

@@ -63,7 +63,7 @@ const COMMANDS: CommandItem[] = [
     value: 'targetUrl',
   },
   {
-    label: '10. Exit ThreatLens (Quit terminal application)',
+    label: '10. Exit ThreatLensGo (Quit terminal application)',
     value: 'exit',
   },
 ];
@@ -133,7 +133,6 @@ export const MainMenu: React.FC = () => {
     } else if (trimmed.includes('exit') || trimmed === '/exit' || trimmed === 'quit' || trimmed === ':q') {
       exit();
     } else {
-      // Default to opening security menu
       push({ type: 'securityMenu' });
     }
   };
@@ -202,7 +201,7 @@ export const MainMenu: React.FC = () => {
               Security
             </Text>
             <Text color="gray"> · </Text>
-            <Text color="white">ThreatLens Engine</Text>
+            <Text color="white">ThreatLensGo Engine</Text>
             <Text color="gray"> </Text>
             <Text dimColor color="gray">
               {targetUrl ? `Target: ${targetUrl}` : 'OpenAudit Zen'}
@@ -254,7 +253,7 @@ export const MainMenu: React.FC = () => {
       <Box flexDirection="row" justifyContent="space-between">
         <Box flexDirection="row">
           <Text dimColor color="gray">
-            ThreatLens:main
+            ThreatLensGo:main
           </Text>
         </Box>
         <Box flexDirection="row">

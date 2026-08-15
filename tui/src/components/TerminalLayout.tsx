@@ -28,11 +28,12 @@ export const TerminalLayout: React.FC<TerminalLayoutProps> = ({
   accentColor = 'cyan',
   children,
 }) => {
-  const { columns } = useTerminalSize();
+  const { columns, rows } = useTerminalSize();
   const { targetUrl } = useSecuritySession();
 
-  // Keep width well-proportioned: between 72 and 100 columns for maximum readability
-  const width = Math.min(Math.max(72, columns > 4 ? columns - 2 : 78), 104);
+  // Full terminal coverage: span the entire width & height
+  const width = Math.max(60, columns > 2 ? columns - 2 : 78);
+  const height = Math.max(16, rows > 2 ? rows - 1 : 24);
 
   const getStatusColor = () => {
     switch (statusType) {
@@ -58,81 +59,98 @@ export const TerminalLayout: React.FC<TerminalLayoutProps> = ({
     return `[ ${dots.join(' ')} ]`;
   };
 
+  const dividerLength = Math.max(10, width - 6);
+
   return (
-    <Box flexDirection="column" width={width} borderStyle="round" borderColor="gray" paddingX={2} paddingY={1}>
-      {/* Top Header Bar */}
-      <Box flexDirection="row" justifyContent="space-between" marginBottom={1}>
-        <Box flexDirection="row">
-          <Text bold color="yellow">
-            ◈ THREATLENS
-          </Text>
-          <Text color="gray"> │ </Text>
-          <Text color="gray" bold>
-            {breadcrumb.toUpperCase()}
-          </Text>
-        </Box>
-        <Box flexDirection="row">
-          {targetUrl ? (
-            <Text color="gray">
-              TARGET › <Text color="cyan" bold>{targetUrl}</Text>
+    <Box
+      flexDirection="column"
+      width={width}
+      height={height}
+      borderStyle="round"
+      borderColor="gray"
+      paddingX={2}
+      paddingY={1}
+      justifyContent="space-between"
+    >
+      {/* Top Header & Title Area */}
+      <Box flexDirection="column">
+        {/* Top Header Bar */}
+        <Box flexDirection="row" justifyContent="space-between" marginBottom={1}>
+          <Box flexDirection="row">
+            <Text bold color="yellow">
+              ◈ THREATLENS
             </Text>
-          ) : (
-            <Text dimColor color="gray">
-              SECURITY AUDIT TUI
+            <Text color="gray"> │ </Text>
+            <Text color="gray" bold>
+              {breadcrumb.toUpperCase()}
             </Text>
-          )}
-        </Box>
-      </Box>
-
-      {/* Screen Title & Subtitle Area */}
-      <Box flexDirection="column" marginBottom={1}>
-        {step && totalSteps ? (
-          <Box flexDirection="row" marginBottom={0}>
-            <Text color="yellow" bold>
-              ● STEP {step} OF {totalSteps}
-            </Text>
-            <Text color="gray">  {renderStepDots()}</Text>
           </Box>
-        ) : null}
+          <Box flexDirection="row">
+            {targetUrl ? (
+              <Text color="gray">
+                TARGET › <Text color="cyan" bold>{targetUrl}</Text>
+              </Text>
+            ) : (
+              <Text dimColor color="gray">
+                SECURITY AUDIT TUI
+              </Text>
+            )}
+          </Box>
+        </Box>
 
-        <Text bold color={accentColor}>
-          {title}
-        </Text>
-        {subtitle ? (
-          <Text color="gray">{subtitle}</Text>
-        ) : null}
+        {/* Screen Title & Subtitle Area */}
+        <Box flexDirection="column" marginBottom={1}>
+          {step && totalSteps ? (
+            <Box flexDirection="row" marginBottom={0}>
+              <Text color="yellow" bold>
+                ● STEP {step} OF {totalSteps}
+              </Text>
+              <Text color="gray">  {renderStepDots()}</Text>
+            </Box>
+          ) : null}
+
+          <Text bold color={accentColor}>
+            {title}
+          </Text>
+          {subtitle ? (
+            <Text color="gray">{subtitle}</Text>
+          ) : null}
+        </Box>
+
+        {/* Top Divider */}
+        <Box marginBottom={1}>
+          <Text dimColor color="gray">
+            {'─'.repeat(dividerLength)}
+          </Text>
+        </Box>
       </Box>
 
-      {/* Divider */}
-      <Box marginBottom={1}>
-        <Text dimColor color="gray">
-          {'─'.repeat(Math.max(10, width - 6))}
-        </Text>
-      </Box>
-
-      {/* Main Content Area */}
-      <Box flexDirection="column" marginY={0}>
+      {/* Main Content Area (Expands to fill available middle space) */}
+      <Box flexDirection="column" flexGrow={1}>
         {children}
       </Box>
 
-      {/* Bottom Divider */}
-      <Box marginTop={1}>
-        <Text dimColor color="gray">
-          {'─'.repeat(Math.max(10, width - 6))}
-        </Text>
-      </Box>
-
-      {/* Footer Status & Keymap */}
-      <Box flexDirection="row" justifyContent="space-between" marginTop={1}>
-        <Box flexDirection="row">
-          <Text color={getStatusColor()} bold>
-            ● {statusText.toUpperCase()}
+      {/* Bottom Status & Keymap Area (Pinned at bottom of terminal) */}
+      <Box flexDirection="column">
+        {/* Bottom Divider */}
+        <Box marginBottom={1}>
+          <Text dimColor color="gray">
+            {'─'.repeat(dividerLength)}
           </Text>
         </Box>
-        <Box flexDirection="row">
-          <Text dimColor color="gray">
-            {keyHints}
-          </Text>
+
+        {/* Footer Status & Keymap */}
+        <Box flexDirection="row" justifyContent="space-between">
+          <Box flexDirection="row">
+            <Text color={getStatusColor()} bold>
+              ● {statusText.toUpperCase()}
+            </Text>
+          </Box>
+          <Box flexDirection="row">
+            <Text dimColor color="gray">
+              {keyHints}
+            </Text>
+          </Box>
         </Box>
       </Box>
     </Box>

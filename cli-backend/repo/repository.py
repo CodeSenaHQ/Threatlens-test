@@ -453,11 +453,11 @@ class Repository:
 
         else:
 
-            empty_tree_sha = repo.git.hash_object(
-                "-t",
-                "tree",
-                "--stdin",
-                input="",
+            # Git has a well-known empty tree object. Using it
+            # directly avoids passing an unsupported ``input=`` option
+            # through GitPython to ``git hash-object``.
+            empty_tree_sha = (
+                "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
             )
 
             empty_tree = repo.tree(

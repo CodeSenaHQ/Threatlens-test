@@ -8,7 +8,7 @@ analysis = CommitAnalyzer(repo)
 
 commits = repo.list_commits(
     branch="main",
-    limit=50,
+    limit=60,
 )
 
 for commit in commits:

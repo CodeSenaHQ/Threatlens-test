@@ -32,7 +32,7 @@ const GRADIENT_COLORS = [
 ];
 
 export const AnimatedLogo: React.FC<{ subtitle?: string }> = ({
-  subtitle = 'OFFENSIVE SECURITY & VULNERABILITY INTELLIGENCE',
+  subtitle = 'OFFENSIVE SECURITY & VULNERABILITY ASSESSMENT',
 }) => {
   const [frame, setFrame] = useState(0);
 
@@ -46,29 +46,40 @@ export const AnimatedLogo: React.FC<{ subtitle?: string }> = ({
 
   return (
     <Box flexDirection="column" alignItems="center" marginY={1}>
-      {LOGO_LINES.map((line, lineIndex) => {
-        return (
-          <Box key={lineIndex} flexDirection="row">
-            {line.split('').map((char, charIndex) => {
-              if (char === ' ') {
-                return <Text key={charIndex}> </Text>;
-              }
-              // Calculate wave color shift based on char position and frame
-              const colorIndex = (charIndex + lineIndex * 2 + frame) % GRADIENT_COLORS.length;
-              const color = GRADIENT_COLORS[colorIndex] || '#38BDF8';
+      <Box flexDirection="row" alignItems="flex-end">
+        <Box flexDirection="column">
+          {LOGO_LINES.map((line, lineIndex) => {
+            return (
+              <Box key={lineIndex} flexDirection="row">
+                {line.split('').map((char, charIndex) => {
+                  if (char === ' ') {
+                    return <Text key={charIndex}> </Text>;
+                  }
+                  // Calculate wave color shift based on char position and frame
+                  const colorIndex = (charIndex + lineIndex * 2 + frame) % GRADIENT_COLORS.length;
+                  const color = GRADIENT_COLORS[colorIndex] || '#38BDF8';
 
-              return (
-                <Text key={charIndex} color={color} bold>
-                  {char}
-                </Text>
-              );
-            })}
-          </Box>
-        );
-      })}
+                  return (
+                    <Text key={charIndex} color={color} bold>
+                      {char}
+                    </Text>
+                  );
+                })}
+              </Box>
+            );
+          })}
+        </Box>
+
+        {/* Small by CodeSena text on the right side of the title */}
+        <Box paddingBottom={2} marginLeft={1}>
+          <Text color="cyan" bold>
+            by CodeSena
+          </Text>
+        </Box>
+      </Box>
 
       {subtitle ? (
-        <Box marginTop={1}>
+        <Box marginTop={1} flexDirection="row" alignItems="center">
           <Text dimColor color="gray" bold>
             {subtitle}
           </Text>

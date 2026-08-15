@@ -71,9 +71,12 @@ export const TerminalLayout: React.FC<TerminalLayoutProps> = ({
       <Box flexDirection="column">
         {/* Top Minimalist Header */}
         <Box flexDirection="row" justifyContent="space-between" marginBottom={1}>
-          <Box flexDirection="row">
+          <Box flexDirection="row" alignItems="center">
             <Text bold color="yellow">
               threatlensgo
+            </Text>
+            <Text color="cyan">
+              {' '}by CodeSena
             </Text>
             <Text color="gray"> › </Text>
             <Text color="white" bold>

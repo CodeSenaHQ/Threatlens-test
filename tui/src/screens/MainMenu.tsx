@@ -202,6 +202,8 @@ export const MainMenu: React.FC = () => {
             </Text>
             <Text color="gray"> · </Text>
             <Text color="white">ThreatLensGo Engine</Text>
+            <Text color="gray"> · </Text>
+            <Text color="cyan" bold>by CodeSena</Text>
             <Text color="gray"> </Text>
             <Text dimColor color="gray">
               {targetUrl ? `Target: ${targetUrl}` : 'OpenAudit Zen'}

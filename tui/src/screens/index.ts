@@ -3,7 +3,7 @@ export { MainMenu, MainMenuScreen } from './MainMenu.js';
 export { GitAnalysisScreen } from './GitAnalysisScreen.js';
 export { SecurityMenu, SecurityMenuScreen } from './security/SecurityMenu.js';
 export { TargetUrlScreen } from './security/TargetUrlScreen.js';
-export { DdosScreen } from './DdosScreen.js';
+export { DdosScreen } from './security/DdosScreen.js';
 export { SqliScreen } from './SqliScreen.js';
 export { XssScreen } from './XssScreen.js';
 export { ExfilScreen } from './ExfilScreen.js';

@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { Box, Text, useInput } from 'ink';
 import TextInput from 'ink-text-input';
 import { useNavigation } from '../state/navigation.js';
+import { TerminalLayout } from '../components/TerminalLayout.js';
 
 type ActiveField = 'username' | 'password';
 
@@ -37,7 +38,6 @@ export const LoginScreen: React.FC = () => {
     }
 
     setError('');
-    // Simulate successful authentication and navigate to mainMenu
     push({ type: 'mainMenu' });
   }, [username, password, push]);
 
@@ -52,17 +52,18 @@ export const LoginScreen: React.FC = () => {
   );
 
   return (
-    <Box flexDirection="column" paddingX={2} paddingY={1} borderStyle="round" borderColor="cyan" width={60}>
-      <Box marginBottom={1} flexDirection="column">
-        <Text bold color="cyan">
-          Security TUI — Login
-        </Text>
-        <Text color="gray">ThreatLens Security Terminal</Text>
-      </Box>
-
-      <Box flexDirection="column">
-        <Box flexDirection="row">
-          <Box width={12}>
+    <TerminalLayout
+      title="AUTHENTICATION"
+      subtitle="Enter security operator credentials to access ThreatLens"
+      breadcrumb="AUTH"
+      borderColor="cyan"
+      statusText={error ? 'AUTHENTICATION FAILED' : 'AWAITING CREDENTIALS'}
+      statusType={error ? 'error' : 'ready'}
+      keyHints="[Tab] Switch field  •  [Enter] Next/Submit"
+    >
+      <Box flexDirection="column" marginY={1}>
+        <Box flexDirection="row" marginY={1}>
+          <Box width={16}>
             <Text bold color={activeField === 'username' ? 'cyan' : 'white'}>
               Username:
             </Text>
@@ -81,8 +82,8 @@ export const LoginScreen: React.FC = () => {
           />
         </Box>
 
-        <Box flexDirection="row" marginTop={1}>
-          <Box width={12}>
+        <Box flexDirection="row" marginY={1}>
+          <Box width={16}>
             <Text bold color={activeField === 'password' ? 'cyan' : 'white'}>
               Password:
             </Text>
@@ -99,21 +100,17 @@ export const LoginScreen: React.FC = () => {
             placeholder="••••••••"
           />
         </Box>
-      </Box>
 
-      {error ? (
-        <Box marginTop={1}>
-          <Text color="red" bold>
-            ✗ {error}
-          </Text>
-        </Box>
-      ) : null}
-
-      <Box marginTop={1}>
-        <Text dimColor color="gray">
-          [Tab] Switch field  •  [Enter] Next / Submit
-        </Text>
+        {error ? (
+          <Box marginTop={1}>
+            <Text color="red" bold>
+              ✗ {error}
+            </Text>
+          </Box>
+        ) : null}
       </Box>
-    </Box>
+    </TerminalLayout>
   );
 };
+
+export default LoginScreen;

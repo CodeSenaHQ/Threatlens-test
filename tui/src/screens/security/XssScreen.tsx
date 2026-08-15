@@ -4,6 +4,7 @@ import SelectInput from 'ink-select-input';
 import { useNavigation } from '../../state/navigation.js';
 import { useSecuritySession } from '../../state/securitySession.js';
 import { MultiSelect } from '../../components/MultiSelect.js';
+import { TerminalLayout } from '../../components/TerminalLayout.js';
 
 type Step = 1 | 2 | 3;
 type XssType = 'Reflected' | 'Stored' | 'DOM-based';
@@ -45,7 +46,6 @@ export const XssScreen: React.FC = () => {
       },
     };
 
-    // Log payload without backend invocation
     console.log(payload);
     setCapturedMessage('Request captured (backend not yet connected)');
     pop();
@@ -67,28 +67,27 @@ export const XssScreen: React.FC = () => {
   );
 
   return (
-    <Box flexDirection="column" paddingX={2} paddingY={1} borderStyle="round" borderColor="yellow" width={72}>
-      <Box marginBottom={1} flexDirection="column">
-        <Text bold color="yellow">
-          Cross-Site Scripting (XSS) Testing [Step {step}/3]
-        </Text>
-        <Text dimColor color="gray">
-          Target: {targetUrl || 'Not configured'}
-        </Text>
-      </Box>
-
+    <TerminalLayout
+      title={`CROSS-SITE SCRIPTING (XSS) TESTING [STEP ${step}/3]`}
+      subtitle="Analyze sanitization routines across reflected inputs, persistent sinks, and DOM scripts"
+      breadcrumb="SECURITY > XSS"
+      borderColor="yellow"
+      statusText={capturedMessage ? 'XSS SUITE DISPATCHED' : `CONFIGURING STEP ${step} OF 3`}
+      statusType={capturedMessage ? 'success' : 'ready'}
+      keyHints={`[↑/↓] Navigate  •  [Enter] Select/Confirm  •  [Esc] ${step === 1 ? 'Exit to Security Menu' : 'Previous step'}`}
+    >
       {/* Step 1: XSS Types MultiSelect */}
       {step === 1 && (
         <Box flexDirection="column" marginY={1}>
           <Text bold color="white">
-            Select XSS Types to Test:
+            Select XSS Types to Test (Space to toggle, Enter to confirm):
           </Text>
           <Box marginTop={1}>
             <MultiSelect<XssType>
               items={[
-                { label: 'Reflected (Non-persistent server-side reflection)', value: 'Reflected' },
-                { label: 'Stored (Persistent payload execution in storage)', value: 'Stored' },
-                { label: 'DOM-based (Client-side script sink execution)', value: 'DOM-based' },
+                { label: 'Reflected (Non-persistent immediate server-side reflection)', value: 'Reflected' },
+                { label: 'Stored (Persistent payload execution rendered from backend storage)', value: 'Stored' },
+                { label: 'DOM-based (Client-side execution inside browser script sinks)', value: 'DOM-based' },
               ]}
               initialSelected={types}
               onSubmit={handleTypesSubmit}
@@ -103,14 +102,14 @@ export const XssScreen: React.FC = () => {
       {step === 2 && (
         <Box flexDirection="column" marginY={1}>
           <Text bold color="white">
-            Select Injection Point:
+            Select Primary Injection Point:
           </Text>
           <Box marginTop={1}>
             <SelectInput
               items={[
-                { label: '1. Query param (URL parameters)', value: 'Query param' as InjectionPoint },
-                { label: '2. Form field (Request body inputs)', value: 'Form field' as InjectionPoint },
-                { label: '3. Header (Custom HTTP headers & User-Agent)', value: 'Header' as InjectionPoint },
+                { label: '1. Query param (URL parameters & search query inputs)', value: 'Query param' as InjectionPoint },
+                { label: '2. Form field (Request body inputs & multipart form values)', value: 'Form field' as InjectionPoint },
+                { label: '3. Header (Custom HTTP request headers, User-Agent, Referer)', value: 'Header' as InjectionPoint },
               ]}
               onSelect={handleInjectionPointSelect}
               isFocused={isInteractive}
@@ -123,17 +122,17 @@ export const XssScreen: React.FC = () => {
       {step === 3 && (
         <Box flexDirection="column" marginY={1}>
           <Text bold color="white">
-            Review Configuration:
+            Review Configuration Summary:
           </Text>
-          <Box flexDirection="column" marginY={1} paddingLeft={2}>
+          <Box flexDirection="column" marginY={1} borderStyle="single" borderColor="gray" paddingX={2} paddingY={1}>
             <Text color="gray">
-              • Target: <Text color="cyan">{targetUrl}</Text>
+              • Target Base URL: <Text color="cyan" bold>{targetUrl}</Text>
             </Text>
             <Text color="gray">
-              • XSS Types: <Text color="yellow">{types.join(', ')}</Text>
+              • XSS Categories: <Text color="yellow" bold>{types.join(', ')}</Text>
             </Text>
             <Text color="gray">
-              • Injection Point: <Text color="yellow">{injectionPoint}</Text>
+              • Injection Point: <Text color="yellow" bold>{injectionPoint}</Text>
             </Text>
           </Box>
           <Box marginTop={1}>
@@ -156,13 +155,7 @@ export const XssScreen: React.FC = () => {
           </Text>
         </Box>
       ) : null}
-
-      <Box marginTop={1}>
-        <Text dimColor color="gray">
-          [↑/↓] Navigate  •  [Enter] Select/Confirm  •  [Esc] {step === 1 ? 'Exit to Security Menu' : 'Previous step'}
-        </Text>
-      </Box>
-    </Box>
+    </TerminalLayout>
   );
 };
 

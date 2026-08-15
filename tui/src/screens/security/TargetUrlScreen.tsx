@@ -3,11 +3,12 @@ import { Box, Text, useInput } from 'ink';
 import TextInput from 'ink-text-input';
 import { useNavigation } from '../../state/navigation.js';
 import { useSecuritySession } from '../../state/securitySession.js';
+import { TerminalLayout } from '../../components/TerminalLayout.js';
 
 const URL_REGEX = /^(https?:\/\/)[\w.-]+(\.[\w.-]+)+(:\d+)?(\/.*)?$/i;
 
 export const TargetUrlScreen: React.FC = () => {
-  const { push, pop, replace } = useNavigation();
+  const { pop, replace } = useNavigation();
   const { targetUrl: existingUrl, setTargetUrl } = useSecuritySession();
   const [urlInput, setUrlInput] = useState(existingUrl || '');
   const [error, setError] = useState('');
@@ -30,7 +31,6 @@ export const TargetUrlScreen: React.FC = () => {
 
       setError('');
       setTargetUrl(trimmed);
-      // Replace targetUrl screen with securityMenu so popping goes back to MainMenu
       replace({ type: 'securityMenu' });
     },
     [setTargetUrl, replace]
@@ -46,48 +46,45 @@ export const TargetUrlScreen: React.FC = () => {
   );
 
   return (
-    <Box flexDirection="column" paddingX={2} paddingY={1} borderStyle="round" borderColor="magenta" width={70}>
-      <Box marginBottom={1} flexDirection="column">
-        <Text bold color="magenta">
-          Security Testing — Target URL
-        </Text>
-        <Text color="gray">Specify the base target URL for security assessments</Text>
-      </Box>
-
+    <TerminalLayout
+      title="TARGET ENDPOINT CONFIGURATION"
+      subtitle="Define the root target base URL for this security assessment session"
+      breadcrumb="SECURITY > TARGET CONFIG"
+      borderColor="magenta"
+      statusText={error ? 'INVALID TARGET URL' : 'AWAITING TARGET CONFIGURATION'}
+      statusType={error ? 'error' : 'ready'}
+      keyHints="[Enter] Proceed to Security Suite  •  [Esc] Back to Main Menu"
+    >
       <Box flexDirection="column" marginY={1}>
-        <Box flexDirection="row">
-          <Box width={16}>
+        <Box flexDirection="row" marginY={1}>
+          <Box width={20}>
             <Text bold color="magenta">
-              Target URL:
+              Target Base URL:
             </Text>
           </Box>
-          <TextInput
-            value={urlInput}
-            onChange={(val) => {
-              setUrlInput(val);
-              if (error) setError('');
-            }}
-            onSubmit={handleSubmit}
-            focus={isInteractive}
-            placeholder="https://staging.example.com"
-          />
+          <Box flexGrow={1}>
+            <TextInput
+              value={urlInput}
+              onChange={(val) => {
+                setUrlInput(val);
+                if (error) setError('');
+              }}
+              onSubmit={handleSubmit}
+              focus={isInteractive}
+              placeholder="https://staging.example.com"
+            />
+          </Box>
         </Box>
-      </Box>
 
-      {error ? (
-        <Box marginTop={1}>
-          <Text color="red" bold>
-            ✗ {error}
-          </Text>
-        </Box>
-      ) : null}
-
-      <Box marginTop={1}>
-        <Text dimColor color="gray">
-          [Enter] Proceed to Security Menu  •  [Esc] Back to Main Menu
-        </Text>
+        {error ? (
+          <Box marginTop={1}>
+            <Text color="red" bold>
+              ✗ {error}
+            </Text>
+          </Box>
+        ) : null}
       </Box>
-    </Box>
+    </TerminalLayout>
   );
 };
 

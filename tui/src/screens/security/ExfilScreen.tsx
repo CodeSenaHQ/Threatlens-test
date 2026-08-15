@@ -4,6 +4,7 @@ import SelectInput from 'ink-select-input';
 import { useNavigation } from '../../state/navigation.js';
 import { useSecuritySession } from '../../state/securitySession.js';
 import { MultiSelect } from '../../components/MultiSelect.js';
+import { TerminalLayout } from '../../components/TerminalLayout.js';
 
 type Step = 1 | 2 | 3;
 type ExfilVector =
@@ -52,7 +53,6 @@ export const ExfilScreen: React.FC = () => {
       },
     };
 
-    // Log payload without backend invocation
     console.log(payload);
     setCapturedMessage('Request captured (backend not yet connected)');
     pop();
@@ -74,29 +74,28 @@ export const ExfilScreen: React.FC = () => {
   );
 
   return (
-    <Box flexDirection="column" paddingX={2} paddingY={1} borderStyle="round" borderColor="magenta" width={72}>
-      <Box marginBottom={1} flexDirection="column">
-        <Text bold color="magenta">
-          Data Exfiltration & Leakage Assessment [Step {step}/3]
-        </Text>
-        <Text dimColor color="gray">
-          Target: {targetUrl || 'Not configured'}
-        </Text>
-      </Box>
-
+    <TerminalLayout
+      title={`DATA EXFILTRATION & LEAKAGE ASSESSMENT [STEP ${step}/3]`}
+      subtitle="Detect inadvertent sensitive data disclosures, stack traces, and unauthenticated debug interfaces"
+      breadcrumb="SECURITY > EXFIL"
+      borderColor="magenta"
+      statusText={capturedMessage ? 'EXFILTRATION SUITE DISPATCHED' : `CONFIGURING STEP ${step} OF 3`}
+      statusType={capturedMessage ? 'success' : 'ready'}
+      keyHints={`[↑/↓] Navigate  •  [Enter] Select/Confirm  •  [Esc] ${step === 1 ? 'Exit to Security Menu' : 'Previous step'}`}
+    >
       {/* Step 1: Vectors MultiSelect */}
       {step === 1 && (
         <Box flexDirection="column" marginY={1}>
           <Text bold color="white">
-            Select Exfiltration & Leakage Vectors:
+            Select Exfiltration & Leakage Vectors (Space to toggle, Enter to confirm):
           </Text>
           <Box marginTop={1}>
             <MultiSelect<ExfilVector>
               items={[
-                { label: 'API response leakage (PII / Sensitive data in JSON/XML payloads)', value: 'API response leakage' },
-                { label: 'Error message leakage (Stack traces & system fingerprinting)', value: 'Error message leakage' },
-                { label: 'Debug endpoint exposure (/actuator, /debug, /metrics, /env)', value: 'Debug endpoint exposure' },
-                { label: 'Header leakage (Server, X-Powered-By, internal IPs)', value: 'Header leakage' },
+                { label: 'API response leakage (PII, tokens, and internal keys in JSON/XML payloads)', value: 'API response leakage' },
+                { label: 'Error message leakage (Verbose stack traces, unhandled exceptions & SQL errors)', value: 'Error message leakage' },
+                { label: 'Debug endpoint exposure (/actuator, /debug, /metrics, /env, /swagger)', value: 'Debug endpoint exposure' },
+                { label: 'Header leakage (Server, X-Powered-By, internal hostname/IP headers)', value: 'Header leakage' },
               ]}
               initialSelected={vectors}
               onSubmit={handleVectorsSubmit}
@@ -116,8 +115,8 @@ export const ExfilScreen: React.FC = () => {
           <Box marginTop={1}>
             <SelectInput
               items={[
-                { label: '1. Surface scan (Fast reconnaissance across public endpoints)', value: 'Surface scan' as ScanDepth },
-                { label: '2. Deep scan (Recursive route discovery and parameter fuzzing)', value: 'Deep scan' as ScanDepth },
+                { label: '1. Surface scan (Fast reconnaissance across exposed public endpoints)', value: 'Surface scan' as ScanDepth },
+                { label: '2. Deep scan (Recursive route discovery, fuzzy crawling & active parameter testing)', value: 'Deep scan' as ScanDepth },
               ]}
               onSelect={handleDepthSelect}
               isFocused={isInteractive}
@@ -130,17 +129,17 @@ export const ExfilScreen: React.FC = () => {
       {step === 3 && (
         <Box flexDirection="column" marginY={1}>
           <Text bold color="white">
-            Review Configuration:
+            Review Configuration Summary:
           </Text>
-          <Box flexDirection="column" marginY={1} paddingLeft={2}>
+          <Box flexDirection="column" marginY={1} borderStyle="single" borderColor="gray" paddingX={2} paddingY={1}>
             <Text color="gray">
-              • Target: <Text color="cyan">{targetUrl}</Text>
+              • Target Base URL: <Text color="cyan" bold>{targetUrl}</Text>
             </Text>
             <Text color="gray">
-              • Exfiltration Vectors: <Text color="yellow">{vectors.join(', ')}</Text>
+              • Exfiltration Vectors: <Text color="yellow" bold>{vectors.join(', ')}</Text>
             </Text>
             <Text color="gray">
-              • Scan Depth: <Text color="yellow">{depth}</Text>
+              • Scan Depth: <Text color="yellow" bold>{depth}</Text>
             </Text>
           </Box>
           <Box marginTop={1}>
@@ -163,13 +162,7 @@ export const ExfilScreen: React.FC = () => {
           </Text>
         </Box>
       ) : null}
-
-      <Box marginTop={1}>
-        <Text dimColor color="gray">
-          [↑/↓] Navigate  •  [Enter] Select/Confirm  •  [Esc] {step === 1 ? 'Exit to Security Menu' : 'Previous step'}
-        </Text>
-      </Box>
-    </Box>
+    </TerminalLayout>
   );
 };
 

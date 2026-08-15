@@ -72,19 +72,23 @@ export function MultiSelect<V extends string = string>({
   );
 
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" marginY={1}>
       {items.map((item, index) => {
         const isHovered = index === cursorIndex;
         const isChecked = selectedIndexSet.has(item.value);
 
         return (
-          <Box key={item.key ?? item.value} flexDirection="row">
+          <Box
+            key={item.key ?? item.value}
+            flexDirection="row"
+            paddingX={1}
+          >
             <Box width={3}>
               <Text color={isHovered ? 'cyan' : 'gray'}>
                 {isHovered ? '❯' : ' '}
               </Text>
             </Box>
-            <Box width={4}>
+            <Box width={5}>
               <Text color={isChecked ? 'green' : 'gray'} bold={isChecked}>
                 [{isChecked ? '✔' : ' '}]
               </Text>
@@ -97,16 +101,10 @@ export function MultiSelect<V extends string = string>({
       })}
 
       {validationError ? (
-        <Box marginTop={1}>
-          <Text color="red">✗ {validationError}</Text>
+        <Box marginTop={1} paddingLeft={1}>
+          <Text color="red" bold>✗ {validationError}</Text>
         </Box>
       ) : null}
-
-      <Box marginTop={1}>
-        <Text dimColor color="gray">
-          [Space] Toggle selection  •  [Enter] Confirm selections  •  [↑/↓] Navigate
-        </Text>
-      </Box>
     </Box>
   );
 }

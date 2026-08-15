@@ -5,6 +5,7 @@ import TextInput from 'ink-text-input';
 import { useNavigation } from '../../state/navigation.js';
 import { useSecuritySession } from '../../state/securitySession.js';
 import { MultiSelect } from '../../components/MultiSelect.js';
+import { TerminalLayout } from '../../components/TerminalLayout.js';
 
 type Step = 1 | 2 | 3 | 4;
 type HttpMethod = 'GET' | 'POST';
@@ -83,7 +84,6 @@ export const SqliScreen: React.FC = () => {
       },
     };
 
-    // Log payload without backend invocation
     console.log(payload);
     setCapturedMessage('Request captured (backend not yet connected)');
     pop();
@@ -109,16 +109,15 @@ export const SqliScreen: React.FC = () => {
   );
 
   return (
-    <Box flexDirection="column" paddingX={2} paddingY={1} borderStyle="round" borderColor="red" width={72}>
-      <Box marginBottom={1} flexDirection="column">
-        <Text bold color="red">
-          SQL Injection Assessment [Step {step}/4]
-        </Text>
-        <Text dimColor color="gray">
-          Target: {targetUrl || 'Not configured'}
-        </Text>
-      </Box>
-
+    <TerminalLayout
+      title={`SQL INJECTION TESTING [STEP ${step}/4]`}
+      subtitle="Fuzz query and body inputs to uncover syntax errors, union leakages, and blind execution delays"
+      breadcrumb="SECURITY > SQLI"
+      borderColor="red"
+      statusText={capturedMessage ? 'INJECTION SUITE DISPATCHED' : `CONFIGURING STEP ${step} OF 4`}
+      statusType={capturedMessage ? 'success' : 'ready'}
+      keyHints={`[↑/↓] Navigate  •  [Enter] Select/Confirm  •  [Esc] ${step === 1 ? 'Exit to Security Menu' : 'Previous step'}`}
+    >
       {/* Step 1: HTTP Method */}
       {step === 1 && (
         <Box flexDirection="column" marginY={1}>
@@ -128,8 +127,8 @@ export const SqliScreen: React.FC = () => {
           <Box marginTop={1}>
             <SelectInput
               items={[
-                { label: '1. GET (Query String Parameters)', value: 'GET' as HttpMethod },
-                { label: '2. POST (Request Body / Form Data)', value: 'POST' as HttpMethod },
+                { label: '1. GET (Inspect query parameters & URL strings)', value: 'GET' as HttpMethod },
+                { label: '2. POST (Inspect request bodies, form submissions & JSON payloads)', value: 'POST' as HttpMethod },
               ]}
               onSelect={handleMethodSelect}
               isFocused={isInteractive}
@@ -148,8 +147,8 @@ export const SqliScreen: React.FC = () => {
             <Box marginTop={1}>
               <SelectInput
                 items={[
-                  { label: '1. Auto-discover parameters from target endpoint', value: 'Auto-discover' as ParamSource },
-                  { label: '2. Specify custom parameter name', value: 'Specify param name' as ParamSource },
+                  { label: '1. Auto-discover parameters from target endpoint responses', value: 'Auto-discover' as ParamSource },
+                  { label: '2. Specify custom target parameter name manually', value: 'Specify param name' as ParamSource },
                 ]}
                 onSelect={handleParamSourceSelect}
                 isFocused={isInteractive}
@@ -158,23 +157,25 @@ export const SqliScreen: React.FC = () => {
           ) : (
             <Box flexDirection="column" marginTop={1}>
               <Box flexDirection="row">
-                <Box width={24}>
-                  <Text color="yellow">Parameter Name:</Text>
+                <Box width={26}>
+                  <Text color="yellow">Target Parameter Name:</Text>
                 </Box>
-                <TextInput
-                  value={paramName}
-                  onChange={(val) => {
-                    setParamName(val);
-                    if (paramError) setParamError('');
-                  }}
-                  onSubmit={handleParamNameSubmit}
-                  focus={isInteractive}
-                  placeholder="e.g. id, search, user, query"
-                />
+                <Box flexGrow={1}>
+                  <TextInput
+                    value={paramName}
+                    onChange={(val) => {
+                      setParamName(val);
+                      if (paramError) setParamError('');
+                    }}
+                    onSubmit={handleParamNameSubmit}
+                    focus={isInteractive}
+                    placeholder="e.g. id, search, user, query, token"
+                  />
+                </Box>
               </Box>
               {paramError ? (
                 <Box marginTop={1}>
-                  <Text color="red">✗ {paramError}</Text>
+                  <Text color="red" bold>✗ {paramError}</Text>
                 </Box>
               ) : null}
             </Box>
@@ -186,15 +187,15 @@ export const SqliScreen: React.FC = () => {
       {step === 3 && (
         <Box flexDirection="column" marginY={1}>
           <Text bold color="white">
-            Select Injection Categories to Test:
+            Select Injection Categories to Test (Space to toggle, Enter to confirm):
           </Text>
           <Box marginTop={1}>
             <MultiSelect<InjectionCategory>
               items={[
-                { label: 'Error-based (Syntax error inspection)', value: 'Error-based' },
-                { label: 'Union-based (UNION SELECT structure extraction)', value: 'Union-based' },
-                { label: 'Blind (boolean) (True/False conditional diffs)', value: 'Blind (boolean)' },
-                { label: 'Blind (time-based) (Sleep / Benchmark latency probes)', value: 'Blind (time-based)' },
+                { label: 'Error-based (Syntax error inspection & database fingerprinting)', value: 'Error-based' },
+                { label: 'Union-based (UNION SELECT schema structure extraction)', value: 'Union-based' },
+                { label: 'Blind (boolean) (True/False conditional diff queries)', value: 'Blind (boolean)' },
+                { label: 'Blind (time-based) (Sleep / Benchmark latency evaluation probes)', value: 'Blind (time-based)' },
               ]}
               initialSelected={injectionCategories}
               onSubmit={handleCategoriesSubmit}
@@ -209,25 +210,25 @@ export const SqliScreen: React.FC = () => {
       {step === 4 && (
         <Box flexDirection="column" marginY={1}>
           <Text bold color="white">
-            Review Configuration:
+            Review Configuration Summary:
           </Text>
-          <Box flexDirection="column" marginY={1} paddingLeft={2}>
+          <Box flexDirection="column" marginY={1} borderStyle="single" borderColor="gray" paddingX={2} paddingY={1}>
             <Text color="gray">
-              • Target: <Text color="cyan">{targetUrl}</Text>
+              • Target Base URL: <Text color="cyan" bold>{targetUrl}</Text>
             </Text>
             <Text color="gray">
-              • HTTP Method: <Text color="yellow">{method}</Text>
+              • HTTP Method: <Text color="yellow" bold>{method}</Text>
             </Text>
             <Text color="gray">
-              • Parameter Source: <Text color="yellow">{paramSource}</Text>
+              • Parameter Source: <Text color="yellow" bold>{paramSource}</Text>
             </Text>
             {paramSource === 'Specify param name' && (
               <Text color="gray">
-                • Parameter Name: <Text color="yellow">{paramName}</Text>
+                • Target Parameter: <Text color="yellow" bold>{paramName}</Text>
               </Text>
             )}
             <Text color="gray">
-              • Injection Categories: <Text color="yellow">{injectionCategories.join(', ')}</Text>
+              • Injection Categories: <Text color="yellow" bold>{injectionCategories.join(', ')}</Text>
             </Text>
           </Box>
           <Box marginTop={1}>
@@ -250,13 +251,7 @@ export const SqliScreen: React.FC = () => {
           </Text>
         </Box>
       ) : null}
-
-      <Box marginTop={1}>
-        <Text dimColor color="gray">
-          [↑/↓] Navigate  •  [Enter] Select/Confirm  •  [Esc] {step === 1 ? 'Exit to Security Menu' : 'Previous step'}
-        </Text>
-      </Box>
-    </Box>
+    </TerminalLayout>
   );
 };
 

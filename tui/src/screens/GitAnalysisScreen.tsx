@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { Box, Text, useInput } from 'ink';
 import TextInput from 'ink-text-input';
 import { useNavigation } from '../state/navigation.js';
+import { TerminalLayout } from '../components/TerminalLayout.js';
 
 const GIT_URL_REGEX = /^(https?:\/\/[^\s]+|git@[^\s:]+:[^\s]+)$/i;
 
@@ -30,7 +31,6 @@ export const GitAnalysisScreen: React.FC = () => {
     }
 
     setError('');
-    // Log collected value as { repoUrl: string } without calling backend
     console.log({ repoUrl: trimmed });
     setSubmittedUrl(trimmed);
     setConfirmation('Analysis request captured (backend not yet connected)');
@@ -46,59 +46,59 @@ export const GitAnalysisScreen: React.FC = () => {
   );
 
   return (
-    <Box flexDirection="column" paddingX={2} paddingY={1} borderStyle="round" borderColor="yellow" width={68}>
-      <Box marginBottom={1} flexDirection="column">
-        <Text bold color="yellow">
-          Security TUI — Git Repository Analysis
-        </Text>
-        <Text color="gray">Scan public repositories for vulnerabilities and secrets</Text>
-      </Box>
-
+    <TerminalLayout
+      title="GIT REPOSITORY ANALYSIS"
+      subtitle="Deep-scan source code repositories for leaked secrets, API keys, and CVEs"
+      breadcrumb="GIT SCAN"
+      borderColor="yellow"
+      statusText={confirmation ? 'REQUEST CAPTURED' : error ? 'INPUT ERROR' : 'AWAITING REPOSITORY URL'}
+      statusType={confirmation ? 'success' : error ? 'error' : 'ready'}
+      keyHints="[Enter] Submit  •  [Esc] Back to Main Menu"
+    >
       <Box flexDirection="column" marginY={1}>
-        <Box flexDirection="row">
-          <Box width={28}>
+        <Box flexDirection="row" marginY={1}>
+          <Box width={32}>
             <Text bold color="yellow">
               Public Git Repository URL:
             </Text>
           </Box>
-          <TextInput
-            value={repoUrl}
-            onChange={(val) => {
-              setRepoUrl(val);
-              if (error) setError('');
-            }}
-            onSubmit={handleSubmit}
-            focus={isInteractive}
-            placeholder="https://github.com/org/repo.git"
-          />
+          <Box flexGrow={1}>
+            <TextInput
+              value={repoUrl}
+              onChange={(val) => {
+                setRepoUrl(val);
+                if (error) setError('');
+              }}
+              onSubmit={handleSubmit}
+              focus={isInteractive}
+              placeholder="https://github.com/dev47929/ThreatLens"
+            />
+          </Box>
         </Box>
+
+        {error ? (
+          <Box marginTop={1}>
+            <Text color="red" bold>
+              ✗ {error}
+            </Text>
+          </Box>
+        ) : null}
+
+        {confirmation ? (
+          <Box marginTop={1} flexDirection="column" borderStyle="single" borderColor="green" paddingX={2} paddingY={1}>
+            <Text color="green" bold>
+              ✓ {confirmation}
+            </Text>
+            {submittedUrl ? (
+              <Box marginTop={1}>
+                <Text color="gray">Captured Target: </Text>
+                <Text color="cyan" bold>{submittedUrl}</Text>
+              </Box>
+            ) : null}
+          </Box>
+        ) : null}
       </Box>
-
-      {error ? (
-        <Box marginTop={1}>
-          <Text color="red" bold>
-            ✗ {error}
-          </Text>
-        </Box>
-      ) : null}
-
-      {confirmation ? (
-        <Box marginTop={1} flexDirection="column">
-          <Text color="green" bold>
-            ✓ {confirmation}
-          </Text>
-          {submittedUrl ? (
-            <Text color="gray">Target: {submittedUrl}</Text>
-          ) : null}
-        </Box>
-      ) : null}
-
-      <Box marginTop={1}>
-        <Text dimColor color="gray">
-          [Enter] Submit  •  [Esc] Back to Main Menu
-        </Text>
-      </Box>
-    </Box>
+    </TerminalLayout>
   );
 };
 

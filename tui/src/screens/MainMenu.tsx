@@ -1,7 +1,8 @@
 import React from 'react';
-import { Box, Text, useApp, useInput } from 'ink';
+import { Box, useApp, useInput } from 'ink';
 import SelectInput from 'ink-select-input';
 import { useNavigation } from '../state/navigation.js';
+import { TerminalLayout } from '../components/TerminalLayout.js';
 
 type MenuAction = 'gitAnalysis' | 'securityMenu';
 
@@ -12,11 +13,11 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   {
-    label: '1. Git Repository Analysis',
+    label: '1. Git Repository Analysis (Public Repo Audits & Secret Detection)',
     value: 'gitAnalysis',
   },
   {
-    label: '2. Security Testing',
+    label: '2. Security Testing Suite (DDoS, SQLi, XSS, Exfiltration, Rate Limiting)',
     value: 'securityMenu',
   },
 ];
@@ -45,14 +46,15 @@ export const MainMenu: React.FC = () => {
   );
 
   return (
-    <Box flexDirection="column" paddingX={2} paddingY={1} borderStyle="round" borderColor="cyan" width={60}>
-      <Box marginBottom={1} flexDirection="column">
-        <Text bold color="cyan">
-          Security TUI
-        </Text>
-        <Text color="gray">Main Menu — ThreatLens Security Suite</Text>
-      </Box>
-
+    <TerminalLayout
+      title="MAIN NAVIGATION"
+      subtitle="Select a security module to initialize testing operations"
+      breadcrumb="MAIN MENU"
+      borderColor="green"
+      statusText="READY FOR SELECTION"
+      statusType="ready"
+      keyHints="[↑/↓] Navigate  •  [Enter] Select  •  [Esc] Quit"
+    >
       <Box marginY={1} flexDirection="column">
         <SelectInput
           items={menuItems}
@@ -60,13 +62,7 @@ export const MainMenu: React.FC = () => {
           isFocused={isInteractive}
         />
       </Box>
-
-      <Box marginTop={1}>
-        <Text dimColor color="gray">
-          ↑/↓ to navigate, Enter to select, Esc to quit
-        </Text>
-      </Box>
-    </Box>
+    </TerminalLayout>
   );
 };
 

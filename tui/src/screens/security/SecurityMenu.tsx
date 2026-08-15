@@ -1,9 +1,10 @@
 import React from 'react';
-import { Box, Text, useInput } from 'ink';
+import { Box, useInput } from 'ink';
 import SelectInput from 'ink-select-input';
-import { useNavigation, Screen } from '../../state/navigation.js';
+import { useNavigation } from '../../state/navigation.js';
 import { useSecuritySession } from '../../state/securitySession.js';
 import { TargetUrlScreen } from './TargetUrlScreen.js';
+import { TerminalLayout } from '../../components/TerminalLayout.js';
 
 type SecurityOptionValue = 'ddos' | 'sqli' | 'xss' | 'exfil' | 'rateLimit' | 'proxy';
 
@@ -14,27 +15,27 @@ interface SecurityMenuItem {
 
 const securityOptions: SecurityMenuItem[] = [
   {
-    label: '1. DDoS Testing',
+    label: '1. DDoS Testing (Flood, Slowloris, Burst-spike simulations)',
     value: 'ddos',
   },
   {
-    label: '2. SQL Injection',
+    label: '2. SQL Injection (Error, Union, and Blind Boolean/Time injection probes)',
     value: 'sqli',
   },
   {
-    label: '3. Cross-Site Scripting (XSS)',
+    label: '3. Cross-Site Scripting (XSS) (Reflected, Stored, and DOM-based vectors)',
     value: 'xss',
   },
   {
-    label: '4. Data Exfiltration',
+    label: '4. Data Exfiltration (API response & error message leak detection)',
     value: 'exfil',
   },
   {
-    label: '5. Rate Limiting',
+    label: '5. Rate Limiting (Concurrency threshold & 429 response enforcement)',
     value: 'rateLimit',
   },
   {
-    label: '6. Proxy Analysis',
+    label: '6. Proxy Interception & Live Request Tampering',
     value: 'proxy',
   },
 ];
@@ -45,7 +46,6 @@ export const SecurityMenu: React.FC = () => {
 
   const isInteractive = Boolean(process.stdin?.isTTY);
 
-  // If no target URL has been specified for this session, prompt for it first
   if (!targetUrl) {
     return <TargetUrlScreen />;
   }
@@ -84,18 +84,15 @@ export const SecurityMenu: React.FC = () => {
   );
 
   return (
-    <Box flexDirection="column" paddingX={2} paddingY={1} borderStyle="round" borderColor="magenta" width={68}>
-      <Box marginBottom={1} flexDirection="column">
-        <Text bold color="magenta">
-          Security Testing Suite
-        </Text>
-        <Box flexDirection="row" marginTop={0}>
-          <Text dimColor color="gray">
-            Target URL: {targetUrl}
-          </Text>
-        </Box>
-      </Box>
-
+    <TerminalLayout
+      title="SECURITY TESTING SUITE"
+      subtitle="Select an offensive security assessment module to configure and execute"
+      breadcrumb="SECURITY"
+      borderColor="magenta"
+      statusText="SESSION ACTIVE"
+      statusType="ready"
+      keyHints="[↑/↓] Navigate  •  [Enter] Select  •  [Esc] Back to Main Menu"
+    >
       <Box marginY={1} flexDirection="column">
         <SelectInput
           items={securityOptions}
@@ -103,13 +100,7 @@ export const SecurityMenu: React.FC = () => {
           isFocused={isInteractive}
         />
       </Box>
-
-      <Box marginTop={1}>
-        <Text dimColor color="gray">
-          ↑/↓ to navigate, Enter to select, Esc to return to Main Menu
-        </Text>
-      </Box>
-    </Box>
+    </TerminalLayout>
   );
 };
 

@@ -1,9 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { Box, Text, useInput } from 'ink';
 import SelectInput from 'ink-select-input';
 import TextInput from 'ink-text-input';
 import { useNavigation } from '../../state/navigation.js';
 import { useSecuritySession } from '../../state/securitySession.js';
+import { TerminalLayout } from '../../components/TerminalLayout.js';
 
 type Step = 1 | 2 | 3 | 4;
 type AttackPattern = 'Flood' | 'Slowloris-style' | 'Burst-spike';
@@ -76,7 +77,6 @@ export const DdosScreen: React.FC = () => {
       },
     };
 
-    // Log the collected payload without calling backend
     console.log(payload);
     setCapturedMessage('Request captured (backend not yet connected)');
     pop();
@@ -102,16 +102,15 @@ export const DdosScreen: React.FC = () => {
   );
 
   return (
-    <Box flexDirection="column" paddingX={2} paddingY={1} borderStyle="round" borderColor="red" width={70}>
-      <Box marginBottom={1} flexDirection="column">
-        <Text bold color="red">
-          DDoS Simulation Configuration [Step {step}/4]
-        </Text>
-        <Text dimColor color="gray">
-          Target: {targetUrl || 'Not configured'}
-        </Text>
-      </Box>
-
+    <TerminalLayout
+      title={`DDOS SIMULATION [STEP ${step}/4]`}
+      subtitle="Configure distributed traffic load patterns and stress test endpoint limits"
+      breadcrumb="SECURITY > DDOS"
+      borderColor="red"
+      statusText={capturedMessage ? 'SIMULATION DISPATCHED' : `CONFIGURING STEP ${step} OF 4`}
+      statusType={capturedMessage ? 'success' : 'ready'}
+      keyHints={`[↑/↓] Navigate  •  [Enter] Select  •  [Esc] ${step === 1 ? 'Exit to Security Menu' : 'Previous step'}`}
+    >
       {/* Step 1: Pattern */}
       {step === 1 && (
         <Box flexDirection="column" marginY={1}>
@@ -121,9 +120,9 @@ export const DdosScreen: React.FC = () => {
           <Box marginTop={1}>
             <SelectInput
               items={[
-                { label: '1. Flood (High volume continuous traffic)', value: 'Flood' as AttackPattern },
-                { label: '2. Slowloris-style (Low-and-slow socket exhaustion)', value: 'Slowloris-style' as AttackPattern },
-                { label: '3. Burst-spike (Intermittent high-amplitude spikes)', value: 'Burst-spike' as AttackPattern },
+                { label: '1. Flood (High volume continuous HTTP/TCP flood)', value: 'Flood' as AttackPattern },
+                { label: '2. Slowloris-style (Low-and-slow persistent connection exhaustion)', value: 'Slowloris-style' as AttackPattern },
+                { label: '3. Burst-spike (Periodic intermittent high-amplitude burst spikes)', value: 'Burst-spike' as AttackPattern },
               ]}
               onSelect={handlePatternSelect}
               isFocused={isInteractive}
@@ -141,9 +140,9 @@ export const DdosScreen: React.FC = () => {
           <Box marginTop={1}>
             <SelectInput
               items={[
-                { label: '1. Light (Low concurrency probe)', value: 'Light' as Intensity },
-                { label: '2. Medium (Standard baseline threshold testing)', value: 'Medium' as Intensity },
-                { label: '3. Heavy (High volume stress load)', value: 'Heavy' as Intensity },
+                { label: '1. Light (Low concurrency probe to gauge baseline latencies)', value: 'Light' as Intensity },
+                { label: '2. Medium (Standard baseline threshold stress testing)', value: 'Medium' as Intensity },
+                { label: '3. Heavy (Maximal concurrency rate to identify crash thresholds)', value: 'Heavy' as Intensity },
               ]}
               onSelect={handleIntensitySelect}
               isFocused={isInteractive}
@@ -156,16 +155,16 @@ export const DdosScreen: React.FC = () => {
       {step === 3 && (
         <Box flexDirection="column" marginY={1}>
           <Text bold color="white">
-            Select Duration:
+            Select Attack Duration:
           </Text>
           {!isEnteringCustom ? (
             <Box marginTop={1}>
               <SelectInput
                 items={[
-                  { label: '1. 10s', value: '10s' as DurationOption },
-                  { label: '2. 30s', value: '30s' as DurationOption },
-                  { label: '3. 60s', value: '60s' as DurationOption },
-                  { label: '4. Custom duration...', value: 'Custom' as DurationOption },
+                  { label: '1. 10 seconds (Quick benchmark probe)', value: '10s' as DurationOption },
+                  { label: '2. 30 seconds (Standard evaluation window)', value: '30s' as DurationOption },
+                  { label: '3. 60 seconds (Extended endurance run)', value: '60s' as DurationOption },
+                  { label: '4. Custom duration (Enter custom duration string)...', value: 'Custom' as DurationOption },
                 ]}
                 onSelect={handleDurationSelect}
                 isFocused={isInteractive}
@@ -174,23 +173,25 @@ export const DdosScreen: React.FC = () => {
           ) : (
             <Box flexDirection="column" marginTop={1}>
               <Box flexDirection="row">
-                <Box width={20}>
-                  <Text color="yellow">Enter duration:</Text>
+                <Box width={24}>
+                  <Text color="yellow">Enter Custom Duration:</Text>
                 </Box>
-                <TextInput
-                  value={customDuration}
-                  onChange={(val) => {
-                    setCustomDuration(val);
-                    if (customError) setCustomError('');
-                  }}
-                  onSubmit={handleCustomDurationSubmit}
-                  focus={isInteractive}
-                  placeholder="e.g. 45s, 2m, 120s"
-                />
+                <Box flexGrow={1}>
+                  <TextInput
+                    value={customDuration}
+                    onChange={(val) => {
+                      setCustomDuration(val);
+                      if (customError) setCustomError('');
+                    }}
+                    onSubmit={handleCustomDurationSubmit}
+                    focus={isInteractive}
+                    placeholder="e.g. 45s, 2m, 120s"
+                  />
+                </Box>
               </Box>
               {customError ? (
                 <Box marginTop={1}>
-                  <Text color="red">✗ {customError}</Text>
+                  <Text color="red" bold>✗ {customError}</Text>
                 </Box>
               ) : null}
             </Box>
@@ -202,20 +203,20 @@ export const DdosScreen: React.FC = () => {
       {step === 4 && (
         <Box flexDirection="column" marginY={1}>
           <Text bold color="white">
-            Review Configuration:
+            Review Configuration Summary:
           </Text>
-          <Box flexDirection="column" marginY={1} paddingLeft={2}>
+          <Box flexDirection="column" marginY={1} borderStyle="single" borderColor="gray" paddingX={2} paddingY={1}>
             <Text color="gray">
-              • Target: <Text color="cyan">{targetUrl}</Text>
+              • Target Base URL: <Text color="cyan" bold>{targetUrl}</Text>
             </Text>
             <Text color="gray">
-              • Attack Pattern: <Text color="yellow">{pattern}</Text>
+              • Attack Pattern: <Text color="yellow" bold>{pattern}</Text>
             </Text>
             <Text color="gray">
-              • Intensity: <Text color="yellow">{intensity}</Text>
+              • Traffic Intensity: <Text color="yellow" bold>{intensity}</Text>
             </Text>
             <Text color="gray">
-              • Duration: <Text color="yellow">{effectiveDuration}</Text>
+              • Duration: <Text color="yellow" bold>{effectiveDuration}</Text>
             </Text>
           </Box>
           <Box marginTop={1}>
@@ -238,13 +239,7 @@ export const DdosScreen: React.FC = () => {
           </Text>
         </Box>
       ) : null}
-
-      <Box marginTop={1}>
-        <Text dimColor color="gray">
-          [↑/↓] Navigate  •  [Enter] Select  •  [Esc] {step === 1 ? 'Exit to Security Menu' : 'Previous step'}
-        </Text>
-      </Box>
-    </Box>
+    </TerminalLayout>
   );
 };
 

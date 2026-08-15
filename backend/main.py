@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from fastapi.middleware.cors import CORSMiddleware
 from tc_auth import Auth 
 from fastapi import FastAPI
-import backend.config as config
+from config import config
 
 engine = create_engine("postgresql://workspace:admin@localhost:5432/tc_auth", echo=False)
 

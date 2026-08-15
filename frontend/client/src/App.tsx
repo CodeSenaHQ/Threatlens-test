@@ -19,6 +19,9 @@ function Router() {
       <Route path="/login" component={() => <AuthPage initialMode="signin" />} />
       <Route path="/auth" component={() => <AuthPage initialMode="signup" />} />
       <Route path="/oauth/callback" component={OAuthCallback} />
+      <Route path="/callback" component={OAuthCallback} />
+      <Route path="/google/callback" component={OAuthCallback} />
+      <Route path="/github/callback" component={OAuthCallback} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

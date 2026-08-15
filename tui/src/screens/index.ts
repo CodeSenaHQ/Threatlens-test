@@ -6,7 +6,7 @@ export { TargetUrlScreen } from './security/TargetUrlScreen.js';
 export { DdosScreen } from './security/DdosScreen.js';
 export { SqliScreen } from './security/SqliScreen.js';
 export { XssScreen } from './security/XssScreen.js';
-export { ExfilScreen } from './ExfilScreen.js';
+export { ExfilScreen } from './security/ExfilScreen.js';
 export { RateLimitScreen } from './RateLimitScreen.js';
 export { ProxyScreen } from './ProxyScreen.js';
 export { HomeScreen } from './HomeScreen.js';

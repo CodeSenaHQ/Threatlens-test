@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 import requests , httpx
+from fastapi.responses import RedirectResponse
 
 app = FastAPI()
 
@@ -16,8 +17,6 @@ BASE_URL = "https://app.totalchaos.online/tc-auth"
 # data = response.json()
 
 # print(data)
-
-from fastapi.responses import RedirectResponse
 
 
 @app.get("/{provider}/login")

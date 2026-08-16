@@ -1,13 +1,32 @@
 from .structure import RepositoryAnalyzer
+from .commit import CommitAnalyzer
 from repo.repository import Repository
 import json
 
-
 repo = Repository("https://github.com/atharv-thakre/tc_auth")
+analysis = CommitAnalyzer(repo)
 
-analyzer = RepositoryAnalyzer(repo)
+commits = repo.list_commits(
+    branch="main",
+    limit=60,
+)
 
-result = analyzer.analyze().to_dict()
-print(json.dumps(result, indent=3))
+for commit in commits:
+    result = analysis.analyze(
+        commit["sha"]
+    )
 
-repo.close()
+    print(
+        json.dumps(
+            result,
+            indent=2,
+            default=str,
+        )
+    )
+
+# analyzer = RepositoryAnalyzer(repo)
+
+# result = analyzer.analyze().to_dict()
+# print(json.dumps(result, indent=3))
+
+# repo.close()

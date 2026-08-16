@@ -67,7 +67,7 @@ export default function OAuthCallback() {
       <div className="max-w-md w-full border border-[#233346] bg-[#09111c] p-8 shadow-2xl text-center space-y-4">
         {status === "loading" && (
           <>
-            <Loader2 className="w-10 h-10 text-[#4cc9ff] animate-spin mx-auto" />
+            <Loader2 className="w-10 h-10 text-[#d9824c] animate-spin mx-auto" />
             <h2 className="text-xl font-bold font-display text-white">Authenticating with OAuth</h2>
             <p className="text-xs font-mono text-[#89a7bb]">Establishing secure session &amp; fetching attestation keys...</p>
           </>

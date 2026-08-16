@@ -134,30 +134,30 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, defaul
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[440px] border-[#29384b] bg-[#09111c] text-[#edf7ff] shadow-2xl backdrop-blur-xl">
+      <DialogContent className="sm:max-w-[440px] border-white/10 bg-[#0b0e14] text-[#edf2f7] shadow-none backdrop-blur-xl">
         <DialogHeader className="text-center sm:text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center border border-[#4cc9ff]/30 bg-[#4cc9ff]/10 text-[#4cc9ff] shadow-[0_0_15px_rgba(76,201,255,0.2)]">
-            <ShieldCheck className="h-6 w-6" />
+          <div className="mx-auto mb-2 flex items-center justify-center">
+            <img src="/threatlens-icon.png" alt="ThreatLens" className="w-12 h-12 object-contain" />
           </div>
-          <DialogTitle className="font-display text-2xl font-bold tracking-tight text-[#ffffff]">
-            ThreatLens <span className="text-[#4cc9ff]">AI</span>
+          <DialogTitle className="brand-name text-2xl justify-center font-bold tracking-tight text-[#ffffff]">
+            ThreatLens <em>AI</em>
           </DialogTitle>
-          <DialogDescription className="text-sm text-[#8fa7be]">
+          <DialogDescription className="text-sm text-[#8a99ad]">
             Security intelligence that leaves a receipt.
           </DialogDescription>
         </DialogHeader>
 
         <Tabs value={tab} onValueChange={handleTabChange} className="mt-1 w-full">
-          <TabsList className="grid w-full grid-cols-2 border border-[#233346] bg-[#0c1827]">
+          <TabsList className="grid w-full grid-cols-2 border border-white/10 bg-[#07090d]">
             <TabsTrigger
               value="signin"
-              className="data-[state=active]:bg-[#2588fa] data-[state=active]:text-white font-semibold text-xs"
+              className="data-[state=active]:bg-[#8b4513] data-[state=active]:text-white font-semibold text-xs"
             >
               Log In
             </TabsTrigger>
             <TabsTrigger
               value="signup"
-              className="data-[state=active]:bg-[#2588fa] data-[state=active]:text-white font-semibold text-xs"
+              className="data-[state=active]:bg-[#8b4513] data-[state=active]:text-white font-semibold text-xs"
             >
               Sign Up
             </TabsTrigger>
@@ -165,7 +165,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, defaul
 
           {/* Sign In Tab */}
           <TabsContent value="signin" className="mt-4 space-y-4">
-            <div className="flex items-center justify-between text-xs text-[#7d9ab8]">
+            <div className="flex items-center justify-between text-xs text-[#8a99ad]">
               <span>Auth Method:</span>
               <div className="flex gap-2">
                 <button
@@ -173,8 +173,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, defaul
                   onClick={() => setAuthMethod("password")}
                   className={`px-2 py-1 transition-colors ${
                     authMethod === "password"
-                      ? "bg-[#16273c] text-[#4cc9ff] font-semibold border border-[#3b5575]"
-                      : "text-[#6b829a] hover:text-[#bcd4e8]"
+                      ? "bg-white/10 text-white font-semibold border border-white/10"
+                      : "text-[#718096] hover:text-white"
                   }`}
                 >
                   Password
@@ -184,8 +184,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, defaul
                   onClick={() => setAuthMethod("otp")}
                   className={`px-2 py-1 transition-colors ${
                     authMethod === "otp"
-                      ? "bg-[#16273c] text-[#4cc9ff] font-semibold border border-[#3b5575]"
-                      : "text-[#6b829a] hover:text-[#bcd4e8]"
+                      ? "bg-white/10 text-white font-semibold border border-white/10"
+                      : "text-[#718096] hover:text-white"
                   }`}
                 >
                   Email OTP
@@ -195,18 +195,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, defaul
 
             <form onSubmit={handleSignIn} className="space-y-3">
               <div className="space-y-1">
-                <Label htmlFor="signin-email" className="text-xs text-[#9cb5cc]">
+                <Label htmlFor="signin-email" className="text-xs text-[#8a99ad]">
                   Email or Handle
                 </Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-[#5f7892]" />
+                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-[#718096]" />
                   <Input
                     id="signin-email"
                     type="text"
                     placeholder="jane@example.com or @jane"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="border-[#233346] bg-[#070e17] pl-9 text-sm text-[#ffffff] focus:border-[#4cc9ff]"
+                    className="border-white/10 bg-[#07090d] pl-9 text-sm text-[#ffffff] focus:border-white/20"
                     required
                   />
                 </div>
@@ -215,38 +215,38 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, defaul
               {authMethod === "password" ? (
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="signin-password" className="text-xs text-[#9cb5cc]">
+                    <Label htmlFor="signin-password" className="text-xs text-[#8a99ad]">
                       Password
                     </Label>
                   </div>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-2.5 h-4 w-4 text-[#5f7892]" />
+                    <Lock className="absolute left-3 top-2.5 h-4 w-4 text-[#718096]" />
                     <Input
                       id="signin-password"
                       type="password"
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="border-[#233346] bg-[#070e17] pl-9 text-sm text-[#ffffff] focus:border-[#4cc9ff]"
+                      className="border-white/10 bg-[#07090d] pl-9 text-sm text-[#ffffff] focus:border-white/20"
                       required
                     />
                   </div>
                 </div>
               ) : (
                 <div className="space-y-1">
-                  <Label htmlFor="signin-otp" className="text-xs text-[#9cb5cc]">
+                  <Label htmlFor="signin-otp" className="text-xs text-[#8a99ad]">
                     Verification OTP
                   </Label>
                   <div className="flex gap-2">
                     <div className="relative flex-1">
-                      <KeyRound className="absolute left-3 top-2.5 h-4 w-4 text-[#5f7892]" />
+                      <KeyRound className="absolute left-3 top-2.5 h-4 w-4 text-[#718096]" />
                       <Input
                         id="signin-otp"
                         type="text"
                         placeholder="123456"
                         value={otp}
                         onChange={(e) => setOtp(e.target.value)}
-                        className="border-[#233346] bg-[#070e17] pl-9 text-sm text-[#ffffff] focus:border-[#4cc9ff]"
+                        className="border-white/10 bg-[#07090d] pl-9 text-sm text-[#ffffff] focus:border-white/20"
                       />
                     </div>
                     <Button
@@ -254,7 +254,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, defaul
                       variant="outline"
                       disabled={loading}
                       onClick={() => handleSendOtp("login")}
-                      className="border-[#2d4057] bg-[#111f31] text-xs text-[#4cc9ff] hover:bg-[#1a2d46]"
+                      className="border-white/10 bg-[#07090d] text-xs text-[#cbd5e1] hover:bg-[#111622]"
                     >
                       {otpSent ? "Resend" : "Send OTP"}
                     </Button>
@@ -265,7 +265,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, defaul
               <Button
                 type="submit"
                 disabled={loading}
-                className="mt-2 w-full bg-[#2588fa] font-semibold text-white shadow-[0_0_20px_rgba(37,136,250,0.3)] hover:bg-[#4097ff]"
+                className="mt-2 w-full bg-[#8b4513] font-semibold text-white hover:bg-[#9c4f17] shadow-none border border-white/10"
               >
                 {loading ? "Signing in..." : "Sign In to ThreatLens"} <ArrowRight className="ml-1.5 h-4 w-4" />
               </Button>
@@ -274,7 +274,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, defaul
 
           {/* Sign Up Tab */}
           <TabsContent value="signup" className="mt-4 space-y-4">
-            <div className="flex items-center justify-between text-xs text-[#7d9ab8]">
+            <div className="flex items-center justify-between text-xs text-[#8a99ad]">
               <span>Sign Up Mode:</span>
               <div className="flex gap-2">
                 <button
@@ -282,8 +282,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, defaul
                   onClick={() => setAuthMethod("password")}
                   className={`px-2 py-1 transition-colors ${
                     authMethod === "password"
-                      ? "bg-[#16273c] text-[#4cc9ff] font-semibold border border-[#3b5575]"
-                      : "text-[#6b829a] hover:text-[#bcd4e8]"
+                      ? "bg-white/10 text-white font-semibold border border-white/10"
+                      : "text-[#718096] hover:text-white"
                   }`}
                 >
                   Password
@@ -293,8 +293,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, defaul
                   onClick={() => setAuthMethod("otp")}
                   className={`px-2 py-1 transition-colors ${
                     authMethod === "otp"
-                      ? "bg-[#16273c] text-[#4cc9ff] font-semibold border border-[#3b5575]"
-                      : "text-[#6b829a] hover:text-[#bcd4e8]"
+                      ? "bg-white/10 text-white font-semibold border border-white/10"
+                      : "text-[#718096] hover:text-white"
                   }`}
                 >
                   Email OTP
@@ -304,18 +304,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, defaul
 
             <form onSubmit={handleSignUp} className="space-y-3">
               <div className="space-y-1">
-                <Label htmlFor="signup-name" className="text-xs text-[#9cb5cc]">
+                <Label htmlFor="signup-name" className="text-xs text-[#8a99ad]">
                   Full Name
                 </Label>
                 <div className="relative">
-                  <User className="absolute left-3 top-2.5 h-4 w-4 text-[#5f7892]" />
+                  <User className="absolute left-3 top-2.5 h-4 w-4 text-[#718096]" />
                   <Input
                     id="signup-name"
                     type="text"
                     placeholder="Jane Doe"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="border-[#233346] bg-[#070e17] pl-9 text-sm text-[#ffffff] focus:border-[#4cc9ff]"
+                    className="border-white/10 bg-[#07090d] pl-9 text-sm text-[#ffffff] focus:border-white/20"
                     required
                   />
                 </div>
@@ -323,36 +323,36 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, defaul
 
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
-                  <Label htmlFor="signup-email" className="text-xs text-[#9cb5cc]">
+                  <Label htmlFor="signup-email" className="text-xs text-[#8a99ad]">
                     Email Address
                   </Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-2.5 h-4 w-4 text-[#5f7892]" />
+                    <Mail className="absolute left-3 top-2.5 h-4 w-4 text-[#718096]" />
                     <Input
                       id="signup-email"
                       type="email"
                       placeholder="jane@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="border-[#233346] bg-[#070e17] pl-9 text-sm text-[#ffffff] focus:border-[#4cc9ff]"
+                      className="border-white/10 bg-[#07090d] pl-9 text-sm text-[#ffffff] focus:border-white/20"
                       required
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <Label htmlFor="signup-handle" className="text-xs text-[#9cb5cc]">
+                  <Label htmlFor="signup-handle" className="text-xs text-[#8a99ad]">
                     Username / Handle
                   </Label>
                   <div className="relative">
-                    <Bot className="absolute left-3 top-2.5 h-4 w-4 text-[#5f7892]" />
+                    <Bot className="absolute left-3 top-2.5 h-4 w-4 text-[#718096]" />
                     <Input
                       id="signup-handle"
                       type="text"
                       placeholder="jane"
                       value={handle}
                       onChange={(e) => setHandle(e.target.value)}
-                      className="border-[#233346] bg-[#070e17] pl-9 text-sm text-[#ffffff] focus:border-[#4cc9ff]"
+                      className="border-white/10 bg-[#07090d] pl-9 text-sm text-[#ffffff] focus:border-white/20"
                     />
                   </div>
                 </div>
@@ -360,37 +360,37 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, defaul
 
               {authMethod === "password" ? (
                 <div className="space-y-1">
-                  <Label htmlFor="signup-password" className="text-xs text-[#9cb5cc]">
+                  <Label htmlFor="signup-password" className="text-xs text-[#8a99ad]">
                     Password
                   </Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-2.5 h-4 w-4 text-[#5f7892]" />
+                    <Lock className="absolute left-3 top-2.5 h-4 w-4 text-[#718096]" />
                     <Input
                       id="signup-password"
                       type="password"
                       placeholder="At least 8 characters"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="border-[#233346] bg-[#070e17] pl-9 text-sm text-[#ffffff] focus:border-[#4cc9ff]"
+                      className="border-white/10 bg-[#07090d] pl-9 text-sm text-[#ffffff] focus:border-white/20"
                       required
                     />
                   </div>
                 </div>
               ) : (
                 <div className="space-y-1">
-                  <Label htmlFor="signup-otp" className="text-xs text-[#9cb5cc]">
+                  <Label htmlFor="signup-otp" className="text-xs text-[#8a99ad]">
                     Email Verification OTP
                   </Label>
                   <div className="flex gap-2">
                     <div className="relative flex-1">
-                      <KeyRound className="absolute left-3 top-2.5 h-4 w-4 text-[#5f7892]" />
+                      <KeyRound className="absolute left-3 top-2.5 h-4 w-4 text-[#718096]" />
                       <Input
                         id="signup-otp"
                         type="text"
                         placeholder="123456"
                         value={otp}
                         onChange={(e) => setOtp(e.target.value)}
-                        className="border-[#233346] bg-[#070e17] pl-9 text-sm text-[#ffffff] focus:border-[#4cc9ff]"
+                        className="border-white/10 bg-[#07090d] pl-9 text-sm text-[#ffffff] focus:border-white/20"
                       />
                     </div>
                     <Button
@@ -398,7 +398,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, defaul
                       variant="outline"
                       disabled={loading}
                       onClick={() => handleSendOtp("signup")}
-                      className="border-[#2d4057] bg-[#111f31] text-xs text-[#4cc9ff] hover:bg-[#1a2d46]"
+                      className="border-white/10 bg-[#07090d] text-xs text-[#cbd5e1] hover:bg-[#111622]"
                     >
                       {otpSent ? "Resend" : "Send OTP"}
                     </Button>
@@ -409,7 +409,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, defaul
               <Button
                 type="submit"
                 disabled={loading}
-                className="mt-2 w-full bg-[#2588fa] font-semibold text-white shadow-[0_0_20px_rgba(37,136,250,0.3)] hover:bg-[#4097ff]"
+                className="mt-2 w-full bg-[#8b4513] font-semibold text-white hover:bg-[#9c4f17] shadow-none border border-white/10"
               >
                 {loading ? "Creating Account..." : "Create ThreatLens Account"}{" "}
                 <Sparkles className="ml-1.5 h-4 w-4" />
@@ -418,7 +418,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, defaul
           </TabsContent>
         </Tabs>
 
-        <div className="mt-2 text-center text-[11px] text-[#637d97]">
+        <div className="mt-2 text-center text-[11px] text-[#718096]">
           Protected by ThreatLens DevSecOps Engine &amp; SHA-256 Verification
         </div>
       </DialogContent>

@@ -3,6 +3,7 @@
  * trace rails, frosted attestation surfaces, and concise operational language.
  */
 import { AuthModal } from "../components/AuthModal";
+import AcidSquares from "../components/ui/acid-squares";
 import { useAuth } from "../contexts/AuthContext";
 import { motion, useInView } from "framer-motion";
 import {
@@ -13,6 +14,7 @@ import {
   CheckCircle2,
   ChevronRight,
   Code2,
+  Copy,
   Database,
   FileCheck2,
   Fingerprint,
@@ -27,14 +29,16 @@ import {
   ShieldAlert,
   ShieldCheck,
   Sparkles,
+  Terminal,
   TriangleAlert,
   X,
+  Zap,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 const heroImage = "/manus-storage/reposhield-hero-field_105155b3.png";
 const blockchainImage = "/manus-storage/reposhield-blockchain-field_7b6d001c.png";
-const logoMark = "/manus-storage/reposhield-mark_2f0e7be5.png";
+const logoMark = "/threatlens-logo.png";
 
 const appear = {
   hidden: { opacity: 0, y: 22 },
@@ -68,9 +72,11 @@ function FadeIn({ children, className = "", delay = 0 }: { children: React.React
 function Brand({ compact = false }: { compact?: boolean }) {
   return (
     <a className="brand" href="#top" aria-label="ThreatLens AI home">
-      <span className="brand-mark-wrap">
-        <img src={logoMark} alt="" className="brand-mark" />
-      </span>
+      <img
+        src="/threatlens-icon.png"
+        alt="ThreatLens Shield Lock"
+        className={compact ? "brand-icon w-6 h-6" : "brand-icon"}
+      />
       <span className={compact ? "brand-name compact" : "brand-name"}>
         ThreatLens <em>AI</em>
       </span>
@@ -99,6 +105,7 @@ function Navbar() {
       <div className="nav-shell">
         <Brand />
         <nav className="desktop-nav" aria-label="Main navigation">
+          <a href="#terminal">Terminal &amp; CLI</a>
           <a href="#product">Product</a>
           <a href="#how-it-works">How It Works</a>
           <a href="#trust">Trust</a>
@@ -134,6 +141,7 @@ function Navbar() {
         </div>
       </div>
       <div className={`mobile-nav ${open ? "open" : ""}`}>
+        <a onClick={closeMenu} href="#terminal">Terminal &amp; CLI</a>
         <a onClick={closeMenu} href="#product">Product</a>
         <a onClick={closeMenu} href="#how-it-works">How It Works</a>
         <a onClick={closeMenu} href="#trust">Trust</a>
@@ -277,6 +285,32 @@ function Hero() {
     <section className="hero" id="top">
       <div className="hero-art" style={{ backgroundImage: `url(${heroImage})` }} />
       <div className="hero-grid" />
+      <div className="hero-acid" aria-hidden="true">
+        <AcidSquares
+          color1="#371803"
+          color2="#632f2f"
+          color3="#730f0f"
+          detail="medium"
+          speed={0.7}
+          waveDepth={1}
+          zoom={1.3}
+          density={10}
+          glow={1}
+          exposure={2700}
+          spread={0.3}
+          stepSize={0.002}
+          colorShift={0}
+          contrast={1}
+          brightness={1}
+          blur={0}
+          opacity={1}
+          grain
+          grainIntensity={0.05}
+          mouseInteraction
+          mouseRadius={0.35}
+          mouseStrength={0.1}
+        />
+      </div>
       <div className="container hero-layout">
         <motion.div className="hero-copy" initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.11 } } }}>
           <motion.div variants={appear}>
@@ -285,7 +319,7 @@ function Hero() {
           <motion.p variants={appear}>AI-powered security testing that detects threats, finds real vulnerabilities, and turns every security result into verifiable proof.</motion.p>
           <motion.div variants={appear} className="hero-actions">
             <Link className="button button-primary button-large" href="/signup">Get Started <ArrowRight size={18} /></Link>
-            <a className="button button-ghost button-large" href="#how-it-works">See How It Works <ChevronRight size={17} /></a>
+            <a className="button button-ghost button-large" href="#terminal">Explore Terminal CLI <ChevronRight size={17} /></a>
           </motion.div>
           <motion.div variants={appear} className="hero-capabilities">
             <span>AI Analysis</span><i /> <span>Active Security Testing</span><i /> <span>Blockchain Verification</span>
@@ -293,6 +327,124 @@ function Hero() {
         </motion.div>
       </div>
       <div className="hero-trace"><span>01</span><div /><span>REPOSITORY TO PROOF</span></div>
+    </section>
+  );
+}
+
+function TerminalShowcase() {
+  const [copied, setCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState<"tui" | "cli">("tui");
+
+  const cmdTui = "cd tui && npm start";
+  const cmdCli = "python sectest/cli.py scan -t http://localhost:8000 --html --serve";
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <section className="terminal-section proof-section" id="terminal">
+      <div className="container">
+        <div className="terminal-layout">
+          {/* Left Column: Description & Features */}
+          <FadeIn className="terminal-copy">
+            <h2>
+              Offensive Security.<br />
+              <em>Right in your shell.</em>
+            </h2>
+            <p>
+              Execute deep repository secret scans, live SQLi and XSS injection audits, DDoS concurrency stress profiles, and receive instant cryptographic attestation without leaving your developer workflow.
+            </p>
+
+            <div className="terminal-features-grid">
+              <div className="terminal-feat-item">
+                <div className="terminal-feat-icon">
+                  <Terminal size={18} />
+                </div>
+                <div className="terminal-feat-text">
+                  <h4>ThreatLensGo Interactive TUI</h4>
+                  <p>Cyberpunk animated terminal interface built with React 18 &amp; Ink. Features hotkey navigation (<code className="text-[#cbd5e1] bg-white/5 px-1 py-0.5 rounded">/git</code>, <code className="text-[#cbd5e1] bg-white/5 px-1 py-0.5 rounded">/sqli</code>, <code className="text-[#cbd5e1] bg-white/5 px-1 py-0.5 rounded">/ddos</code>, <code className="text-[#cbd5e1] bg-white/5 px-1 py-0.5 rounded">/exfil</code>) and real-time probe meters.</p>
+                </div>
+              </div>
+
+              <div className="terminal-feat-item">
+                <div className="terminal-feat-icon">
+                  <ScanSearch size={18} />
+                </div>
+                <div className="terminal-feat-text">
+                  <h4>SecTest Autonomous Scanner</h4>
+                  <p>Modular Python security fuzzing pipeline with safety guards, dynamic response latency analysis, and locally hosted animated HTML audit reports.</p>
+                </div>
+              </div>
+
+              <div className="terminal-feat-item">
+                <div className="terminal-feat-icon">
+                  <Zap size={18} />
+                </div>
+                <div className="terminal-feat-text">
+                  <h4>Instant OAuth Device-Code Bridge</h4>
+                  <p>Authenticate CLI sessions via GitHub or Google SSO in seconds with local session tokens and cryptographic evidence generation.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Command Box */}
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("tui")}
+                  className={`px-3 py-1.5 text-xs font-mono font-semibold transition-colors cursor-pointer ${
+                    activeTab === "tui"
+                      ? "bg-[#8b4513] text-white border border-white/10"
+                      : "bg-[#0b0e14] text-[#8a99ad] border border-white/5 hover:text-white"
+                  }`}
+                >
+                  ThreatLensGo TUI
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("cli")}
+                  className={`px-3 py-1.5 text-xs font-mono font-semibold transition-colors cursor-pointer ${
+                    activeTab === "cli"
+                      ? "bg-[#8b4513] text-white border border-white/10"
+                      : "bg-[#0b0e14] text-[#8a99ad] border border-white/5 hover:text-white"
+                  }`}
+                >
+                  SecTest Scanner
+                </button>
+              </div>
+
+              <div className="terminal-cmd-bar">
+                <code>{activeTab === "tui" ? cmdTui : cmdCli}</code>
+                <button
+                  type="button"
+                  onClick={() => handleCopy(activeTab === "tui" ? cmdTui : cmdCli)}
+                  className="flex items-center gap-1.5 text-xs text-[#8a99ad] hover:text-white transition-colors bg-transparent border-0 cursor-pointer p-1"
+                  title="Copy command"
+                >
+                  {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+                  <span>{copied ? "Copied" : "Copy"}</span>
+                </button>
+              </div>
+            </div>
+          </FadeIn>
+
+          {/* Right Column: Terminal Photo & Frame */}
+          <FadeIn className="terminal-photo-container" delay={0.15}>
+            <div className="terminal-photo-wrap">
+              <img
+                src="/terminal_cli_preview.jpg"
+                alt="ThreatLensGo Terminal and CLI Interface Preview"
+                className="terminal-photo-img"
+                loading="lazy"
+              />
+            </div>
+          </FadeIn>
+        </div>
+      </div>
     </section>
   );
 }
@@ -308,7 +460,7 @@ function ValueProposition() {
     <section className="section values-section proof-section" id="product">
       <div className="container">
         <FadeIn className="section-heading split-heading">
-          <div><SectionEyebrow>Complete signal coverage</SectionEyebrow><h2>One security record.<br /><em>Complete visibility.</em></h2></div>
+          <div><h2>One security record.<br /><em>Complete visibility.</em></h2></div>
           <p>Cut across fragmented point tools with a single, traceable path from code risk to independently verifiable result.</p>
         </FadeIn>
         <div className="value-cards">
@@ -343,7 +495,6 @@ function HowItWorks() {
     <section className="section process-section proof-section" id="how-it-works">
       <div className="container">
         <FadeIn className="section-heading centered-heading">
-          <SectionEyebrow>Designed for a clear audit trail</SectionEyebrow>
           <h2>From code to <em>verified proof.</em></h2>
         </FadeIn>
         <div className="process-rail" aria-label="Four-step security process">
@@ -374,34 +525,55 @@ function SecurityReport() {
     <section className="section report-section proof-section">
       <div className="container report-layout">
         <FadeIn className="report-intro">
-          <SectionEyebrow>Security intelligence, distilled</SectionEyebrow>
-          <h2>Security posture.<br /><em>Verified at a glance.</em></h2>
-          <p>Every ThreatLens report turns activity across your stack into a concise, explainable security narrative with recommended next actions.</p>
+          <h2>An evidence trail for <em>every stakeholder.</em></h2>
+          <p>Developers get actionable fixes. Security teams get deep telemetry. Compliance officers get cryptographically signed proof.</p>
           <div className="report-intro-list">
-            <span><CheckCircle2 size={17} /> Severity breakdown</span>
-            <span><CheckCircle2 size={17} /> Affected files and CVEs</span>
-            <span><CheckCircle2 size={17} /> AI explanations and fixes</span>
+            <span><FileCheck2 size={15} /> Automated SBOM</span>
+            <span><ShieldAlert size={15} /> Exploit validation</span>
+            <span><Fingerprint size={15} /> Polygon anchoring</span>
           </div>
         </FadeIn>
         <FadeIn className="report-shell" delay={0.12}>
-          <div className="report-topbar"><Brand compact /><span className="report-live"><i /> LIVE ANALYSIS</span></div>
+          <div className="report-topbar">
+            <div className="flex items-center gap-2">
+              <img src="/threatlens-icon.png" alt="" className="w-5 h-5 object-contain" />
+              <span className="brand-name text-sm">ThreatLens <em>AI</em></span>
+            </div>
+            <div className="report-live"><i /> LIVE TELEMETRY</div>
+          </div>
           <div className="report-main">
             <div className="report-score-area">
-              <div><span className="mono-label">Security score</span><div className="report-score">78<span>/100</span></div></div>
-              <div className="report-circle"><span>78</span><i /></div>
+              <div><span className="mono-label">Composite Security Index</span><div className="report-score">84<span>/100</span></div></div>
+              <div className="report-circle"><span>A+</span><i /></div>
             </div>
             <div className="report-rule" />
             <div className="score-list">
-              {scoreRows.map(([name, score, accent]) => <div className="score-row" key={name as string}><span>{name as string}</span><div className="score-bar"><b className={`score-fill ${accent}`} style={{ width: `${score}%` }} /></div><strong>{score as number}</strong></div>)}
+              {scoreRows.map(([name, score, tone]) => (
+                <div className="score-row" key={name as string}>
+                  <span>{name}</span>
+                  <div className="score-bar"><span className={`score-fill ${tone}`} style={{ width: `${score}%` }} /></div>
+                  <strong>{score}</strong>
+                </div>
+              ))}
             </div>
             <div className="finding-card">
-              <div className="finding-head"><span className="severity"><TriangleAlert size={13} /> Critical</span><span className="route">/api/search</span></div>
-              <h3>SQL Injection Risk</h3>
-              <div className="finding-copy"><span>AI Analysis</span><p>Unsanitized user input detected.</p></div>
-              <div className="finding-rec"><span>Recommendation</span><p>Use parameterized queries.</p><ArrowRight size={15} /></div>
+              <div className="finding-head">
+                <span className="severity"><TriangleAlert size={12} /> Critical finding</span>
+                <span className="route">api/v1/auth</span>
+              </div>
+              <h3>SQL Injection (Blind Boolean-based)</h3>
+              <div className="finding-copy">
+                <span>Vulnerability</span>
+                <p>Parameter &apos;user_id&apos; vulnerable to time-delayed SQL payloads.</p>
+              </div>
+              <div className="finding-rec">
+                <span>Remediation</span>
+                <p>Use parameterized query bindings in ORM layer.</p>
+                <CheckCircle2 size={16} />
+              </div>
             </div>
           </div>
-          <div className="report-footer"><span><Check size={14} /> VERIFIED ON POLYGON</span><code>0x8f4c...91ab</code></div>
+          <div className="report-footer"><span><Link2 size={13} /> Blockchain Anchor</span><code>0x7f9a...3b21</code></div>
         </FadeIn>
       </div>
     </section>
@@ -410,28 +582,37 @@ function SecurityReport() {
 
 function BlockchainTrust() {
   return (
-    <section className="trust-section proof-section" id="trust">
+    <section className="section trust-section proof-section" id="trust">
       <div className="trust-art" style={{ backgroundImage: `url(${blockchainImage})` }} />
       <div className="trust-grid" />
       <div className="container trust-layout">
         <FadeIn className="trust-copy">
-          <SectionEyebrow>Independent verification</SectionEyebrow>
-          <h2>Don't just report<br />security. <em>Prove it.</em></h2>
-          <p>Every report and scan result receives a cryptographic fingerprint that can be independently verified without exposing source code or raw findings.</p>
-          <a href="#get-started" className="button button-primary">Verify a Report <ArrowRight size={17} /></a>
+          <h2>Independent evidence.<br /><em>Immutable trust.</em></h2>
+          <p>Security scan results are signed with ECDSA keys and published to the Polygon ledger as tamper-proof state attestations.</p>
         </FadeIn>
-        <FadeIn className="verification-stage" delay={0.1}>
+        <FadeIn className="verification-stage" delay={0.15}>
           <div className="verification-path">
-            <div><FileCheck2 size={19} /><span>Security<br />report</span></div><i><b /></i>
-            <div><Fingerprint size={19} /><span>SHA-256</span></div><i><b /></i>
-            <div><Network size={19} /><span>Polygon</span></div><i><b /></i>
-            <div className="path-verified"><CheckCircle2 size={19} /><span>Verified</span></div>
+            <div><GitBranch size={16} /><span>Commit</span></div>
+            <i /><b />
+            <div><Bot size={16} /><span>AI Scan</span></div>
+            <i /><b />
+            <div><Fingerprint size={16} /><span>SHA-256</span></div>
+            <i /><b />
+            <div className="path-verified"><CheckCircle2 size={16} /><span>On-Chain</span></div>
           </div>
           <div className="verification-card">
-            <div className="verification-title"><span className="mono-label">Verification status</span><span className="verified-check"><CheckCircle2 size={15} /> Authentic</span></div>
-            <div className="verification-data"><span>Network</span><strong>Polygon</strong></div>
-            <div className="verification-data"><span>Hash</span><code>8f4c...91ab</code></div>
-            <div className="verification-data"><span>Integrity</span><strong className="integrity">100% MATCH</strong></div>
+            <div className="verification-title">
+              <div>
+                <span className="mono-label">Smart Contract</span>
+                <p className="font-mono text-xs text-white">0x38a...9F21</p>
+              </div>
+              <span className="verified-check"><CheckCircle2 size={13} /> Live</span>
+            </div>
+            <div className="verification-data">
+              <span>Status</span><strong className="integrity">ANCHORED</strong>
+              <span>Block</span><code>#58,291,042</code>
+              <span>Tx Hash</span><code>0xa91c...44e8</code>
+            </div>
           </div>
         </FadeIn>
       </div>
@@ -462,6 +643,7 @@ function Footer() {
           <p>Security that leaves a receipt.</p>
         </div>
         <div className="footer-links">
+          <a href="#terminal">Terminal &amp; CLI</a>
           <a href="#product">Product</a>
           <a href="#how-it-works">How It Works</a>
           <a href="#trust">Trust</a>
@@ -477,7 +659,15 @@ export default function Home() {
   return (
     <div className="site-shell">
       <Navbar />
-      <main className="proof-journey"><Hero /><ValueProposition /><HowItWorks /><SecurityReport /><BlockchainTrust /><FinalCTA /></main>
+      <main className="proof-journey">
+        <Hero />
+        <TerminalShowcase />
+        <ValueProposition />
+        <HowItWorks />
+        <SecurityReport />
+        <BlockchainTrust />
+        <FinalCTA />
+      </main>
       <Footer />
     </div>
   );

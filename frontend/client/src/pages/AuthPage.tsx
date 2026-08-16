@@ -20,7 +20,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { toast } from "sonner";
 
-const logoMark = "/manus-storage/reposhield-mark_2f0e7be5.png";
+const logoMark = "/threatlens-logo.png";
 
 interface AuthPageProps {
   initialMode?: "signin" | "signup";
@@ -111,23 +111,21 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#07090d] text-[#edf7ff] selection:bg-[#2588fa] selection:text-white">
+    <div className="min-h-screen bg-[#07090d] text-[#edf7ff] selection:bg-[#8b4513] selection:text-white">
       {/* Background Grid Pattern */}
       <div className="fixed inset-0 z-0 opacity-40 pointer-events-none bg-[linear-gradient(rgba(64,74,89,0.35)_1px,transparent_1px),linear-gradient(90deg,rgba(64,74,89,0.35)_1px,transparent_1px)] bg-[size:86px_86px]" />
 
       {/* Header Bar */}
-      <header className="relative z-10 border-b border-white/10 bg-[#040e18]/80 backdrop-blur-md">
+      <header className="relative z-10 border-b border-white/10 bg-[#0b0e14]/90 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="inline-flex items-center gap-2.5 group">
-            <span className="grid place-items-center w-7 h-7 border border-[#73dcff]/30 bg-[#4ab3ff]/10 rotate-45">
-              <img src={logoMark} alt="" className="w-10 h-10 -rotate-45 scale-75 object-contain" />
-            </span>
-            <span className="font-display font-semibold text-lg text-[#eff8ff] tracking-tight">
-              ThreatLens <em className="text-[#4cc9ff] not-italic">AI</em>
+          <Link href="/" className="brand group">
+            <img src="/threatlens-icon.png" alt="ThreatLens" className="brand-icon" />
+            <span className="brand-name">
+              ThreatLens <em>AI</em>
             </span>
           </Link>
 
-          <Link href="/" className="inline-flex items-center gap-1.5 text-xs text-[#8cb2d3] hover:text-[#4cc9ff] transition-colors">
+          <Link href="/" className="inline-flex items-center gap-1.5 text-xs text-[#8a99ad] hover:text-white transition-colors">
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Home
           </Link>
         </div>
@@ -142,11 +140,9 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
         </div>
 
         {/* Auth Card Container */}
-        <div className="border border-[#26374a] bg-[#09111c]/90 backdrop-blur-xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-[#4cc9ff]/5 rounded-full blur-2xl pointer-events-none" />
-
+        <div className="border border-white/10 bg-[#0b0e14]/95 backdrop-blur-xl p-6 sm:p-8 shadow-none relative overflow-hidden">
           {/* Mode Switcher Tabs */}
-          <div className="grid grid-cols-2 p-1 mb-6 border border-[#213247] bg-[#0c1827]">
+          <div className="grid grid-cols-2 p-1 mb-6 border border-white/10 bg-[#07090d]">
             <button
               type="button"
               onClick={() => {
@@ -155,8 +151,8 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
               }}
               className={`py-2.5 text-xs font-semibold uppercase tracking-wider transition-all ${
                 mode === "signup"
-                  ? "bg-[#2588fa] text-white shadow-[0_0_15px_rgba(37,136,250,0.4)]"
-                  : "text-[#829bb5] hover:text-[#e1f1ff]"
+                  ? "bg-[#8b4513] text-white"
+                  : "text-[#8a99ad] hover:text-white"
               }`}
             >
               Create Account
@@ -169,8 +165,8 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
               }}
               className={`py-2.5 text-xs font-semibold uppercase tracking-wider transition-all ${
                 mode === "signin"
-                  ? "bg-[#2588fa] text-white shadow-[0_0_15px_rgba(37,136,250,0.4)]"
-                  : "text-[#829bb5] hover:text-[#e1f1ff]"
+                  ? "bg-[#8b4513] text-white"
+                  : "text-[#8a99ad] hover:text-white"
               }`}
             >
               Sign In
@@ -183,16 +179,16 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
               <button
                 type="button"
                 onClick={() => handleOAuthLogin("github")}
-                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[#2e4056] bg-[#0e1927] hover:bg-[#152538] hover:border-[#4cc9ff]/40 text-[#edf7ff] font-medium text-sm transition-all group"
+                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-white/10 bg-[#07090d] hover:bg-[#111622] hover:border-white/20 text-[#edf2f7] font-medium text-sm transition-all group"
               >
-                <Github className="w-5 h-5 text-[#ffffff] group-hover:scale-110 transition-transform" />
+                <Github className="w-5 h-5 text-[#ffffff]" />
                 <span>{mode === "signup" ? "Sign up with GitHub" : "Sign in with GitHub"}</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleOAuthLogin("google")}
-                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[#2e4056] bg-[#0e1927] hover:bg-[#152538] hover:border-[#4cc9ff]/40 text-[#edf7ff] font-medium text-sm transition-all group"
+                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-white/10 bg-[#07090d] hover:bg-[#111622] hover:border-white/20 text-[#edf2f7] font-medium text-sm transition-all group"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
                   <path
@@ -216,11 +212,11 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
               </button>
 
               <div className="relative my-5 flex items-center">
-                <div className="flex-grow border-t border-[#233346]" />
-                <span className="flex-shrink mx-3 text-[11px] font-mono text-[#66829d] uppercase tracking-wider">
+                <div className="flex-grow border-t border-white/10" />
+                <span className="flex-shrink mx-3 text-[11px] font-mono text-[#718096] uppercase tracking-wider">
                   OR CONTINUE WITH
                 </span>
-                <div className="flex-grow border-t border-[#233346]" />
+                <div className="flex-grow border-t border-white/10" />
               </div>
 
               {mode === "signin" ? (
@@ -228,14 +224,14 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
                   <button
                     type="button"
                     onClick={() => setMethod("password")}
-                    className="flex items-center justify-center gap-2 py-2.5 px-3 border border-[#2d4057] bg-[#0c1726] hover:bg-[#142337] text-xs font-semibold text-[#4cc9ff] transition-all"
+                    className="flex items-center justify-center gap-2 py-2.5 px-3 border border-white/10 bg-[#07090d] hover:bg-[#111622] text-xs font-semibold text-[#cbd5e1] transition-all"
                   >
                     <Lock className="w-3.5 h-3.5" /> Email &amp; Password
                   </button>
                   <button
                     type="button"
                     onClick={() => setMethod("otp")}
-                    className="flex items-center justify-center gap-2 py-2.5 px-3 border border-[#2d4057] bg-[#0c1726] hover:bg-[#142337] text-xs font-semibold text-[#4cc9ff] transition-all"
+                    className="flex items-center justify-center gap-2 py-2.5 px-3 border border-white/10 bg-[#07090d] hover:bg-[#111622] text-xs font-semibold text-[#cbd5e1] transition-all"
                   >
                     <KeyRound className="w-3.5 h-3.5" /> Email OTP Code
                   </button>
@@ -244,7 +240,7 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
                 <button
                   type="button"
                   onClick={() => setMethod("password")}
-                  className="w-full flex items-center justify-center gap-2.5 py-3 px-4 border border-[#2d4057] bg-[#0c1726] hover:bg-[#142337] hover:border-[#4cc9ff]/40 text-xs font-semibold text-[#4cc9ff] transition-all"
+                  className="w-full flex items-center justify-center gap-2.5 py-3 px-4 border border-white/10 bg-[#07090d] hover:bg-[#111622] text-xs font-semibold text-[#cbd5e1] transition-all"
                 >
                   <Lock className="w-4 h-4" /> Continue with Email &amp; Password
                 </button>
@@ -253,14 +249,14 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
           ) : (
             /* Form */
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-[#1e2f44]">
-                <span className="text-xs font-mono text-[#4cc9ff] uppercase tracking-wider">
+              <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                <span className="text-xs font-mono text-[#8a99ad] uppercase tracking-wider">
                   {method === "password" ? "Email & Password Method" : "Email OTP Verification"}
                 </span>
                 <button
                   type="button"
                   onClick={() => setMethod("social")}
-                  className="text-xs text-[#7d9ab8] hover:text-white underline"
+                  className="text-xs text-[#8a99ad] hover:text-white underline"
                 >
                   &larr; Switch method
                 </button>
@@ -268,18 +264,18 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
 
               {mode === "signup" && (
                 <div className="space-y-1.5">
-                  <Label htmlFor="auth-name" className="text-xs text-[#9cb5cc]">
+                  <Label htmlFor="auth-name" className="text-xs text-[#8a99ad]">
                     Full Name
                   </Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-2.5 h-4 w-4 text-[#5f7892]" />
+                    <User className="absolute left-3 top-2.5 h-4 w-4 text-[#718096]" />
                     <Input
                       id="auth-name"
                       type="text"
                       placeholder="Jane Doe"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="border-[#233346] bg-[#070e17] pl-9 text-sm text-[#ffffff] focus:border-[#4cc9ff]"
+                      className="border-white/10 bg-[#07090d] pl-9 text-sm text-[#ffffff] focus:border-white/20"
                       required
                     />
                   </div>
@@ -287,18 +283,18 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
               )}
 
               <div className="space-y-1.5">
-                <Label htmlFor="auth-email" className="text-xs text-[#9cb5cc]">
+                <Label htmlFor="auth-email" className="text-xs text-[#8a99ad]">
                   {mode === "signin" && method === "password" ? "Email or Username" : "Email Address"}
                 </Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-[#5f7892]" />
+                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-[#718096]" />
                   <Input
                     id="auth-email"
                     type="text"
                     placeholder="jane@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="border-[#233346] bg-[#070e17] pl-9 text-sm text-[#ffffff] focus:border-[#4cc9ff]"
+                    className="border-white/10 bg-[#07090d] pl-9 text-sm text-[#ffffff] focus:border-white/20"
                     required
                   />
                 </div>
@@ -306,18 +302,18 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
 
               {mode === "signup" && (
                 <div className="space-y-1.5">
-                  <Label htmlFor="auth-handle" className="text-xs text-[#9cb5cc]">
+                  <Label htmlFor="auth-handle" className="text-xs text-[#8a99ad]">
                     Username / Handle (optional)
                   </Label>
                   <div className="relative">
-                    <Bot className="absolute left-3 top-2.5 h-4 w-4 text-[#5f7892]" />
+                    <Bot className="absolute left-3 top-2.5 h-4 w-4 text-[#718096]" />
                     <Input
                       id="auth-handle"
                       type="text"
                       placeholder="jane"
                       value={handle}
                       onChange={(e) => setHandle(e.target.value)}
-                      className="border-[#233346] bg-[#070e17] pl-9 text-sm text-[#ffffff] focus:border-[#4cc9ff]"
+                      className="border-white/10 bg-[#07090d] pl-9 text-sm text-[#ffffff] focus:border-white/20"
                     />
                   </div>
                 </div>
@@ -325,37 +321,37 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
 
               {method === "password" ? (
                 <div className="space-y-1.5">
-                  <Label htmlFor="auth-password" className="text-xs text-[#9cb5cc]">
+                  <Label htmlFor="auth-password" className="text-xs text-[#8a99ad]">
                     Password
                   </Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-2.5 h-4 w-4 text-[#5f7892]" />
+                    <Lock className="absolute left-3 top-2.5 h-4 w-4 text-[#718096]" />
                     <Input
                       id="auth-password"
                       type="password"
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="border-[#233346] bg-[#070e17] pl-9 text-sm text-[#ffffff] focus:border-[#4cc9ff]"
+                      className="border-white/10 bg-[#07090d] pl-9 text-sm text-[#ffffff] focus:border-white/20"
                       required
                     />
                   </div>
                 </div>
               ) : (
                 <div className="space-y-1.5">
-                  <Label htmlFor="auth-otp" className="text-xs text-[#9cb5cc]">
+                  <Label htmlFor="auth-otp" className="text-xs text-[#8a99ad]">
                     6-Digit Verification Code
                   </Label>
                   <div className="flex gap-2">
                     <div className="relative flex-1">
-                      <KeyRound className="absolute left-3 top-2.5 h-4 w-4 text-[#5f7892]" />
+                      <KeyRound className="absolute left-3 top-2.5 h-4 w-4 text-[#718096]" />
                       <Input
                         id="auth-otp"
                         type="text"
                         placeholder="123456"
                         value={otp}
                         onChange={(e) => setOtp(e.target.value)}
-                        className="border-[#233346] bg-[#070e17] pl-9 text-sm text-[#ffffff] focus:border-[#4cc9ff]"
+                        className="border-white/10 bg-[#07090d] pl-9 text-sm text-[#ffffff] focus:border-white/20"
                       />
                     </div>
                     <Button
@@ -363,7 +359,7 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
                       variant="outline"
                       disabled={loading}
                       onClick={() => handleSendOtp("login")}
-                      className="border-[#2d4057] bg-[#111f31] text-xs text-[#4cc9ff] hover:bg-[#1a2d46]"
+                      className="border-white/10 bg-[#07090d] text-xs text-[#cbd5e1] hover:bg-[#111622]"
                     >
                       {otpSent ? "Resend" : "Send OTP"}
                     </Button>
@@ -374,7 +370,7 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
               <Button
                 type="submit"
                 disabled={loading}
-                className="mt-4 w-full bg-[#2588fa] py-3 font-semibold text-white shadow-[0_0_20px_rgba(37,136,250,0.35)] hover:bg-[#4097ff] transition-all"
+                className="mt-4 w-full bg-[#8b4513] py-3 font-semibold text-white hover:bg-[#9c4f17] transition-all shadow-none border border-white/10"
               >
                 {loading
                   ? "Processing..."
@@ -386,7 +382,7 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
             </form>
           )}
 
-          <div className="mt-6 pt-4 border-t border-[#1c2c3e] text-center text-xs text-[#7e99b5]">
+          <div className="mt-6 pt-4 border-t border-white/10 text-center text-xs text-[#8a99ad]">
             {mode === "signup" ? (
               <span>
                 Already have an account?{" "}
@@ -395,7 +391,7 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
                     setMode("signin");
                     setMethod("social");
                   }}
-                  className="text-[#4cc9ff] font-semibold hover:underline"
+                  className="text-[#cbd5e1] font-semibold hover:underline"
                 >
                   Log in
                 </button>
@@ -408,7 +404,7 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
                     setMode("signup");
                     setMethod("social");
                   }}
-                  className="text-[#4cc9ff] font-semibold hover:underline"
+                  className="text-[#cbd5e1] font-semibold hover:underline"
                 >
                   Create one now
                 </button>
@@ -417,9 +413,9 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
           </div>
         </div>
 
-        <div className="mt-8 text-center text-xs text-[#5e7790] space-y-1">
+        <div className="mt-8 text-center text-xs text-[#718096] space-y-1">
           <p className="flex items-center justify-center gap-2">
-            <CheckCircle2 className="w-3.5 h-3.5 text-[#4cc9ff]" /> Protected by ThreatLens AI Engine &amp; Polygon Verification
+            <CheckCircle2 className="w-3.5 h-3.5 text-[#10b981]" /> Protected by ThreatLens AI Engine &amp; Polygon Verification
           </p>
         </div>
       </main>

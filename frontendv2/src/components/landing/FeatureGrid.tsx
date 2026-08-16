@@ -120,9 +120,9 @@ export const FeatureGrid: React.FC<FeatureGridProps> = ({ onSelectModule }) => {
               </div>
 
               {/* Action Link */}
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-400 group-hover:text-blue-300 group-hover:translate-x-1 transition-all">
+              <div className="pt-4 border-t border-white/[0.06] flex items-center justify-between text-xs font-semibold text-blue-400 group-hover:text-blue-300">
                 <span>Launch Studio Wizard</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </div>
             </SpotlightCard>
           );

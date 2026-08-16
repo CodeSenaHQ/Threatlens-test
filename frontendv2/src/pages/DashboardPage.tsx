@@ -22,29 +22,23 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
       setActiveSection={setActiveSection}
       onOpenLanding={onOpenLanding}
     >
-      <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300">
-        {/* Top Overview Chart Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <OverviewMetrics />
-          </div>
-          <div className="lg:col-span-1">
-            <AiKeyInsights />
-          </div>
-        </div>
-
-        {/* Middle Traffic Equalizer & Multi-Scanner Progress Bars */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <EqualizerTrafficChart />
-          <ModuleUsageBars />
-        </div>
-
-        {/* Global Attack Vector Map */}
-        <LiveAttackMap />
-
-        {/* Active Targets & Repositories Table */}
-        <ActiveTargetsTable />
+      {/* Top Overview Chart Row (2:1 Grid matching Cortex Labs) */}
+      <div className="cortex-grid-2-1">
+        <OverviewMetrics />
+        <AiKeyInsights />
       </div>
+
+      {/* Middle Row: Usage by Type (1 col) + Token Consumption Equalizer (2 cols) */}
+      <div className="cortex-grid-1-2">
+        <ModuleUsageBars />
+        <EqualizerTrafficChart />
+      </div>
+
+      {/* Global Attack Vector Map */}
+      <LiveAttackMap />
+
+      {/* Active Targets & Repositories Table */}
+      <ActiveTargetsTable />
     </DashboardLayout>
   );
 };

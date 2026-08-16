@@ -39,24 +39,24 @@ export const AiKeyInsights: React.FC = () => {
 
       {/* Insight Bullet 1: Cost Optimization */}
       <div className="space-y-3 my-4">
-        <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:border-purple-500/30 transition-all">
+        <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:border-purple-500/30 transition-all">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs font-bold text-white">Cost & Audit Optimization</span>
+            <span className="text-xs font-bold text-white">Cost Optimization</span>
             <span className="w-2 h-2 rounded-full bg-purple-400 shadow-[0_0_6px_#c084fc]" />
           </div>
-          <p className="text-xs text-slate-400 leading-relaxed">
-            Smart payload model routing reduced API stress testing cost by <strong className="text-purple-300">16%</strong>, saving an estimated <strong className="text-white">$1,240</strong> this month.
+          <p className="text-[11px] text-slate-400 leading-relaxed">
+            Smart model routing reduced API costs by <strong className="text-purple-300">16%</strong>, saving an estimated <strong className="text-white">$1,240</strong> this month.
           </p>
         </div>
 
         {/* Insight Bullet 2: Performance Boost */}
-        <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:border-blue-500/30 transition-all">
+        <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:border-blue-500/30 transition-all">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs font-bold text-white">Performance Boost</span>
             <span className="w-2 h-2 rounded-full bg-blue-400 shadow-[0_0_6px_#60a5fa]" />
           </div>
-          <p className="text-xs text-slate-400 leading-relaxed">
-            Response latency improved by <strong className="text-emerald-400">24%</strong> after enabling dynamic request caching and 429 backoff throttles.
+          <p className="text-[11px] text-slate-400 leading-relaxed">
+            Response latency improved by <strong className="text-emerald-400">24%</strong> after enabling intelligent request caching.
           </p>
         </div>
       </div>
@@ -67,7 +67,7 @@ export const AiKeyInsights: React.FC = () => {
           type="text"
           value={promptText}
           onChange={(e) => setPromptText(e.target.value)}
-          placeholder="Ask AI Copilot..."
+          placeholder="Ask AI ..."
           className="w-full bg-[#0d1326] border border-white/[0.1] rounded-xl pl-3.5 pr-10 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500/60 focus:ring-1 focus:ring-purple-500/60 transition-all"
         />
         <button

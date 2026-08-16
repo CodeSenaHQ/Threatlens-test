@@ -11,11 +11,14 @@ import Home from "./pages/Home";
 import AuthPage from "@/pages/AuthPage";
 import OAuthCallback from "@/pages/OAuthCallback";
 import CommitAnalysisPage from "@/pages/CommitAnalysisPage";
+import DashboardPage from "@/pages/DashboardPage";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/dashboard" component={DashboardPage} />
+      <Route path="/operations" component={DashboardPage} />
       <Route path="/commit-analysis" component={CommitAnalysisPage} />
       <Route path="/commits" component={CommitAnalysisPage} />
       <Route path="/signup" component={() => <AuthPage initialMode="signup" />} />

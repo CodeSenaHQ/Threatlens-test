@@ -19,6 +19,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { toast } from "sonner";
+import { ThreatLensLogo } from "@/components/ThreatLensLogo";
 
 const logoMark = "/threatlens-logo.png";
 
@@ -118,11 +119,8 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
       {/* Header Bar */}
       <header className="relative z-10 border-b border-white/10 bg-[#0b0e14]/90 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="brand group">
-            <img src="/threatlens-icon.png" alt="ThreatLens" className="brand-icon" />
-            <span className="brand-name">
-              ThreatLens <em>AI</em>
-            </span>
+          <Link href="/" className="brand group flex items-center">
+            <ThreatLensLogo className="h-7 w-auto" />
           </Link>
 
           <Link href="/" className="inline-flex items-center gap-1.5 text-xs text-[#8a99ad] hover:text-white transition-colors">
@@ -142,7 +140,7 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
         {/* Auth Card Container */}
         <div className="border border-white/10 bg-[#0b0e14]/95 backdrop-blur-xl p-6 sm:p-8 shadow-none relative overflow-hidden">
           {/* Mode Switcher Tabs */}
-          <div className="grid grid-cols-2 p-1 mb-6 border border-white/10 bg-[#07090d]">
+          <div className="grid grid-cols-2 p-1 mb-6 border border-white/10 bg-[#06080d]">
             <button
               type="button"
               onClick={() => {
@@ -151,7 +149,7 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
               }}
               className={`py-2.5 text-xs font-semibold uppercase tracking-wider transition-all ${
                 mode === "signup"
-                  ? "bg-[#8b4513] text-white"
+                  ? "bg-[#2546ff] text-white shadow-[0_0_15px_rgba(37,70,255,0.3)]"
                   : "text-[#8a99ad] hover:text-white"
               }`}
             >
@@ -165,7 +163,7 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
               }}
               className={`py-2.5 text-xs font-semibold uppercase tracking-wider transition-all ${
                 mode === "signin"
-                  ? "bg-[#8b4513] text-white"
+                  ? "bg-[#2546ff] text-white shadow-[0_0_15px_rgba(37,70,255,0.3)]"
                   : "text-[#8a99ad] hover:text-white"
               }`}
             >
@@ -370,7 +368,7 @@ export default function AuthPage({ initialMode = "signup" }: AuthPageProps) {
               <Button
                 type="submit"
                 disabled={loading}
-                className="mt-4 w-full bg-[#8b4513] py-3 font-semibold text-white hover:bg-[#9c4f17] transition-all shadow-none border border-white/10"
+                className="mt-4 w-full bg-[#2546ff] py-3 font-semibold text-white hover:bg-[#0d27c7] transition-all shadow-[0_0_20px_rgba(37,70,255,0.25)] border border-white/10"
               >
                 {loading
                   ? "Processing..."

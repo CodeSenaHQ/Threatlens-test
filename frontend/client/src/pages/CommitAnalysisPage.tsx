@@ -21,6 +21,8 @@ import {
 import { SAMPLE_COMMITS, CommitItem } from "../services/api";
 import { CommitAnalysisPanel } from "../components/CommitAnalysisPanel";
 
+import { ThreatLensLogo } from "../components/ThreatLensLogo";
+
 export default function CommitAnalysisPage() {
   const [commits] = useState<CommitItem[]>(SAMPLE_COMMITS);
   // Default to null so initially all commits cover the full screen
@@ -78,22 +80,19 @@ export default function CommitAnalysisPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#07090d] text-[#edf2f7] selection:bg-[#8b4513] selection:text-white pb-24 font-sans">
+    <div className="min-h-screen bg-[#06080d] text-[#edf2f7] selection:bg-[#2546ff] selection:text-white pb-24 font-sans">
       {/* Background Grid Pattern */}
       <div className="fixed inset-0 z-0 opacity-30 pointer-events-none bg-[linear-gradient(rgba(64,74,89,0.3)_1px,transparent_1px),linear-gradient(90deg,rgba(64,74,89,0.3)_1px,transparent_1px)] bg-[size:86px_86px]" />
 
       {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#07090d]/90 backdrop-blur-md">
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#06080d]/90 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <Link href="/" className="brand group">
-              <img src="/threatlens-icon.png" alt="ThreatLens" className="brand-icon" />
-              <span className="brand-name">
-                ThreatLens <em>AI</em>
-              </span>
+            <Link href="/" className="brand group flex items-center">
+              <ThreatLensLogo className="h-7 w-auto" />
             </Link>
             <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded bg-white/5 border border-white/10 text-xs text-[#cbd5e1]">
-              <GitCommit className="w-3.5 h-3.5 text-[#d4a373]" />
+              <GitCommit className="w-3.5 h-3.5 text-[#4d8eff]" />
               <span className="font-mono">AI Commit Analyzer</span>
             </div>
           </div>
@@ -138,7 +137,7 @@ export default function CommitAnalysisPage() {
                 placeholder="Search commit, branch, or author..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#0b0e14] border border-white/10 rounded-lg pl-10 pr-3 py-2.5 text-sm text-white placeholder-[#718096] focus:outline-none focus:border-white/25 font-mono"
+                className="w-full bg-[#0a0d15] border border-white/10 rounded-lg pl-10 pr-3 py-2.5 text-sm text-white placeholder-[#718096] focus:outline-none focus:border-white/25 font-mono"
               />
             </div>
             {searchQuery && (
@@ -152,7 +151,7 @@ export default function CommitAnalysisPage() {
             )}
             <button
               type="submit"
-              className="px-4 py-2.5 bg-[#8b4513] hover:bg-[#9c4f17] text-white text-sm font-semibold rounded-lg transition-colors border border-white/10 cursor-pointer"
+              className="px-4 py-2.5 bg-[#2546ff] hover:bg-[#0d27c7] text-white text-sm font-semibold rounded-lg transition-colors border border-white/10 cursor-pointer shadow-[0_0_15px_rgba(37,70,255,0.25)]"
             >
               Search
             </button>
@@ -173,7 +172,7 @@ export default function CommitAnalysisPage() {
           >
             <div className="flex items-center justify-between px-1 pb-1 text-xs text-[#8a99ad]">
               <span className="flex items-center gap-1.5 font-medium">
-                <History className="w-3.5 h-3.5 text-[#d4a373]" /> Repository Commit Stream ({filteredCommits.length})
+                <History className="w-3.5 h-3.5 text-[#4d8eff]" /> Repository Commit Stream ({filteredCommits.length})
               </span>
               <span className="text-[11px] text-[#8a99ad] font-mono">
                 {selectedCommit ? "Selected: " + selectedCommit.shortHash : "Click any commit to inspect"}
@@ -382,11 +381,11 @@ export default function CommitAnalysisPage() {
                 </div>
 
                 {/* Quick Terminal Command */}
-                <div className="p-4 rounded-xl bg-[#07090d] border border-white/10 text-xs">
+                <div className="p-4 rounded-xl bg-[#06080d] border border-white/10 text-xs">
                   <div className="flex items-center gap-2 text-[#8a99ad] mb-2 font-mono text-[11px]">
-                    <Terminal className="w-3.5 h-3.5 text-[#d4a373]" /> Run from CLI / TUI:
+                    <Terminal className="w-3.5 h-3.5 text-[#4d8eff]" /> Run from CLI / TUI:
                   </div>
-                  <code className="block bg-[#0b0e14] p-2.5 rounded border border-white/5 text-white font-mono text-xs leading-normal">
+                  <code className="block bg-[#0a0d15] p-2.5 rounded border border-white/5 text-white font-mono text-xs leading-normal">
                     python sectest/cli.py analyze --commit {selectedCommit.shortHash}
                   </code>
                 </div>

@@ -69,17 +69,12 @@ function FadeIn({ children, className = "", delay = 0 }: { children: React.React
   );
 }
 
+import { ThreatLensLogo } from "../components/ThreatLensLogo";
+
 function Brand({ compact = false }: { compact?: boolean }) {
   return (
-    <a className="brand" href="#top" aria-label="ThreatLens AI home">
-      <img
-        src="/threatlens-icon.png"
-        alt="ThreatLens Shield Lock"
-        className={compact ? "brand-icon w-7 h-7" : "brand-icon"}
-      />
-      <span className={compact ? "brand-name compact" : "brand-name"}>
-        ThreatLens <em>AI</em>
-      </span>
+    <a className="brand flex items-center" href="#top" aria-label="ThreatLens AI home">
+      <ThreatLensLogo className={compact ? "h-6 w-auto" : "h-7 w-auto"} />
     </a>
   );
 }
@@ -105,8 +100,11 @@ function Navbar() {
       <div className="nav-shell">
         <Brand />
         <nav className="desktop-nav" aria-label="Main navigation">
-          <Link href="/commit-analysis" className="text-white/90 font-medium hover:text-white flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#d4a373]" />
+          <Link href="/dashboard" className="text-white font-medium hover:text-white flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#2546ff]/15 border border-[#2546ff]/30 text-[#93c5fd]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#4d8eff] shadow-[0_0_6px_#4d8eff]" />
+            Dashboard
+          </Link>
+          <Link href="/commit-analysis" className="text-white/80 font-medium hover:text-white flex items-center gap-1.5">
             Commit Analysis
           </Link>
           <a href="#terminal">Terminal &amp; CLI</a>
@@ -291,9 +289,9 @@ function Hero() {
       <div className="hero-grid" />
       <div className="hero-acid" aria-hidden="true">
         <AcidSquares
-          color1="#371803"
-          color2="#632f2f"
-          color3="#730f0f"
+          color1="#4d2ec9ff"
+          color2="#2036c6ff"
+          color3="#211286ff"
           detail="medium"
           speed={0.7}
           waveDepth={1}
@@ -402,7 +400,7 @@ function TerminalShowcase() {
                   onClick={() => setActiveTab("tui")}
                   className={`px-3 py-1.5 text-xs font-mono font-semibold transition-colors cursor-pointer ${
                     activeTab === "tui"
-                      ? "bg-[#8b4513] text-white border border-white/10"
+                      ? "bg-[#2546ff] text-white border border-white/10"
                       : "bg-[#0b0e14] text-[#8a99ad] border border-white/5 hover:text-white"
                   }`}
                 >
@@ -413,7 +411,7 @@ function TerminalShowcase() {
                   onClick={() => setActiveTab("cli")}
                   className={`px-3 py-1.5 text-xs font-mono font-semibold transition-colors cursor-pointer ${
                     activeTab === "cli"
-                      ? "bg-[#8b4513] text-white border border-white/10"
+                      ? "bg-[#2546ff] text-white border border-white/10"
                       : "bg-[#0b0e14] text-[#8a99ad] border border-white/5 hover:text-white"
                   }`}
                 >
@@ -540,8 +538,7 @@ function SecurityReport() {
         <FadeIn className="report-shell" delay={0.12}>
           <div className="report-topbar">
             <div className="flex items-center gap-2">
-              <img src="/threatlens-icon.png" alt="" className="w-5 h-5 object-contain" />
-              <span className="brand-name text-sm">ThreatLens <em>AI</em></span>
+              <ThreatLensLogo className="h-5 w-auto" idPrefix="report" />
             </div>
             <div className="report-live"><i /> LIVE TELEMETRY</div>
           </div>

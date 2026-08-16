@@ -13,6 +13,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { ArrowRight, Bot, KeyRound, Lock, Mail, ShieldCheck, Sparkles, User } from "lucide-react";
 import React, { useState } from "react";
 import { toast } from "sonner";
+import { ThreatLensLogo } from "./ThreatLensLogo";
 
 interface AuthModalProps {
   open: boolean;
@@ -136,12 +137,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, defaul
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[440px] border-white/10 bg-[#0b0e14] text-[#edf2f7] shadow-none backdrop-blur-xl">
         <DialogHeader className="text-center sm:text-center">
-          <div className="mx-auto mb-2 flex items-center justify-center">
-            <img src="/threatlens-icon.png" alt="ThreatLens" className="w-12 h-12 object-contain" />
+          <div className="mx-auto mb-3 flex items-center justify-center">
+            <ThreatLensLogo className="h-8 w-auto" idPrefix="auth-modal" />
           </div>
-          <DialogTitle className="brand-name text-2xl justify-center font-bold tracking-tight text-[#ffffff]">
-            ThreatLens <em>AI</em>
-          </DialogTitle>
           <DialogDescription className="text-sm text-[#8a99ad]">
             Security intelligence that leaves a receipt.
           </DialogDescription>
@@ -151,13 +149,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, defaul
           <TabsList className="grid w-full grid-cols-2 border border-white/10 bg-[#07090d]">
             <TabsTrigger
               value="signin"
-              className="data-[state=active]:bg-[#8b4513] data-[state=active]:text-white font-semibold text-xs"
+              className="data-[state=active]:bg-[#2546ff] data-[state=active]:text-white font-semibold text-xs shadow-[0_0_12px_rgba(37,70,255,0.3)]"
             >
               Log In
             </TabsTrigger>
             <TabsTrigger
               value="signup"
-              className="data-[state=active]:bg-[#8b4513] data-[state=active]:text-white font-semibold text-xs"
+              className="data-[state=active]:bg-[#2546ff] data-[state=active]:text-white font-semibold text-xs shadow-[0_0_12px_rgba(37,70,255,0.3)]"
             >
               Sign Up
             </TabsTrigger>
@@ -265,7 +263,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, defaul
               <Button
                 type="submit"
                 disabled={loading}
-                className="mt-2 w-full bg-[#8b4513] font-semibold text-white hover:bg-[#9c4f17] shadow-none border border-white/10"
+                className="mt-2 w-full bg-[#2546ff] font-semibold text-white hover:bg-[#0d27c7] shadow-[0_0_20px_rgba(37,70,255,0.25)] border border-white/10"
               >
                 {loading ? "Signing in..." : "Sign In to ThreatLens"} <ArrowRight className="ml-1.5 h-4 w-4" />
               </Button>
@@ -409,7 +407,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, defaul
               <Button
                 type="submit"
                 disabled={loading}
-                className="mt-2 w-full bg-[#8b4513] font-semibold text-white hover:bg-[#9c4f17] shadow-none border border-white/10"
+                className="mt-2 w-full bg-[#2546ff] font-semibold text-white hover:bg-[#0d27c7] shadow-[0_0_20px_rgba(37,70,255,0.25)] border border-white/10"
               >
                 {loading ? "Creating Account..." : "Create ThreatLens Account"}{" "}
                 <Sparkles className="ml-1.5 h-4 w-4" />

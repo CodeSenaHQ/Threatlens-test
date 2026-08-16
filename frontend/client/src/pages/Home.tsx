@@ -75,7 +75,7 @@ function Brand({ compact = false }: { compact?: boolean }) {
       <img
         src="/threatlens-icon.png"
         alt="ThreatLens Shield Lock"
-        className={compact ? "brand-icon w-6 h-6" : "brand-icon"}
+        className={compact ? "brand-icon w-7 h-7" : "brand-icon"}
       />
       <span className={compact ? "brand-name compact" : "brand-name"}>
         ThreatLens <em>AI</em>
@@ -105,6 +105,10 @@ function Navbar() {
       <div className="nav-shell">
         <Brand />
         <nav className="desktop-nav" aria-label="Main navigation">
+          <Link href="/commit-analysis" className="text-white/90 font-medium hover:text-white flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#d4a373]" />
+            Commit Analysis
+          </Link>
           <a href="#terminal">Terminal &amp; CLI</a>
           <a href="#product">Product</a>
           <a href="#how-it-works">How It Works</a>

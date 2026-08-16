@@ -10,11 +10,14 @@ import Home from "./pages/Home";
 
 import AuthPage from "@/pages/AuthPage";
 import OAuthCallback from "@/pages/OAuthCallback";
+import CommitAnalysisPage from "@/pages/CommitAnalysisPage";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/commit-analysis" component={CommitAnalysisPage} />
+      <Route path="/commits" component={CommitAnalysisPage} />
       <Route path="/signup" component={() => <AuthPage initialMode="signup" />} />
       <Route path="/login" component={() => <AuthPage initialMode="signin" />} />
       <Route path="/auth" component={() => <AuthPage initialMode="signup" />} />

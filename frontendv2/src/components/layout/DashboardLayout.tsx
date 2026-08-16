@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard,
   Shield,
@@ -21,6 +21,8 @@ import {
   FolderGit2,
   Lock,
   ChevronRight,
+  X,
+  Play,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSecurity, SecurityModuleType } from '../../contexts/SecurityContext';
@@ -40,10 +42,28 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   onOpenLanding,
 }) => {
   const { user, logout } = useAuth();
-  const { targets, activeTarget, setActiveTarget, openCopilot, setActiveModule } = useSecurity();
+  const { targets, activeTarget, setActiveTarget, openCopilot, setActiveModule, startSimulation } = useSecurity();
   const [searchQuery, setSearchQuery] = useState('');
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [targetDropdownOpen, setTargetDropdownOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+
+  // Keyboard shortcut listener for '/'
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) {
+        e.preventDefault();
+        setIsCommandPaletteOpen(true);
+      }
+      if (e.key === 'Escape') {
+        setIsCommandPaletteOpen(false);
+        setTargetDropdownOpen(false);
+        setNotificationsOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const handleModuleClick = (moduleKey: SecurityModuleType) => {
     setActiveModule(moduleKey);
@@ -54,12 +74,25 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     toast.success('Generated ThreatLens Telemetry Report (CSV). Download started.');
   };
 
+  const commands = [
+    { title: 'Launch SQL Injection Assessment', module: 'sqli' as SecurityModuleType, tag: 'Studio' },
+    { title: 'Simulate Cross-Site Scripting (XSS)', module: 'xss' as SecurityModuleType, tag: 'Studio' },
+    { title: 'Execute DDoS Traffic Stress Test', module: 'ddos' as SecurityModuleType, tag: 'Simulator' },
+    { title: 'Audit Git Repository for Leaked Secrets', module: 'git-audit' as SecurityModuleType, tag: 'Audit' },
+    { title: 'Data Exfiltration & Actuator Crawler', module: 'exfil' as SecurityModuleType, tag: 'Discovery' },
+    { title: 'Rate Limit (429) & Proxy Interceptor', module: 'ratelimit' as SecurityModuleType, tag: 'Throttle' },
+  ];
+
+  const filteredCommands = commands.filter((c) =>
+    c.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="flex min-h-screen bg-[#05070e] text-slate-100 font-sans selection:bg-blue-600/30">
       {/* ========================================================================= */}
       {/* LEFT SIDEBAR (Cortex Labs Aesthetic) */}
       {/* ========================================================================= */}
-      <aside className="w-64 border-r border-white/[0.08] bg-[#070a14] flex flex-col justify-between p-4 shrink-0 z-20">
+      <aside className="w-64 border-r border-white/[0.08] bg-[#070a14] flex flex-col justify-between p-4 shrink-0 z-20 sticky top-0 h-screen overflow-y-auto">
         <div className="space-y-6">
           {/* Workspace Header */}
           <div
@@ -72,7 +105,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
                 <span className="font-heading font-bold text-sm text-white truncate">ThreatLens AI</span>
-                <span className="text-[9px] font-mono px-1 rounded bg-blue-500/20 text-blue-300">PRO</span>
+                <span className="text-[9px] font-mono px-1 rounded bg-blue-500/20 text-blue-300 font-bold">PRO</span>
               </div>
               <p className="text-[11px] text-slate-400 truncate">SecOps Workspace</p>
             </div>
@@ -111,7 +144,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 <Zap className="w-4 h-4 text-purple-400" />
                 <span>Security Studios</span>
               </div>
-              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300">
+              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 font-bold">
                 7
               </span>
             </button>
@@ -142,7 +175,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 <Bot className="w-4 h-4 text-cyan-400 group-hover:rotate-12 transition-transform" />
                 <span>AI Threat Copilot</span>
               </div>
-              <span className="text-[9px] font-mono px-1 rounded bg-cyan-500/20 text-cyan-300">
+              <span className="text-[9px] font-mono px-1 rounded bg-cyan-500/20 text-cyan-300 font-bold">
                 AI
               </span>
             </button>
@@ -201,6 +234,14 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
               <span>Rate Limit (429) Guard</span>
             </button>
+
+            <button
+              onClick={() => handleModuleClick('proxy')}
+              className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-slate-200 hover:bg-white/[0.02] transition-colors"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+              <span>Proxy & Tamper Repeater</span>
+            </button>
           </div>
         </div>
 
@@ -214,7 +255,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               <span>ThreatLens Enterprise</span>
             </div>
             <p className="text-[11px] text-slate-400 mb-3 leading-relaxed">
-              Continuous 24/7 autonomous zero-day discovery & compliance reports.
+              Autonomous zero-day discovery & signed compliance audits.
             </p>
             <button
               onClick={() => toast.info('ThreatLens Enterprise Cluster is active.')}
@@ -254,18 +295,17 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         <header className="h-16 border-b border-white/[0.08] bg-[#070a14]/90 backdrop-blur-xl px-8 flex items-center justify-between sticky top-0 z-30">
           {/* Search bar with / keyboard hint */}
           <div className="flex items-center gap-3 flex-1 max-w-md">
-            <div className="relative w-full">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search targets, CVE signatures, payloads..."
-                className="w-full bg-[#0d1224] border border-white/[0.08] rounded-xl pl-9 pr-8 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
-              />
-              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/[0.06] text-slate-400 border border-white/10">
-                /
-              </span>
+            <div
+              onClick={() => setIsCommandPaletteOpen(true)}
+              className="relative w-full cursor-pointer group"
+            >
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 group-hover:text-blue-400 transition-colors" />
+              <div className="w-full bg-[#0d1224] border border-white/[0.08] rounded-xl pl-9 pr-8 py-2 text-xs text-slate-400 group-hover:border-blue-500/40 transition-all flex items-center justify-between">
+                <span>Search targets, CVE signatures, modules...</span>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/[0.06] text-slate-400 border border-white/10">
+                  /
+                </span>
+              </div>
             </div>
           </div>
 
@@ -278,7 +318,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#10b981]" />
               <div className="text-left">
                 <span className="text-[10px] text-slate-500 font-mono block leading-none">TARGET ENDPOINT</span>
-                <span className="text-xs font-mono font-semibold text-slate-200 truncate max-w-[200px] block">
+                <span className="text-xs font-mono font-semibold text-slate-200 truncate max-w-[220px] block">
                   {activeTarget.url}
                 </span>
               </div>
@@ -286,7 +326,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             </div>
 
             {targetDropdownOpen && (
-              <div className="absolute top-full mt-2 left-0 w-72 rounded-xl bg-[#090d1a] border border-white/10 shadow-2xl p-2 z-50">
+              <div className="absolute top-full mt-2 left-0 w-80 rounded-2xl bg-[#090d1a] border border-white/10 shadow-2xl p-2 z-50">
                 <div className="text-[10px] font-mono text-slate-500 px-2 py-1 uppercase">Switch Testing Target</div>
                 {targets.map((t) => (
                   <div
@@ -296,7 +336,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                       setTargetDropdownOpen(false);
                       toast.info(`Active target switched to ${t.url}`);
                     }}
-                    className={`p-2 rounded-lg cursor-pointer text-xs flex items-center justify-between transition-colors ${
+                    className={`p-2.5 rounded-xl cursor-pointer text-xs flex items-center justify-between transition-colors ${
                       t.id === activeTarget.id
                         ? 'bg-blue-600/20 text-blue-300 border border-blue-500/30'
                         : 'hover:bg-white/[0.04] text-slate-300'
@@ -307,7 +347,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                       <div className="text-[10px] font-mono text-slate-400">{t.url}</div>
                     </div>
                     <span
-                      className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
+                      className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-bold ${
                         t.status === 'protected'
                           ? 'bg-emerald-500/20 text-emerald-300'
                           : 'bg-rose-500/20 text-rose-300'
@@ -355,7 +395,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-300 relative transition-all"
               >
                 <Bell className="w-4 h-4" />
-                <span className="absolute 1 top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_6px_#f43f5e]" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_6px_#f43f5e]" />
               </button>
 
               {notificationsOpen && (
@@ -383,6 +423,57 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         {/* Dynamic Page Content */}
         <main className="p-8 flex-1">{children}</main>
       </div>
+
+      {/* Global Interactive Command Palette Modal (Triggered by / or search bar) */}
+      {isCommandPaletteOpen && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-24 p-4 bg-black/75 backdrop-blur-md animate-in fade-in">
+          <div className="w-full max-w-xl rounded-3xl bg-[#080c1a] border border-blue-500/40 p-4 shadow-[0_0_60px_rgba(59,130,246,0.3)] space-y-3">
+            <div className="flex items-center gap-3 px-3 py-2 border-b border-white/[0.08]">
+              <Search className="w-4 h-4 text-blue-400 shrink-0" />
+              <input
+                type="text"
+                autoFocus
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Type a command or jump to studio..."
+                className="w-full bg-transparent text-sm text-white placeholder-slate-500 focus:outline-none"
+              />
+              <button
+                onClick={() => setIsCommandPaletteOpen(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="max-h-72 overflow-y-auto space-y-1 p-1 text-xs font-medium">
+              {filteredCommands.map((cmd) => (
+                <div
+                  key={cmd.title}
+                  onClick={() => {
+                    handleModuleClick(cmd.module);
+                    setIsCommandPaletteOpen(false);
+                  }}
+                  className="p-3 rounded-xl hover:bg-blue-600/20 hover:border-blue-500/40 border border-transparent cursor-pointer flex items-center justify-between transition-colors"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Play className="w-3.5 h-3.5 text-blue-400" />
+                    <span className="text-white">{cmd.title}</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/[0.06] text-slate-400">
+                    {cmd.tag}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-2 border-t border-white/[0.06] flex items-center justify-between text-[11px] text-slate-500 font-mono px-3">
+              <span>Navigate with [↑↓] · Press [Esc] to exit</span>
+              <span className="text-blue-400">ThreatLens Command Studio</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

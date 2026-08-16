@@ -2,8 +2,12 @@ import React from 'react';
 import { Navbar } from '../components/layout/Navbar';
 import { HeroSection } from '../components/landing/HeroSection';
 import { StatsSection } from '../components/landing/StatsSection';
+import { SyntraComparisonSection } from '../components/landing/SyntraComparisonSection';
 import { FeatureGrid } from '../components/landing/FeatureGrid';
+import { SyntraWorkflowTabs } from '../components/landing/SyntraWorkflowTabs';
+import { SyntraThreeCards } from '../components/landing/SyntraThreeCards';
 import { PipelineVisualizer } from '../components/landing/PipelineVisualizer';
+import { SyntraBottomCta } from '../components/landing/SyntraBottomCta';
 import { Footer } from '../components/layout/Footer';
 import { CyberGrid } from '../components/react-bits/CyberGrid';
 import { SecurityModuleType } from '../contexts/SecurityContext';
@@ -34,8 +38,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           onExploreModules={() => setCurrentView('modules')}
         />
         <StatsSection />
+        <SyntraComparisonSection />
         <FeatureGrid onSelectModule={onSelectModule} />
+        <SyntraWorkflowTabs />
+        <SyntraThreeCards />
         <PipelineVisualizer />
+        <SyntraBottomCta onLaunchConsole={onLaunchConsole} />
       </main>
 
       {/* Footer */}

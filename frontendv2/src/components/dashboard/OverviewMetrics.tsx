@@ -4,8 +4,13 @@ import { MOCK_CHART_DATA } from '../../lib/mockData';
 import { AnimatedCounter } from '../react-bits/AnimatedCounter';
 
 export const OverviewMetrics: React.FC = () => {
-  const [timeRange, setTimeRange] = useState<'Month' | 'Week'>('Month');
+  const [timeRange, setTimeRange] = useState<'Month' | 'Week' | '24h'>('Month');
   const [hoveredData, setHoveredData] = useState<any>(MOCK_CHART_DATA[4]); // default July
+
+  // Dynamic values depending on active time range
+  const afterHardeningValue = timeRange === 'Month' ? '$87,450' : timeRange === 'Week' ? '$21,860' : '$4,920';
+  const beforeHardeningValue = timeRange === 'Month' ? '$52,310' : timeRange === 'Week' ? '$14,120' : '$3,180';
+  const deltaValue = timeRange === 'Month' ? '+10.6%' : timeRange === 'Week' ? '+14.2%' : '+18.5%';
 
   return (
     <div className="space-y-6">
@@ -16,32 +21,25 @@ export const OverviewMetrics: React.FC = () => {
             Welcome Back, Michael
           </h2>
           <p className="text-xs text-slate-400 font-mono mt-0.5">
-            Security Telemetry Cluster: <span className="text-emerald-400">All Nodes Active</span> · Last updated 30 sec ago
+            Security Telemetry Cluster: <span className="text-emerald-400 font-bold">All 5 Nodes Active</span> · Last updated 30 sec ago
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <div className="flex items-center p-1 rounded-xl bg-white/[0.04] border border-white/[0.08]">
-            <button
-              onClick={() => setTimeRange('Month')}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
-                timeRange === 'Month'
-                  ? 'bg-blue-600/30 text-blue-300 border border-blue-500/40 shadow-[0_0_10px_rgba(59,130,246,0.3)]'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Month
-            </button>
-            <button
-              onClick={() => setTimeRange('Week')}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
-                timeRange === 'Week'
-                  ? 'bg-blue-600/30 text-blue-300 border border-blue-500/40 shadow-[0_0_10px_rgba(59,130,246,0.3)]'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Week
-            </button>
+            {(['Month', 'Week', '24h'] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => setTimeRange(t)}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                  timeRange === t
+                    ? 'bg-blue-600/30 text-blue-300 border border-blue-500/40 shadow-[0_0_10px_rgba(59,130,246,0.3)]'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                {t}
+              </button>
+            ))}
           </div>
         </div>
       </div>
@@ -62,11 +60,11 @@ export const OverviewMetrics: React.FC = () => {
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-3xl font-extrabold text-white font-heading">
-                    $87,450
+                    {afterHardeningValue}
                   </span>
                   <span className="inline-flex items-center text-xs font-bold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full">
                     <ArrowUpRight className="w-3 h-3 mr-0.5" />
-                    +10.6%
+                    {deltaValue}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 mt-1">
@@ -79,7 +77,7 @@ export const OverviewMetrics: React.FC = () => {
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-2xl font-bold text-slate-400 font-heading">
-                    $52,310
+                    {beforeHardeningValue}
                   </span>
                   <span className="inline-flex items-center text-xs font-bold text-rose-400 bg-rose-500/15 border border-rose-500/30 px-2 py-0.5 rounded-full">
                     <ArrowDownRight className="w-3 h-3 mr-0.5" />
@@ -95,17 +93,21 @@ export const OverviewMetrics: React.FC = () => {
           </div>
 
           {/* Interactive Tooltip Card Preview (Jul 27 from image.png) */}
-          <div className="p-3 rounded-xl bg-[#0e1428] border border-blue-500/30 shadow-lg text-xs font-mono space-y-1.5 min-w-[180px]">
-            <div className="text-slate-400 font-bold border-b border-white/[0.08] pb-1">
-              {hoveredData.month} Telemetry Sample
+          <div className="p-3.5 rounded-xl bg-[#0e1428] border border-blue-500/30 shadow-lg text-xs font-mono space-y-1.5 min-w-[200px]">
+            <div className="text-slate-400 font-bold border-b border-white/[0.08] pb-1 flex items-center justify-between">
+              <span>{hoveredData.month} Telemetry</span>
+              <span className="text-[10px] text-emerald-400">● LIVE</span>
             </div>
             <div className="flex items-center justify-between text-blue-300">
-              <span>■ After AI:</span>
-              <span className="font-bold text-emerald-400">+{((hoveredData.afterAI / 60000) * 10).toFixed(2)}%</span>
+              <span>■ After Hardening:</span>
+              <span className="font-bold text-emerald-400">+14.06%</span>
             </div>
             <div className="flex items-center justify-between text-purple-300">
-              <span>■ Before AI:</span>
+              <span>■ Before Hardening:</span>
               <span className="font-bold text-rose-400">-0.42%</span>
+            </div>
+            <div className="text-[10px] text-slate-500 pt-0.5 border-t border-white/[0.04]">
+              Latency: {hoveredData.latency}ms · {hoveredData.threatsBlocked} Blocked
             </div>
           </div>
         </div>

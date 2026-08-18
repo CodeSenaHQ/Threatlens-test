@@ -102,16 +102,21 @@ def store_raw_commit_analysis(
     }
 
 
-@router.post("/analysis")
+@router.post("/commit/analysis")
 async def ai_commit_analysis(
     request: AICommitAnalysisRequest,
 ):
     sha = request.analysis["commit"]["sha"]
+
     repo = Repository(request.url)
     diff = repo.diff(sha)
 
-    return await ai_call(
+    response = await ai_call(
         diffs=diff,
         raw_analysis=request.analysis,
     )
 
+    return {
+        "diff": diff,
+        "ai_response": response,
+    }

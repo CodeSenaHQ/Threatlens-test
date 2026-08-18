@@ -1,10 +1,9 @@
 from __future__ import annotations
 
+import json
+from typing import Any
 from collections import Counter
 from dataclasses import dataclass, asdict
-from datetime import datetime
-from pathlib import Path
-from typing import Any
 
 
 @dataclass
@@ -30,6 +29,9 @@ class RepositoryAnalysis:
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
+    
+    def to_json(self) -> str:
+        return json.dumps(self.to_dict(), indent=2, default=str)
 
 
 class RepositoryAnalyzer:

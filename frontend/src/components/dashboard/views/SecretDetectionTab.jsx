@@ -1,117 +1,109 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Key,
   ShieldAlert,
-  ShieldCheck,
   Search,
   Copy,
   Check,
   Download,
-  Filter,
   Eye,
   EyeOff,
-  Sparkles,
-  FileCode,
   AlertTriangle,
+  WifiOff,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { repoApi, severityColor, timeAgo } from "@/lib/api";
 
 export default function SecretDetectionTab() {
+  const { token } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [showSecretMap, setShowSecretMap] = useState({});
   const [copiedIndex, setCopiedIndex] = useState(null);
+  const [secrets, setSecrets] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const secrets = [
-    {
-      id: "SEC-001",
-      type: "Stripe Secret Key",
-      provider: "Stripe",
-      severity: "critical",
-      entropy: "4.85 bits",
-      redacted: "sk_live_51MzaX••••••••••••••••••••941a",
-      unmasked: "sk_live_51MzaX89B2aLp9Q41aZ941a",
-      filePath: "backend/config.py:14",
-      commitSha: "8f2a11b",
-      author: "Marcus Brody",
-      status: "Active (Exposed)",
-      remediation: "Revoke key in Stripe Dashboard and migrate to AWS Secrets Manager / environment variable.",
-    },
-    {
-      id: "SEC-002",
-      type: "AWS Access Key ID",
-      provider: "AWS IAM",
-      severity: "high",
-      entropy: "4.12 bits",
-      redacted: "AKIAIOSFODNN7•••••••",
-      unmasked: "AKIAIOSFODNN7EXAMPLE",
-      filePath: "docker-compose.yml:28",
-      commitSha: "4e21a8d",
-      author: "Elena Rostov",
-      status: "Revoked (Resolved)",
-      remediation: "Enforce IAM role-based execution (IRSA) rather than static long-lived credentials.",
-    },
-    {
-      id: "SEC-003",
-      type: "GitHub Personal Access Token",
-      provider: "GitHub",
-      severity: "critical",
-      entropy: "5.10 bits",
-      redacted: "ghp_98aZ1b2C3d4E5f••••••••••••••••",
-      unmasked: "ghp_98aZ1b2C3d4E5fG6h7I8j9K0l1M2n3",
-      filePath: ".github/workflows/deploy.yml:19",
-      commitSha: "7b19df3",
-      author: "Sarah Chen",
-      status: "Active (Exposed)",
-      remediation: "Use GitHub Action OIDC federation token with repository claims.",
-    },
-    {
-      id: "SEC-004",
-      type: "RSA Private Key Block",
-      provider: "OpenSSL / SSH",
-      severity: "critical",
-      entropy: "5.92 bits",
-      redacted: "-----BEGIN RSA PRIVATE KEY-----\nMIIEogIBAAKCAQEA••••••••••••",
-      unmasked: "-----BEGIN RSA PRIVATE KEY-----\nMIIEogIBAAKCAQEA0928...",
-      filePath: "certs/jwt-signing.key:1",
-      commitSha: "96e2a87",
-      author: "Alex Vance",
-      status: "Revoked (Resolved)",
-      remediation: "Remove private key from git tree history using git-filter-repo and rotate certificates.",
-    },
-  ];
+  // Fetch secrets from commit findings across all repos
+  useEffect(() => {
+    const fetchSecrets = async () => {
+      if (!token) return;
+      setLoading(true);
+      try {
+        const repos = await repoApi.getRepos(token);
+        const repoList = Array.isArray(repos) ? repos : [];
+        const allSecrets = [];
 
-  const filteredSecrets = secrets.filter((s) => {
-    return (
-      s.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.filePath.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.author.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  });
+        for (const repo of repoList.slice(0, 5)) {
+          try {
+            const res = await repoApi.getCommits(token, repo.id, 1, 50);
+            const commits = res?.data || [];
+            for (const c of commits) {
+              const findings = c.findings || [];
+              for (const f of findings) {
+                if (f.category === "secret_detection") {
+                  allSecrets.push({
+                    id: `SEC-${allSecrets.length + 1}`,
+                    type: f.title,
+                    severity: f.severity,
+                    path: f.path || "unknown",
+                    evidence: f.evidence || "[REDACTED]",
+                    description: f.description,
+                    commitSha: c.commit?.short_sha || "?",
+                    commitMessage: c.commit?.message || "",
+                    author: c.commit?.author_name || "",
+                    repo: `${repo.username}/${repo.name}`,
+                    date: c.commit?.authored_at,
+                  });
+                }
+              }
+            }
+          } catch { /* skip repo */ }
+        }
 
-  const toggleShowSecret = (id) => {
-    setShowSecretMap((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
+        setSecrets(allSecrets);
+      } catch {
+        toast.error("Failed to load secret detection data");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSecrets();
+  }, [token]);
 
-  const handleCopySecret = (text, idx) => {
-    navigator.clipboard.writeText(text);
-    setCopiedIndex(idx);
-    toast.success("Secret copied to clipboard!");
+  const filteredSecrets = secrets.filter((s) =>
+    s.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    s.path.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    s.repo.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleCopyEvidence = (evidence, index) => {
+    navigator.clipboard.writeText(evidence);
+    setCopiedIndex(index);
+    toast.success("Evidence copied!");
     setTimeout(() => setCopiedIndex(null), 2000);
   };
+
+  const toggleShowSecret = (index) => {
+    setShowSecretMap((prev) => ({ ...prev, [index]: !prev[index] }));
+  };
+
+  // KPIs
+  const criticalCount = secrets.filter((s) => s.severity === "critical").length;
+  const highCount = secrets.filter((s) => s.severity === "high").length;
 
   return (
     <div className="space-y-7">
       {/* Top Page Header */}
       <div className="flex flex-wrap items-end justify-between gap-4 pb-2 border-b border-[#253240]/60">
         <div>
-          <h1 className="font-mono text-lg font-bold tracking-tight text-white">Secret & Credential Detection</h1>
+          <h1 className="font-mono text-lg font-bold tracking-tight text-white">Secret Detection</h1>
           <p className="text-xs text-[#8a99ad] mt-1 font-mono">
-            Shannon entropy analysis & regex pattern scanning for leaked API keys, tokens and cryptographic certificates
+            Extracted from commit findings · category: secret_detection · {secrets.length} secrets found
           </p>
         </div>
         <div className="flex items-center gap-3 font-mono text-xs">
           <button
-            onClick={() => toast.success("Exported secret audit report (CSV)")}
+            onClick={() => toast.success("Exported secret detection report")}
             className="px-4 py-2 rounded-lg border border-[#2b3947] bg-[#10151a] text-[#d8e2e8] hover:border-white/[0.2] hover:bg-[#141b21] shadow-sm transition-all cursor-pointer flex items-center gap-2"
           >
             <Download className="w-3.5 h-3.5" />
@@ -124,133 +116,102 @@ export default function SecretDetectionTab() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4.5">
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
           <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#ff4d4f] shadow-[0_0_10px_#ff4d4f]" />
-          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Active Exposed Keys</div>
-          <div className="font-mono text-xl font-bold mt-1.5 text-[#ff4d4f]">2 Active</div>
-          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">Stripe & GitHub PAT</div>
+          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Critical Secrets</div>
+          <div className="font-mono text-xl font-bold mt-1.5 text-[#ff4d4f]">{loading ? "…" : criticalCount}</div>
+          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">require immediate rotation</div>
         </div>
-
+        <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
+          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#ff9a3c] shadow-[0_0_10px_#ff9a3c]" />
+          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">High Severity</div>
+          <div className="font-mono text-xl font-bold mt-1.5 text-[#ff9a3c]">{loading ? "…" : highCount}</div>
+          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">elevated exposure risk</div>
+        </div>
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
           <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#38bdf8] shadow-[0_0_10px_#38bdf8]" />
-          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Resolved / Revoked</div>
-          <div className="font-mono text-xl font-bold mt-1.5 text-white">2 Remediated</div>
-          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">AWS & RSA Key Block</div>
+          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Total Detected</div>
+          <div className="font-mono text-xl font-bold mt-1.5 text-white">{loading ? "…" : secrets.length}</div>
+          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">across all commits</div>
         </div>
-
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
           <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#38bdf8] shadow-[0_0_10px_#38bdf8]" />
-          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Scanned Commits</div>
-          <div className="font-mono text-xl font-bold mt-1.5 text-white">1,428</div>
-          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">Full commit history scan</div>
-        </div>
-
-        <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#38bdf8] shadow-[0_0_10px_#38bdf8]" />
-          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Entropy Engine</div>
-          <div className="font-mono text-xl font-bold mt-1.5 text-[#38bdf8]">ARMED</div>
-          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">Threshold: 3.5 bits/byte</div>
+          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Scan Status</div>
+          <div className="font-mono text-xl font-bold mt-1.5 text-[#38bdf8]">{loading ? "Scanning…" : "Complete"}</div>
+          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">commit-level detection</div>
         </div>
       </div>
 
-      {/* Search Input Bar */}
+      {/* Search */}
       <div className="relative max-w-md">
         <Search className="w-4 h-4 text-[#8a99ad] absolute left-3.5 top-1/2 -translate-y-1/2" />
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Filter by secret type, file path, author..."
+          placeholder="Search by secret type, file path, or repository..."
           className="w-full pl-10 pr-4 py-2 bg-[#10151a] border border-[#283747] rounded-lg text-xs font-mono text-white placeholder-[#6f8390] focus:border-[#38bdf8] focus:outline-none"
         />
       </div>
 
       {/* Secrets Table */}
-      <div className="bg-[#10151a] border border-[#263544] rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-        <div className="flex items-center justify-between p-3.5 px-4.5 border-b border-[#253240] bg-[#12181f]/60">
-          <h2 className="font-mono text-xs font-bold text-white uppercase tracking-wider">
-            Detected Secrets & Credential Exposures
-          </h2>
-          <div className="font-mono text-[10px] text-[#8a99ad]">Shannon Entropy & Regex AST Rules</div>
+      {loading ? (
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="bg-[#1a2330] rounded-xl h-20 animate-pulse" />
+          ))}
         </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr className="border-b border-[#253240] text-[10px] font-mono uppercase tracking-wider text-[#8a99ad] bg-[#0c1015]">
-                <th className="py-3 px-4.5">Severity</th>
-                <th className="py-3 px-4.5">Secret Type & Value</th>
-                <th className="py-3 px-4.5">File & Location</th>
-                <th className="py-3 px-4.5">Commit & Author</th>
-                <th className="py-3 px-4.5">Status</th>
-                <th className="py-3 px-4.5 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#222e3a]">
-              {filteredSecrets.map((s, idx) => {
-                const isExposed = s.status.includes("Active");
-                const isShown = showSecretMap[s.id];
-
-                return (
-                  <tr key={s.id} className="hover:bg-white/[0.03] transition-colors">
-                    <td className="py-3 px-4.5 align-top">
-                      <span
-                        className="font-mono text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full border whitespace-nowrap font-bold"
-                        style={{
-                          color: isExposed ? "#ff4d4f" : "#38bdf8",
-                          borderColor: isExposed ? "#ff4d4f" : "#38bdf8",
-                          backgroundColor: isExposed ? "rgba(255,77,79,.10)" : "rgba(56,189,248,.10)",
-                        }}
-                      >
-                        {s.severity}
-                      </span>
-                    </td>
-
-                    <td className="py-3 px-4.5 align-top min-w-[240px]">
-                      <div className="font-semibold text-white">{s.type}</div>
-                      <div className="flex items-center gap-2 mt-1 font-mono text-[11px]">
-                        <code className="bg-[#0a0d10] px-2 py-0.5 rounded border border-[#222e3a] text-[#38bdf8]">
-                          {isShown ? s.unmasked : s.redacted}
-                        </code>
-                        <button
-                          onClick={() => toggleShowSecret(s.id)}
-                          className="text-[#8a99ad] hover:text-white p-0.5"
-                          title={isShown ? "Mask secret" : "Reveal secret"}
+      ) : secrets.length === 0 ? (
+        <div className="text-center py-16">
+          <ShieldAlert className="w-8 h-8 mx-auto text-[#38bdf8] mb-3" />
+          <p className="font-mono text-sm text-[#8a99ad]">No secrets detected in commit history</p>
+          <p className="font-mono text-xs text-[#6f8390] mt-1">This is good! Your codebase appears clean of leaked credentials.</p>
+        </div>
+      ) : (
+        <div className="bg-[#10151a] border border-[#263544] rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
+          <div className="flex items-center justify-between p-3.5 px-4.5 border-b border-[#253240] bg-[#12181f]/60">
+            <h2 className="font-mono text-xs font-bold text-white uppercase tracking-wider">Detected Secrets & Credentials</h2>
+          </div>
+          <div className="divide-y divide-[#222e3a]">
+            {filteredSecrets.map((s, i) => {
+              const color = severityColor(s.severity);
+              return (
+                <div key={i} className="p-4 hover:bg-white/[0.02] transition-colors">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="font-mono text-[10px] uppercase px-2 py-0.5 rounded-full border font-bold"
+                          style={{ color, borderColor: color, backgroundColor: `${color}14` }}
                         >
-                          {isShown ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                          {s.severity}
+                        </span>
+                        <span className="text-xs text-white font-semibold">{s.type}</span>
+                      </div>
+                      <p className="text-[11px] text-[#8a99ad] font-mono">📁 {s.path} · {s.repo} · commit {s.commitSha}</p>
+                      {s.description && <p className="text-[11px] text-[#6f8390] font-mono">{s.description}</p>}
+
+                      {/* Evidence with show/hide toggle */}
+                      <div className="flex items-center gap-2 mt-1">
+                        <pre className="text-[10px] text-[#38bdf8] font-mono bg-[#07090d] p-2 rounded flex-1 overflow-x-auto">
+                          {showSecretMap[i] ? s.evidence : s.evidence?.replace(/./g, "•").slice(0, 40)}
+                        </pre>
+                        <button onClick={() => toggleShowSecret(i)} className="text-[#8a99ad] hover:text-white p-1">
+                          {showSecretMap[i] ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        </button>
+                        <button onClick={() => handleCopyEvidence(s.evidence, i)} className="text-[#8a99ad] hover:text-[#38bdf8] p-1">
+                          {copiedIndex === i ? <Check className="w-3.5 h-3.5 text-[#38bdf8]" /> : <Copy className="w-3.5 h-3.5" />}
                         </button>
                       </div>
-                    </td>
-
-                    <td className="py-3 px-4.5 align-top font-mono text-[11px]">
-                      <div className="text-white font-medium">{s.filePath}</div>
-                      <div className="text-[#8a99ad] text-[10px] mt-0.5">Entropy: {s.entropy}</div>
-                    </td>
-
-                    <td className="py-3 px-4.5 align-top font-mono text-[11px]">
-                      <div className="text-[#38bdf8] font-semibold">{s.commitSha}</div>
-                      <div className="text-[#8a99ad] text-[10px] mt-0.5">{s.author}</div>
-                    </td>
-
-                    <td className="py-3 px-4.5 align-top font-mono text-[11px]">
-                      <span className={isExposed ? "text-[#ff4d4f] font-semibold" : "text-emerald-400"}>
-                        {s.status}
-                      </span>
-                    </td>
-
-                    <td className="py-3 px-4.5 align-top text-right font-mono">
-                      <button
-                        onClick={() => handleCopySecret(s.unmasked, idx)}
-                        className="px-3 py-1 rounded bg-[#141b21] hover:bg-[#1a232b] border border-[#2b3947] text-xs text-[#38bdf8] hover:text-white transition-colors"
-                      >
-                        {copiedIndex === idx ? "Copied" : "Copy"}
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                    </div>
+                    <div className="text-[10px] text-[#8a99ad] font-mono text-right shrink-0">
+                      {s.date ? timeAgo(s.date) : ""}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

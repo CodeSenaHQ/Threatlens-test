@@ -1,5 +1,5 @@
-// ThreatLens Unified Frontend API Client & Mock Data Layer
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+// ThreatLens Unified Frontend API Client
+const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 const SECTEST_BASE = "http://localhost:8765";
 
 export function parseJwt(token) {
@@ -45,6 +45,7 @@ async function authRequest(path, options = {}) {
 }
 
 export const authApi = {
+  // ── Authentication ──
   loginWithPassword: (data) =>
     authRequest("/login/password", {
       method: "POST",
@@ -81,35 +82,9 @@ export const authApi = {
       body: JSON.stringify(data),
     }),
 
+  // ── Profile & Session ──
   getMe: (token) =>
     authRequest("/me", {
-      method: "GET",
-      headers: { Authorization: `Bearer ${token}` },
-    }),
-
-  logout: (token) =>
-    authRequest("/logout", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-    }),
-
-  logoutAll: (token) =>
-    authRequest("/logout-all", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-    }),
-
-  getPulse: () =>
-    authRequest("/config/pulse", { method: "GET" }),
-
-  getCounts: (token) =>
-    authRequest("/config/counts", {
-      method: "GET",
-      headers: { Authorization: `Bearer ${token}` },
-    }),
-
-  getConfig: (token) =>
-    authRequest("/config/load/", {
       method: "GET",
       headers: { Authorization: `Bearer ${token}` },
     }),
@@ -128,8 +103,105 @@ export const authApi = {
       body: JSON.stringify({ password }),
     }),
 
+  logout: (token) =>
+    authRequest("/logout", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  logoutAll: (token) =>
+    authRequest("/logout-all", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  // ── Dashboard Config (Superadmin) ──
+  getPulse: () =>
+    authRequest("/config/pulse", { method: "GET" }),
+
+  getCounts: (token) =>
+    authRequest("/config/counts", {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  getConfig: (token) =>
+    authRequest("/config/load/", {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  updateConfigEmail: (token, data) =>
+    authRequest("/config/email", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify(data),
+    }),
+
+  updateConfigGithub: (token, data) =>
+    authRequest("/config/github", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify(data),
+    }),
+
+  updateConfigGoogle: (token, data) =>
+    authRequest("/config/google", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify(data),
+    }),
+
+  updateConfigJwt: (token, data) =>
+    authRequest("/config/jwt", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify(data),
+    }),
+
+  // ── Account CRUD (Superadmin) ──
+  getAccounts: (token, page = 1, limit = 20) =>
+    authRequest(`/account/?page=${page}&limit=${limit}`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  queryAccount: (token, field, value) =>
+    authRequest(`/account/query?field=${field}&value=${encodeURIComponent(value)}`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  createAccount: (token, data) =>
+    authRequest("/account/", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify(data),
+    }),
+
+  updateAccount: (token, data) =>
+    authRequest("/account/", {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify(data),
+    }),
+
+  deleteAccount: (token, accountId) =>
+    authRequest("/account/", {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ account_id: accountId }),
+    }),
+
+  // ── Session Admin (Superadmin) ──
   getSessions: (token, accountId) =>
     authRequest(`/session/query?field=id&value=${accountId}`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  getAllSessions: (token, page = 1, limit = 50) =>
+    authRequest(`/session/?page=${page}&limit=${limit}`, {
       method: "GET",
       headers: { Authorization: `Bearer ${token}` },
     }),
@@ -141,14 +213,59 @@ export const authApi = {
       body: JSON.stringify({ session_id: sessionId }),
     }),
 
-  getAccounts: (token, page = 1, limit = 20) =>
-    authRequest(`/account/?page=${page}&limit=${limit}`, {
+  destroyAllSessions: (token, accountId) =>
+    authRequest("/session/all", {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ account_id: accountId }),
+    }),
+
+  cleanupSessions: (token) =>
+    authRequest("/session/cleanup", {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  clearAllSessions: (token) =>
+    authRequest("/session/clear", {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  // ── OAuth Admin (Superadmin) ──
+  getOAuthLinks: (token, accountId) =>
+    authRequest(`/oauth/query?field=account_id&value=${accountId}`, {
       method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  getAllOAuth: (token, page = 1, limit = 20) =>
+    authRequest(`/oauth/?page=${page}&limit=${limit}`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  // ── OTP Admin (Superadmin) ──
+  getAllOtps: (token, page = 1, limit = 20) =>
+    authRequest(`/otp/?page=${page}&limit=${limit}`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  cleanupOtps: (token) =>
+    authRequest("/otp/cleanup", {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  clearAllOtps: (token) =>
+    authRequest("/otp/clear", {
+      method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     }),
 };
 
-// Repository & Git Module API
+// ── Repository & Git Module API ──
 export const repoApi = {
   async getRepos(token) {
     const url = `${API_BASE_URL}/repo`;
@@ -168,50 +285,18 @@ export const repoApi = {
     return await res.json();
   },
 
-  async analyzeCommit(url, analysis) {
+  async analyzeCommit(repoUrl, analysis) {
     const res = await fetch(`${API_BASE_URL}/repo/commit/analysis`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url, analysis }),
+      body: JSON.stringify({ url: repoUrl, analysis }),
     });
     if (!res.ok) throw new Error(`AI analysis failed: ${res.status}`);
     return await res.json();
   },
 };
 
-export const CommitsAPI = {
-  async analyzeCommit(commitHash, diff) {
-    try {
-      const res = await fetch(`${API_BASE_URL}/repo/commit/analysis`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          url: "https://github.com/ThreatLens/ThreatLens.git",
-          analysis: {
-            commit: { sha: commitHash, short_sha: commitHash.slice(0, 7) },
-            summary: { risk_score: 20, risk_level: "low" },
-            findings: [],
-          },
-        }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        return {
-          analysis: data.ai_response?.summary || JSON.stringify(data.ai_response, null, 2),
-          model_used: "Gemini / Claude via ThreatLens AI",
-        };
-      }
-    } catch {
-      // Fallback response for offline demo
-    }
-    return {
-      analysis: `### ⚡ AI Security Assessment for ${commitHash.slice(0, 7)}\n- **Risk Level**: LOW (Verified Patch)\n- **Code Integrity**: Parameterized binding correctly replaces raw query string interpolation.\n- **Recommendations**: Enforce constant-time token comparison.`,
-      model_used: "ThreatLens AST Neural Engine",
-    };
-  },
-};
-
-// SecTest Dynamic Vulnerability Scanner API
+// ── SecTest Dynamic Vulnerability Scanner API ──
 export const secTestApi = {
   async getReport() {
     try {
@@ -227,7 +312,42 @@ export const secTestApi = {
   },
 };
 
-// Sample Commits for CommitAnalysisPage & Demos
+// ── Utility Helpers ──
+export function formatBytes(bytes) {
+  if (!bytes || bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+}
+
+export function timeAgo(dateStr) {
+  if (!dateStr) return "—";
+  const date = new Date(dateStr);
+  const now = new Date();
+  const seconds = Math.floor((now - date) / 1000);
+  if (seconds < 60) return "Just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return date.toLocaleDateString();
+}
+
+export function severityColor(severity) {
+  switch (severity?.toLowerCase()) {
+    case "critical": return "#ff4d4f";
+    case "high": return "#ff9a3c";
+    case "medium": return "#f2c94c";
+    case "low": return "#38bdf8";
+    case "info": return "#4d9cff";
+    default: return "#8a99ad";
+  }
+}
+
+// ── Sample Commits for CommitAnalysisPage Demo ──
 export const SAMPLE_COMMITS = [
   {
     hash: "96e2a871b53c19d4902187f0bca711832049e211",
@@ -285,230 +405,35 @@ export const SAMPLE_COMMITS = [
   },
 ];
 
-// Rich Sample Data for UI Initialization & Offline Demo Preview
-export const MOCK_REPOSITORIES = [
-  {
-    id: 1,
-    name: "ThreatLens",
-    username: "ThreatLens",
-    url: "https://github.com/ThreatLens/ThreatLens.git",
-    default_branch: "main",
-    branches: ["main", "dev", "security/jwt-rotation"],
-    commit_count: 1428,
-    files_total: 342,
-    total_size: 18459200,
-    languages: { Python: 140, JavaScript: 72, TypeScript: 48, CSS: 15 },
-    tags: [
-      { name: "v2.0.0-rc1", sha: "96e2a871b53c19d4902187f0bca711832049e211", short_sha: "96e2a87" },
-      { name: "v1.4.0", sha: "4e21a8d011f592cb1475e330a8901f443810c512", short_sha: "4e21a8d" },
-    ],
-    lastScanned: "10 mins ago",
-    status: "verified",
-    riskLevel: "low",
+// Legacy export for CommitAnalysisPage compatibility
+export const CommitsAPI = {
+  async analyzeCommit(commitHash, diff) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/repo/commit/analysis`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url: "https://github.com/ThreatLens/ThreatLens.git",
+          analysis: {
+            commit: { sha: commitHash, short_sha: commitHash.slice(0, 7) },
+            summary: { risk_score: 20, risk_level: "low" },
+            findings: [],
+          },
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return {
+          analysis: data.ai_response?.summary || JSON.stringify(data.ai_response, null, 2),
+          model_used: "Gemini / Claude via ThreatLens AI",
+        };
+      }
+    } catch {
+      // Fallback response for offline demo
+    }
+    return {
+      analysis: `### ⚡ AI Security Assessment for ${commitHash.slice(0, 7)}\n- **Risk Level**: LOW (Verified Patch)\n- **Code Integrity**: Parameterized binding correctly replaces raw query string interpolation.\n- **Recommendations**: Enforce constant-time token comparison.`,
+      model_used: "ThreatLens AST Neural Engine",
+    };
   },
-  {
-    id: 2,
-    name: "02_vulnerable_ecommerce_py",
-    username: "ThreatLensGo",
-    url: "https://github.com/ThreatLens/02_vulnerable_ecommerce.git",
-    default_branch: "main",
-    branches: ["main"],
-    commit_count: 84,
-    files_total: 62,
-    total_size: 4820000,
-    languages: { Python: 52, HTML: 6, JavaScript: 4 },
-    tags: [{ name: "v0.9.0", sha: "8f2a11b", short_sha: "8f2a11b" }],
-    lastScanned: "2 hours ago",
-    status: "vulnerable",
-    riskLevel: "critical",
-  },
-  {
-    id: 3,
-    name: "03_vulnerable_fintech_py",
-    username: "ThreatLensGo",
-    url: "https://github.com/ThreatLens/03_vulnerable_fintech.git",
-    default_branch: "main",
-    branches: ["main", "feat/payouts"],
-    commit_count: 120,
-    files_total: 94,
-    total_size: 8910000,
-    languages: { Python: 80, SQL: 14 },
-    tags: [{ name: "v1.1.0", sha: "3fa912c", short_sha: "3fa912c" }],
-    lastScanned: "Yesterday",
-    status: "vulnerable",
-    riskLevel: "high",
-  },
-  {
-    id: 4,
-    name: "FastAPI-Auth-Service",
-    username: "totalchaos",
-    url: "https://github.com/totalchaos/tc-auth.git",
-    default_branch: "master",
-    branches: ["master", "v2"],
-    commit_count: 650,
-    files_total: 110,
-    total_size: 6120000,
-    languages: { Python: 104, Markdown: 6 },
-    tags: [{ name: "v3.2.0", sha: "7b19df3", short_sha: "7b19df3" }],
-    lastScanned: "3 days ago",
-    status: "verified",
-    riskLevel: "low",
-  },
-];
-
-export const MOCK_COMMITS = [
-  {
-    sha: "96e2a871b53c19d4902187f0bca711832049e211",
-    short_sha: "96e2a87",
-    author_name: "Alex Vance",
-    author_email: "alex@threatlens.io",
-    authored_at: "10 mins ago",
-    message: "fix(auth): sanitize user input and replace raw string query in login endpoint",
-    summary: {
-      risk_score: 18,
-      risk_level: "low",
-      files_changed: 2,
-      findings: 1,
-      critical: 0,
-      high: 0,
-      medium: 0,
-      low: 1,
-    },
-    findings: [
-      {
-        category: "security_code",
-        severity: "low",
-        title: "SQL Injection Vector Fixed",
-        description: "Replaced raw string query execution with parameterized bind variables.",
-        path: "backend/routes/auth.py",
-        evidence: "- query = f\"SELECT * FROM users WHERE email = '{request.email}'\"\n+ query = \"SELECT id, email FROM users WHERE email = :email\"",
-      },
-    ],
-  },
-  {
-    sha: "4e21a8d011f592cb1475e330a8901f443810c512",
-    short_sha: "4e21a8d",
-    author_name: "Elena Rostov",
-    author_email: "elena@threatlens.io",
-    authored_at: "2 hours ago",
-    message: "feat(billing): verify stripe webhook signature before processing checkout payload",
-    summary: {
-      risk_score: 12,
-      risk_level: "low",
-      files_changed: 1,
-      findings: 1,
-      critical: 0,
-      high: 0,
-      medium: 0,
-      low: 1,
-    },
-    findings: [
-      {
-        category: "security_code",
-        severity: "low",
-        title: "Signature Verification Enforced",
-        description: "Enforced Stripe cryptographic signature verification against replay attacks.",
-        path: "backend/routes/billing.py",
-        evidence: "+ event = stripe.Webhook.construct_event(payload, sig_header, SECRET)",
-      },
-    ],
-  },
-  {
-    sha: "7b19df33501a2ce08914efb900234acb7712aa90",
-    short_sha: "7b19df3",
-    author_name: "Sarah Chen",
-    author_email: "sarah@threatlens.io",
-    authored_at: "Yesterday",
-    message: "refactor(jwt): implement RS256 asymmetric token signing with key rotation support",
-    summary: {
-      risk_score: 10,
-      risk_level: "low",
-      files_changed: 3,
-      findings: 0,
-      critical: 0,
-      high: 0,
-      medium: 0,
-      low: 0,
-    },
-    findings: [],
-  },
-  {
-    sha: "8f2a11b29c0174092b192830114092b192801940",
-    short_sha: "8f2a11b",
-    author_name: "Marcus Brody",
-    author_email: "marcus@threatlens.io",
-    authored_at: "2 days ago",
-    message: "wip(api): temporary bypass auth token check for staging webhook test",
-    summary: {
-      risk_score: 85,
-      risk_level: "critical",
-      files_changed: 4,
-      findings: 2,
-      critical: 1,
-      high: 1,
-      medium: 0,
-      low: 0,
-    },
-    findings: [
-      {
-        category: "suspicious_commit_pattern",
-        severity: "critical",
-        title: "Authentication Bypass Pattern",
-        description: "Commit patch bypasses token authentication validation.",
-        path: "backend/routes/webhooks.py",
-        evidence: "- if not verify_token(req): return 401\n+ # bypass auth for test\n+ pass",
-      },
-      {
-        category: "secret_detection",
-        severity: "high",
-        title: "Hardcoded API Key",
-        description: "Possible generic secret assignment detected.",
-        path: "backend/config.py",
-        evidence: "api_key = \"sk_test_51Mz...941a\"",
-      },
-    ],
-  },
-];
-
-export const MOCK_ACTIVITIES = [
-  {
-    id: 1,
-    user: "Alex Vance",
-    avatar: "AV",
-    avatarColor: "#3b82f6",
-    action: "pushed commit 96e2a87",
-    target: "fix(auth): sanitize user input",
-    time: "10 mins ago",
-    type: "commit",
-  },
-  {
-    id: 2,
-    user: "SecTest Prober",
-    avatar: "ST",
-    avatarColor: "#ef4444",
-    action: "flagged 1 Critical Vulnerability",
-    target: "CWE-89 (SQL Injection) on /api/users",
-    time: "45 mins ago",
-    type: "threat",
-  },
-  {
-    id: 3,
-    user: "Elena Rostov",
-    avatar: "ER",
-    avatarColor: "#10b981",
-    action: "verified webhook signature",
-    target: "stripe_webhook event verification",
-    time: "2 hours ago",
-    type: "audit",
-  },
-  {
-    id: 4,
-    user: "Sarah Chen",
-    avatar: "SC",
-    avatarColor: "#8b5cf6",
-    action: "rotated RS256 JWT keys",
-    target: "Key ID kid_2026_08_rotation",
-    time: "Yesterday",
-    type: "config",
-  },
-];
+};

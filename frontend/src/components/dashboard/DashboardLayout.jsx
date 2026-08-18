@@ -1,10 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { authApi, repoApi, secTestApi, severityColor, formatBytes, timeAgo } from "@/lib/api";
 import { toast } from "sonner";
 import {
   Copy,
   Check,
   X,
+  Loader2,
+  AlertTriangle,
+  WifiOff,
 } from "lucide-react";
 
 // Individual Tab Views
@@ -17,13 +21,26 @@ import AccountsTab from "./views/AccountsTab";
 import SystemConfigTab from "./views/SystemConfigTab";
 import SessionsTab from "./views/SessionsTab";
 
+// ── Loading Skeleton ──
+function SkeletonBlock({ className = "" }) {
+  return <div className={`bg-[#1a2330] rounded animate-pulse ${className}`} />;
+}
+
 export default function DashboardLayout() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [activeNav, setActiveNav] = useState("dashboard");
   const [clockStr, setClockStr] = useState("--:--:--");
   const [selectedItem, setSelectedItem] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // ── Live data state ──
+  const [pulse, setPulse] = useState(null);
+  const [counts, setCounts] = useState(null);
+  const [repos, setRepos] = useState([]);
+  const [latestCommits, setLatestCommits] = useState([]);
+  const [secTestReport, setSecTestReport] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // Live Digital Clock
   useEffect(() => {
@@ -37,165 +54,109 @@ export default function DashboardLayout() {
     return () => clearInterval(interval);
   }, []);
 
+  // ── Fetch all dashboard data ──
+  const fetchDashboardData = useCallback(async () => {
+    if (!token) return;
+    setLoading(true);
+    try {
+      const [pulseRes, countsRes, reposRes, secTestRes] = await Promise.allSettled([
+        authApi.getPulse(),
+        authApi.getCounts(token),
+        repoApi.getRepos(token),
+        secTestApi.getReport(),
+      ]);
+
+      if (pulseRes.status === "fulfilled") setPulse(pulseRes.value);
+      if (countsRes.status === "fulfilled") setCounts(countsRes.value);
+
+      let fetchedRepos = [];
+      if (reposRes.status === "fulfilled" && Array.isArray(reposRes.value)) {
+        fetchedRepos = reposRes.value;
+        setRepos(fetchedRepos);
+      }
+
+      if (secTestRes.status === "fulfilled") setSecTestReport(secTestRes.value);
+
+      // Fetch latest commits from first repo
+      if (fetchedRepos.length > 0) {
+        try {
+          const commitsRes = await repoApi.getCommits(token, fetchedRepos[0].id, 1, 5);
+          setLatestCommits(commitsRes?.data || []);
+        } catch { /* ignore */ }
+      }
+    } catch {
+      // individual errors handled above
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  // ── Refresh pulse periodically ──
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const p = await authApi.getPulse();
+        setPulse(p);
+      } catch { /* ignore */ }
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // ── Computed dashboard KPIs ──
+  const secTestFindings = secTestReport?.findings || [];
+  const secTestSummary = secTestReport?.summary?.by_severity || {};
+
+  // Aggregate findings from latest commits
+  const commitFindingCounts = latestCommits.reduce(
+    (acc, c) => {
+      acc.critical += c.summary?.critical || 0;
+      acc.high += c.summary?.high || 0;
+      acc.medium += c.summary?.medium || 0;
+      acc.low += c.summary?.low || 0;
+      return acc;
+    },
+    { critical: 0, high: 0, medium: 0, low: 0 }
+  );
+
   const kpis = [
-    { label: "Critical findings", value: "3", sub: "secret_detection, security_code", type: "critical" },
-    { label: "High severity", value: "9", sub: "across 3 repositories", type: "high" },
-    { label: "Medium severity", value: "14", sub: "mostly suspicious_commit_pattern", type: "medium" },
-    { label: "Repos monitored", value: "3", sub: "13,250 commits indexed (fastapi)", type: "low" },
-  ];
-
-  const commits = [
     {
-      sha: "8b4f7a6",
-      fullSha: "8b4f7a668a7de34693bb25d6f66abfcb4f7b095e",
-      msg: "fix(auth): parameterize login query",
-      meta: "Alex Vance · backend/routes/auth.py · 2 findings",
-      risk: "risk 28 · medium",
-      badgeClass: "badge-medium",
-      score: 28,
-      explanation: "Replaced raw string query execution with parameterized SQL statement bindings.",
-      diff: `--- a/backend/routes/auth.py\n+++ b/backend/routes/auth.py\n@@ -42,8 +42,14 @@\n-    query = f"SELECT * FROM users WHERE email = '{email}'"\n+    query = "SELECT id, email FROM users WHERE email = :email"`,
+      label: "Critical findings",
+      value: String((secTestSummary.critical || 0) + commitFindingCounts.critical),
+      sub: secTestReport ? "commit + scanner combined" : "from commit analysis",
+      type: "critical",
     },
     {
-      sha: "c19e2fd",
-      fullSha: "c19e2fd912830114092b19280194092830114092",
-      msg: "chore(ci): pin github actions to sha",
-      meta: "Priya Nair · .github/workflows/deploy.yml · 1 finding",
-      risk: "risk 8 · low",
-      badgeClass: "badge-low",
-      score: 8,
-      explanation: "Pinned unversioned third-party GitHub Actions to immutable 40-character commit hashes.",
+      label: "High severity",
+      value: String((secTestSummary.high || 0) + commitFindingCounts.high),
+      sub: `across ${repos.length} repositories`,
+      type: "high",
     },
     {
-      sha: "f402a19",
-      fullSha: "f402a19011f592cb1475e330a8901f443810c512",
-      msg: "feat(search): add raw filter passthrough",
-      meta: "Alex Vance · api/v1/users/search.py · 3 findings",
-      risk: "risk 84 · critical",
-      badgeClass: "badge-critical",
-      score: 84,
-      explanation: "CRITICAL: Direct user parameter passed to database execution clause without escaping.",
+      label: "Medium severity",
+      value: String((secTestSummary.medium || 0) + commitFindingCounts.medium),
+      sub: "commit + scanner combined",
+      type: "medium",
     },
     {
-      sha: "a7710bb",
-      fullSha: "a7710bb3501a2ce08914efb900234acb7712aa90",
-      msg: "wip: skip auth for local testing",
-      meta: "Marcus Lee · middleware/session.py · 2 findings",
-      risk: "risk 62 · high",
-      badgeClass: "badge-high",
-      score: 62,
-      explanation: "HIGH: Authentication bypass logic committed into session middleware.",
-    },
-    {
-      sha: "031bd6e",
-      fullSha: "031bd6e8bca711832049e21196e2a871b53c19d4",
-      msg: "docs: update README badges",
-      meta: "Priya Nair · README.md · 0 findings",
-      risk: "risk 0 · low",
-      badgeClass: "badge-low",
-      score: 0,
-      explanation: "Documentation update with zero security impact.",
+      label: "Repos monitored",
+      value: String(repos.length),
+      sub: repos.length > 0
+        ? `${repos.reduce((s, r) => s + (r.commit_count || 0), 0).toLocaleString()} total commits`
+        : "no repos scanned yet",
+      type: "low",
     },
   ];
 
-  const findings = [
-    {
-      severity: "critical",
-      title: "SQL Injection Vector in User Query Filter",
-      evidence: "Payload: ' OR '1'='1 returned HTTP 200 with 150 rows.",
-      module: "injection",
-      endpoint: "POST /api/v1/users/search · CWE-89",
-      explanation: "Unsanitized user search parameters concatenated directly into PostgreSQL query builder clause.",
-      remediation: "Use parameterized prepared statement binding.",
-    },
-    {
-      severity: "high",
-      title: "Missing Content-Security-Policy header",
-      evidence: "Response lacks CSP, exposing app to XSS injection.",
-      module: "headers",
-      endpoint: "GET /repo · CWE-693",
-      explanation: "The HTTP response does not include a Content-Security-Policy header.",
-      remediation: "Add 'Content-Security-Policy: default-src \\'self\\''.",
-    },
-    {
-      severity: "high",
-      title: "Verbose stack trace exposed on 500",
-      evidence: "Internal file paths and package versions leaked.",
-      module: "exposure",
-      endpoint: "POST /repo/commit/analysis · CWE-209",
-      explanation: "Application uncaught exceptions return full tracebacks to client.",
-      remediation: "Implement global exception handler returning sanitized error response.",
-    },
-    {
-      severity: "medium",
-      title: "No rate limiting on OTP request endpoint",
-      evidence: "1000 req/min accepted without throttling.",
-      module: "ratelimit",
-      endpoint: "POST /tc-auth/otp/ · CWE-799",
-      explanation: "OTP generation endpoint allows brute-force flooding.",
-      remediation: "Configure sliding window rate limiter (5 requests / 60 seconds).",
-    },
-    {
-      severity: "medium",
-      title: "Weak JWT algorithm accepted",
-      evidence: "Server accepts alg:none on session validation.",
-      module: "auth",
-      endpoint: "GET /tc-auth/me · CWE-347",
-      explanation: "JWT decoder does not strictly whitelist cryptographic algorithms.",
-      remediation: "Enforce HS256/RS256 algorithm validation.",
-    },
-    {
-      severity: "info",
-      title: "Server header discloses framework version",
-      evidence: "Response includes uvicorn/0.30 in headers.",
-      module: "headers",
-      endpoint: "GET /tc-auth/config/pulse · CWE-200",
-      explanation: "Server banner leaks server stack information.",
-      remediation: "Disable server header in Uvicorn production startup.",
-    },
-  ];
-
-  const repos = [
-    {
-      name: "fastapi",
-      url: "fastapi/fastapi.git",
-      branch: "master",
-      commits: "13,250",
-      files: "420",
-      size: "9.2MB",
-      py: 83,
-      js: 5,
-      other: 12,
-      pyCount: 300,
-      jsCount: 18,
-    },
-    {
-      name: "threatlens-core",
-      url: "dev47929/threatlens-core",
-      branch: "main",
-      commits: "842",
-      files: "96",
-      size: "1.4MB",
-      py: 60,
-      js: 30,
-      other: 10,
-      pyCount: 58,
-      jsCount: 29,
-    },
-    {
-      name: "tc-auth-service",
-      url: "dev47929/tc-auth-service",
-      branch: "develop",
-      commits: "317",
-      files: "54",
-      size: "620KB",
-      py: 40,
-      js: 45,
-      other: 15,
-      pyCount: 22,
-      jsCount: 24,
-    },
-  ];
+  // ── Risk gauge ──
+  const avgRiskScore = latestCommits.length > 0
+    ? Math.round(latestCommits.reduce((s, c) => s + (c.summary?.risk_score || 0), 0) / latestCommits.length)
+    : 0;
+  const gaugeOffset = 314 - (314 * avgRiskScore) / 100;
+  const gaugeColor = avgRiskScore >= 80 ? "#ff4d4f" : avgRiskScore >= 50 ? "#ff9a3c" : avgRiskScore >= 20 ? "#f2c94c" : "#38bdf8";
 
   const handleOpenDetail = (item) => {
     setSelectedItem(item);
@@ -208,6 +169,10 @@ export default function DashboardLayout() {
     toast.success("Payload copied to clipboard!");
     setTimeout(() => setCopied(false), 2000);
   };
+
+  // ── Pulse display ──
+  const pulseHealthy = pulse?.status === "healthy" && pulse?.state === "active";
+  const scannerOnline = secTestReport !== null;
 
   return (
     <div
@@ -244,7 +209,7 @@ export default function DashboardLayout() {
             Threat<span className="text-[#38bdf8]">Lens</span>
           </div>
           <div className="font-mono text-[10px] text-[#8a99ad] tracking-[1.5px] uppercase ml-2 px-2 py-0.5 border border-[#2b3947] bg-[#12181f] rounded">
-            Dev Instance
+            {pulse ? pulse.state?.toUpperCase() || "ACTIVE" : "LOADING"}
           </div>
         </div>
 
@@ -254,14 +219,20 @@ export default function DashboardLayout() {
             <span
               className="w-2 h-2 rounded-full inline-block mr-2 animate-pulse"
               style={{
-                backgroundColor: "#38bdf8",
-                boxShadow: "0 0 10px #38bdf8",
+                backgroundColor: pulseHealthy ? "#38bdf8" : "#ff4d4f",
+                boxShadow: pulseHealthy ? "0 0 10px #38bdf8" : "0 0 10px #ff4d4f",
               }}
             />
-            API pulse: <span className="text-[#38bdf8] ml-1 font-semibold">nominal</span>
+            API pulse:{" "}
+            <span className={`ml-1 font-semibold ${pulseHealthy ? "text-[#38bdf8]" : "text-[#ff4d4f]"}`}>
+              {pulseHealthy ? "nominal" : pulse ? "degraded" : "connecting…"}
+            </span>
           </div>
           <div>
-            Scanner :8765 · <span className="text-[#38bdf8] font-semibold">online</span>
+            Scanner :8765 ·{" "}
+            <span className={`font-semibold ${scannerOnline ? "text-[#38bdf8]" : "text-[#ff4d4f]"}`}>
+              {scannerOnline ? "online" : "offline"}
+            </span>
           </div>
           <div className="text-[#d8e2e8] font-bold">{clockStr}</div>
         </div>
@@ -274,12 +245,12 @@ export default function DashboardLayout() {
               background: "linear-gradient(135deg, #4d9cff, #38bdf8)",
             }}
           >
-            {user?.name ? user.name.slice(0, 2).toUpperCase() : "DV"}
+            {user?.name ? user.name.slice(0, 2).toUpperCase() : "TL"}
           </div>
           <div>
-            <div className="font-mono text-[11px] text-white font-medium leading-none">{user?.name || "Dev"}</div>
+            <div className="font-mono text-[11px] text-white font-medium leading-none">{user?.name || "User"}</div>
             <div className="text-[#8a99ad] text-[9px] uppercase tracking-wider leading-none mt-0.5">
-              {user?.role || "superadmin"}
+              {user?.role || "analyst"}
             </div>
           </div>
         </div>
@@ -292,131 +263,74 @@ export default function DashboardLayout() {
           <div className="font-mono text-[10px] text-[#8a99ad] uppercase tracking-[1.5px] my-3 mx-2">
             Overview
           </div>
-          <button
-            onClick={() => setActiveNav("dashboard")}
-            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs border transition-all text-left ${
-              activeNav === "dashboard"
-                ? "bg-[#141b21] text-white border-[#38bdf8]/40 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
-                : "text-[#8a99ad] border-transparent hover:bg-white/[0.04] hover:text-white"
-            }`}
-          >
-            <span className={`w-4 text-center font-mono text-xs ${activeNav === "dashboard" ? "text-[#38bdf8]" : ""}`}>
-              ▣
-            </span>
-            <span>Dashboard</span>
-          </button>
-          <button
-            onClick={() => setActiveNav("repositories")}
-            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs border transition-all text-left ${
-              activeNav === "repositories"
-                ? "bg-[#141b21] text-white border-[#38bdf8]/40 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
-                : "text-[#8a99ad] border-transparent hover:bg-white/[0.04] hover:text-white"
-            }`}
-          >
-            <span className={`w-4 text-center font-mono text-xs ${activeNav === "repositories" ? "text-[#38bdf8]" : ""}`}>
-              ◧
-            </span>
-            <span>Repositories</span>
-          </button>
-          <button
-            onClick={() => setActiveNav("commits")}
-            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs border transition-all text-left ${
-              activeNav === "commits"
-                ? "bg-[#141b21] text-white border-[#38bdf8]/40 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
-                : "text-[#8a99ad] border-transparent hover:bg-white/[0.04] hover:text-white"
-            }`}
-          >
-            <span className={`w-4 text-center font-mono text-xs ${activeNav === "commits" ? "text-[#38bdf8]" : ""}`}>
-              ↯
-            </span>
-            <span>Commits</span>
-          </button>
+          {[
+            { id: "dashboard", icon: "▣", label: "Dashboard" },
+            { id: "repositories", icon: "◧", label: "Repositories" },
+            { id: "commits", icon: "↯", label: "Commits" },
+          ].map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveNav(item.id)}
+              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs border transition-all text-left ${
+                activeNav === item.id
+                  ? "bg-[#141b21] text-white border-[#38bdf8]/40 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
+                  : "text-[#8a99ad] border-transparent hover:bg-white/[0.04] hover:text-white"
+              }`}
+            >
+              <span className={`w-4 text-center font-mono text-xs ${activeNav === item.id ? "text-[#38bdf8]" : ""}`}>
+                {item.icon}
+              </span>
+              <span>{item.label}</span>
+            </button>
+          ))}
 
           <div className="font-mono text-[10px] text-[#8a99ad] uppercase tracking-[1.5px] mt-4 mb-2 mx-2">
             Security
           </div>
-          <button
-            onClick={() => setActiveNav("findings")}
-            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs border transition-all text-left ${
-              activeNav === "findings"
-                ? "bg-[#141b21] text-white border-[#38bdf8]/40 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
-                : "text-[#8a99ad] border-transparent hover:bg-white/[0.04] hover:text-white"
-            }`}
-          >
-            <span className={`w-4 text-center font-mono text-xs ${activeNav === "findings" ? "text-[#38bdf8]" : ""}`}>
-              ⌁
-            </span>
-            <span>Live Findings</span>
-          </button>
-          <button
-            onClick={() => setActiveNav("secrets")}
-            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs border transition-all text-left ${
-              activeNav === "secrets"
-                ? "bg-[#141b21] text-white border-[#38bdf8]/40 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
-                : "text-[#8a99ad] border-transparent hover:bg-white/[0.04] hover:text-white"
-            }`}
-          >
-            <span className={`w-4 text-center font-mono text-xs ${activeNav === "secrets" ? "text-[#38bdf8]" : ""}`}>
-              ⚑
-            </span>
-            <span>Secret Detection</span>
-          </button>
-          <button
-            onClick={() => setActiveNav("cicd")}
-            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs border transition-all text-left ${
-              activeNav === "cicd"
-                ? "bg-[#141b21] text-white border-[#38bdf8]/40 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
-                : "text-[#8a99ad] border-transparent hover:bg-white/[0.04] hover:text-white"
-            }`}
-          >
-            <span className={`w-4 text-center font-mono text-xs ${activeNav === "cicd" ? "text-[#38bdf8]" : ""}`}>
-              ◫
-            </span>
-            <span>CI/CD & Docker</span>
-          </button>
+          {[
+            { id: "findings", icon: "⌁", label: "Live Findings" },
+            { id: "secrets", icon: "⚑", label: "Secret Detection" },
+            { id: "cicd", icon: "◫", label: "CI/CD & Docker" },
+          ].map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveNav(item.id)}
+              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs border transition-all text-left ${
+                activeNav === item.id
+                  ? "bg-[#141b21] text-white border-[#38bdf8]/40 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
+                  : "text-[#8a99ad] border-transparent hover:bg-white/[0.04] hover:text-white"
+              }`}
+            >
+              <span className={`w-4 text-center font-mono text-xs ${activeNav === item.id ? "text-[#38bdf8]" : ""}`}>
+                {item.icon}
+              </span>
+              <span>{item.label}</span>
+            </button>
+          ))}
 
           <div className="font-mono text-[10px] text-[#8a99ad] uppercase tracking-[1.5px] mt-4 mb-2 mx-2">
             Admin
           </div>
-          <button
-            onClick={() => setActiveNav("accounts")}
-            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs border transition-all text-left ${
-              activeNav === "accounts"
-                ? "bg-[#141b21] text-white border-[#38bdf8]/40 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
-                : "text-[#8a99ad] border-transparent hover:bg-white/[0.04] hover:text-white"
-            }`}
-          >
-            <span className={`w-4 text-center font-mono text-xs ${activeNav === "accounts" ? "text-[#38bdf8]" : ""}`}>
-              ☰
-            </span>
-            <span>Accounts</span>
-          </button>
-          <button
-            onClick={() => setActiveNav("config")}
-            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs border transition-all text-left ${
-              activeNav === "config"
-                ? "bg-[#141b21] text-white border-[#38bdf8]/40 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
-                : "text-[#8a99ad] border-transparent hover:bg-white/[0.04] hover:text-white"
-            }`}
-          >
-            <span className={`w-4 text-center font-mono text-xs ${activeNav === "config" ? "text-[#38bdf8]" : ""}`}>
-              ⚙
-            </span>
-            <span>System Config</span>
-          </button>
-          <button
-            onClick={() => setActiveNav("sessions")}
-            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs border transition-all text-left ${
-              activeNav === "sessions"
-                ? "bg-[#141b21] text-white border-[#38bdf8]/40 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
-                : "text-[#8a99ad] border-transparent hover:bg-white/[0.04] hover:text-white"
-            }`}
-          >
-            <span className={`w-4 text-center font-mono text-xs ${activeNav === "sessions" ? "text-[#38bdf8]" : ""}`}>
-              ◔
-            </span>
-            <span>Sessions</span>
-          </button>
+          {[
+            { id: "accounts", icon: "☰", label: "Accounts" },
+            { id: "config", icon: "⚙", label: "System Config" },
+            { id: "sessions", icon: "◔", label: "Sessions" },
+          ].map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveNav(item.id)}
+              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs border transition-all text-left ${
+                activeNav === item.id
+                  ? "bg-[#141b21] text-white border-[#38bdf8]/40 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
+                  : "text-[#8a99ad] border-transparent hover:bg-white/[0.04] hover:text-white"
+              }`}
+            >
+              <span className={`w-4 text-center font-mono text-xs ${activeNav === item.id ? "text-[#38bdf8]" : ""}`}>
+                {item.icon}
+              </span>
+              <span>{item.label}</span>
+            </button>
+          ))}
         </nav>
 
         {/* Main Content Area */}
@@ -428,7 +342,9 @@ export default function DashboardLayout() {
                 <div>
                   <h1 className="font-mono text-lg font-bold tracking-tight text-white">Security Overview</h1>
                   <p className="text-xs text-[#8a99ad] mt-1 font-mono">
-                    repo.threatlens.local · scanning 3 repositories · live DAST daemon on :8765
+                    {repos.length > 0
+                      ? `scanning ${repos.length} repositories · ${scannerOnline ? "live DAST daemon on :8765" : "scanner offline"}`
+                      : "no repositories scanned yet · connect backend to get started"}
                   </p>
                 </div>
                 <div className="flex items-center gap-3 font-mono text-xs">
@@ -449,51 +365,32 @@ export default function DashboardLayout() {
 
               {/* KPI ROW */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4.5">
-                {kpis.map((k, i) => (
-                  <div
-                    key={i}
-                    className="bg-[#10151a] border border-[#263544] hover:border-[#38bdf8]/40 rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-all"
-                  >
-                    <div
-                      className="absolute left-0 top-0 bottom-0 w-[3.5px]"
-                      style={{
-                        backgroundColor:
-                          k.type === "critical"
-                            ? "#ff4d4f"
-                            : k.type === "high"
-                            ? "#ff9a3c"
-                            : k.type === "medium"
-                            ? "#f2c94c"
-                            : "#38bdf8",
-                        boxShadow:
-                          k.type === "critical"
-                            ? "0 0 10px #ff4d4f"
-                            : k.type === "high"
-                            ? "0 0 10px #ff9a3c"
-                            : k.type === "medium"
-                            ? "0 0 10px #f2c94c"
-                            : "0 0 10px #38bdf8",
-                      }}
-                    />
-                    <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">{k.label}</div>
-                    <div
-                      className="font-mono text-xl font-bold mt-1.5"
-                      style={{
-                        color:
-                          k.type === "critical"
-                            ? "#ff4d4f"
-                            : k.type === "high"
-                            ? "#ff9a3c"
-                            : k.type === "medium"
-                            ? "#f2c94c"
-                            : "#38bdf8",
-                      }}
-                    >
-                      {k.value}
-                    </div>
-                    <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">{k.sub}</div>
-                  </div>
-                ))}
+                {loading
+                  ? Array.from({ length: 4 }).map((_, i) => (
+                      <SkeletonBlock key={i} className="h-24 rounded-xl" />
+                    ))
+                  : kpis.map((k, i) => (
+                      <div
+                        key={i}
+                        className="bg-[#10151a] border border-[#263544] hover:border-[#38bdf8]/40 rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-all"
+                      >
+                        <div
+                          className="absolute left-0 top-0 bottom-0 w-[3.5px]"
+                          style={{
+                            backgroundColor: severityColor(k.type),
+                            boxShadow: `0 0 10px ${severityColor(k.type)}`,
+                          }}
+                        />
+                        <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">{k.label}</div>
+                        <div
+                          className="font-mono text-xl font-bold mt-1.5"
+                          style={{ color: severityColor(k.type) }}
+                        >
+                          {k.value}
+                        </div>
+                        <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">{k.sub}</div>
+                      </div>
+                    ))}
               </div>
 
               {/* GAUGE + COMMITS SPLIT */}
@@ -505,56 +402,67 @@ export default function DashboardLayout() {
                       <h2 className="font-mono text-xs font-bold text-white uppercase tracking-wider">
                         Latest analyzed commits
                       </h2>
-                      <div className="font-mono text-[10px] text-[#8a99ad]">GET /repo/12/commits</div>
+                      <div className="font-mono text-[10px] text-[#8a99ad]">
+                        {repos.length > 0 ? `GET /repo/${repos[0]?.id}/commits` : "no repo"}
+                      </div>
                     </div>
 
                     <div className="divide-y divide-[#222e3a]">
-                      {commits.map((c, i) => (
-                        <div
-                          key={i}
-                          onClick={() => handleOpenDetail(c)}
-                          className="grid grid-cols-[auto_1fr_auto] gap-3.5 items-center p-3 px-4.5 hover:bg-white/[0.03] cursor-pointer transition-colors"
-                        >
-                          <span className="font-mono text-[#38bdf8] bg-[#38bdf8]/10 px-2 py-0.5 rounded text-[11px] border border-[#38bdf8]/30 font-semibold shadow-sm">
-                            {c.sha}
-                          </span>
-                          <div className="min-w-0 pr-2">
-                            <div className="text-[#d8e2e8] text-xs font-semibold truncate">{c.msg}</div>
-                            <div className="text-[#8a99ad] text-[10.5px] font-mono truncate mt-0.5">{c.meta}</div>
+                      {loading ? (
+                        Array.from({ length: 4 }).map((_, i) => (
+                          <div key={i} className="p-3 px-4.5">
+                            <SkeletonBlock className="h-10 w-full" />
                           </div>
-                          <span
-                            className="font-mono text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full border whitespace-nowrap"
-                            style={{
-                              color:
-                                c.score >= 80
-                                  ? "#ff4d4f"
-                                  : c.score >= 50
-                                  ? "#ff9a3c"
-                                  : c.score >= 20
-                                  ? "#f2c94c"
-                                  : "#38bdf8",
-                              borderColor:
-                                c.score >= 80
-                                  ? "#ff4d4f"
-                                  : c.score >= 50
-                                  ? "#ff9a3c"
-                                  : c.score >= 20
-                                  ? "#f2c94c"
-                                  : "#38bdf8",
-                              backgroundColor:
-                                c.score >= 80
-                                  ? "rgba(255,77,79,.10)"
-                                  : c.score >= 50
-                                  ? "rgba(255,154,60,.10)"
-                                  : c.score >= 20
-                                  ? "rgba(242,201,76,.10)"
-                                  : "rgba(56,189,248,.10)",
-                            }}
-                          >
-                            {c.risk}
-                          </span>
+                        ))
+                      ) : latestCommits.length === 0 ? (
+                        <div className="p-8 text-center">
+                          <WifiOff className="w-6 h-6 mx-auto text-[#8a99ad] mb-2" />
+                          <p className="font-mono text-xs text-[#8a99ad]">No commit data available yet</p>
+                          <p className="font-mono text-[10px] text-[#6f8390] mt-1">Run the CLI scanner to analyze commits</p>
                         </div>
-                      ))}
+                      ) : (
+                        latestCommits.map((c, i) => {
+                          const score = c.summary?.risk_score || 0;
+                          const level = c.summary?.risk_level || "low";
+                          const color = severityColor(level);
+                          return (
+                            <div
+                              key={i}
+                              onClick={() => handleOpenDetail({
+                                sha: c.commit?.short_sha,
+                                fullSha: c.commit?.sha,
+                                msg: c.commit?.message,
+                                meta: `${c.commit?.author_name} · ${c.summary?.files_changed || 0} files · ${(c.findings || []).length} findings`,
+                                risk: `risk ${score} · ${level}`,
+                                score,
+                                explanation: c.findings?.[0]?.description || "",
+                                evidence: c.findings?.[0]?.evidence || "",
+                              })}
+                              className="grid grid-cols-[auto_1fr_auto] gap-3.5 items-center p-3 px-4.5 hover:bg-white/[0.03] cursor-pointer transition-colors"
+                            >
+                              <span className="font-mono text-[#38bdf8] bg-[#38bdf8]/10 px-2 py-0.5 rounded text-[11px] border border-[#38bdf8]/30 font-semibold shadow-sm">
+                                {c.commit?.short_sha}
+                              </span>
+                              <div className="min-w-0 pr-2">
+                                <div className="text-[#d8e2e8] text-xs font-semibold truncate">{c.commit?.message}</div>
+                                <div className="text-[#8a99ad] text-[10.5px] font-mono truncate mt-0.5">
+                                  {c.commit?.author_name} · {timeAgo(c.commit?.authored_at)} · {c.summary?.files_changed || 0} files
+                                </div>
+                              </div>
+                              <span
+                                className="font-mono text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full border whitespace-nowrap"
+                                style={{
+                                  color,
+                                  borderColor: color,
+                                  backgroundColor: `${color}14`,
+                                }}
+                              >
+                                risk {score} · {level}
+                              </span>
+                            </div>
+                          );
+                        })
+                      )}
                     </div>
                   </div>
                 </div>
@@ -566,7 +474,7 @@ export default function DashboardLayout() {
                       <h2 className="font-mono text-xs font-bold text-white uppercase tracking-wider">
                         Repo risk score
                       </h2>
-                      <div className="font-mono text-[10px] text-[#8a99ad]">weighted</div>
+                      <div className="font-mono text-[10px] text-[#8a99ad]">weighted average</div>
                     </div>
 
                     <div className="flex items-center gap-6 p-5 px-6">
@@ -578,15 +486,15 @@ export default function DashboardLayout() {
                             cy="60"
                             r="50"
                             fill="none"
-                            stroke="#ff9a3c"
+                            stroke={gaugeColor}
                             strokeWidth="10"
                             strokeDasharray="314"
-                            strokeDashoffset="105"
+                            strokeDashoffset={gaugeOffset}
                             strokeLinecap="round"
                           />
                         </svg>
                         <div className="absolute inset-0 flex flex-col items-center justify-center font-mono">
-                          <b className="text-lg text-white font-bold">58</b>
+                          <b className="text-lg text-white font-bold">{avgRiskScore}</b>
                           <span className="text-[8.5px] text-[#8a99ad] uppercase tracking-wider">/ 100</span>
                         </div>
                       </div>
@@ -618,10 +526,16 @@ export default function DashboardLayout() {
                       <div className="font-mono text-[10px] text-[#8a99ad]">/tc-auth/config/pulse</div>
                     </div>
                     <div className="p-3.5 px-4 font-mono text-[11px] text-[#8a99ad] leading-relaxed">
-                      accounts: <span className="text-white font-bold">18</span> · sessions:{" "}
-                      <span className="text-white font-bold">6</span> · oauth:{" "}
-                      <span className="text-white font-bold">4</span> · otp:{" "}
-                      <span className="text-white font-bold">1</span>
+                      {counts ? (
+                        <>
+                          accounts: <span className="text-white font-bold">{counts.accounts}</span> · sessions:{" "}
+                          <span className="text-white font-bold">{counts.sessions}</span> · oauth:{" "}
+                          <span className="text-white font-bold">{counts.oauth}</span> · otp:{" "}
+                          <span className="text-white font-bold">{counts.otp}</span>
+                        </>
+                      ) : (
+                        <span className="text-[#6f8390]">connecting to backend…</span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -633,65 +547,72 @@ export default function DashboardLayout() {
                   <h2 className="font-mono text-xs font-bold text-white uppercase tracking-wider">
                     Live SecTest findings
                   </h2>
-                  <div className="font-mono text-[10px] text-[#8a99ad]">GET :8765/report.json · scanned 4 min ago</div>
+                  <div className="font-mono text-[10px] text-[#8a99ad]">
+                    GET :8765/report.json{secTestReport?.scanned_at ? ` · scanned ${timeAgo(secTestReport.scanned_at)}` : ""}
+                  </div>
                 </div>
 
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse text-xs">
-                    <thead>
-                      <tr className="border-b border-[#253240] text-[10px] font-mono uppercase tracking-wider text-[#8a99ad] bg-[#0c1015]">
-                        <th className="py-3 px-4.5">Severity</th>
-                        <th className="py-3 px-4.5">Finding</th>
-                        <th className="py-3 px-4.5">Module</th>
-                        <th className="py-3 px-4.5">Endpoint / CWE</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#222e3a]">
-                      {findings.map((f, i) => {
-                        const isCrit = f.severity === "critical";
-                        const isHigh = f.severity === "high";
-                        const isMed = f.severity === "medium";
-                        const isInfo = f.severity === "info";
-                        const color = isCrit
-                          ? "#ff4d4f"
-                          : isHigh
-                          ? "#ff9a3c"
-                          : isMed
-                          ? "#f2c94c"
-                          : isInfo
-                          ? "#4d9cff"
-                          : "#38bdf8";
-
-                        return (
-                          <tr
-                            key={i}
-                            onClick={() => handleOpenDetail(f)}
-                            className="hover:bg-white/[0.03] cursor-pointer transition-colors"
-                          >
-                            <td className="py-3 px-4.5 align-top">
-                              <span
-                                className="font-mono text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full border whitespace-nowrap font-medium"
-                                style={{
-                                  color: color,
-                                  borderColor: color,
-                                  backgroundColor: `${color}14`,
-                                }}
-                              >
-                                {f.severity}
-                              </span>
-                            </td>
-                            <td className="py-3 px-4.5 align-top">
-                              <div className="font-semibold text-white">{f.title}</div>
-                              <div className="font-mono text-[#8a99ad] text-[10.5px] mt-0.5">{f.evidence}</div>
-                            </td>
-                            <td className="py-3 px-4.5 align-top font-mono text-[10.5px] text-[#8a99ad]">{f.module}</td>
-                            <td className="py-3 px-4.5 align-top font-mono text-[10.5px] text-[#8a99ad]">{f.endpoint}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                {!scannerOnline ? (
+                  <div className="p-8 text-center">
+                    <WifiOff className="w-6 h-6 mx-auto text-[#ff9a3c] mb-2" />
+                    <p className="font-mono text-xs text-[#8a99ad]">SecTest scanner is offline</p>
+                    <p className="font-mono text-[10px] text-[#6f8390] mt-1">Start the scanner on port 8765 to see live vulnerability findings</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse text-xs">
+                      <thead>
+                        <tr className="border-b border-[#253240] text-[10px] font-mono uppercase tracking-wider text-[#8a99ad] bg-[#0c1015]">
+                          <th className="py-3 px-4.5">Severity</th>
+                          <th className="py-3 px-4.5">Finding</th>
+                          <th className="py-3 px-4.5">Module</th>
+                          <th className="py-3 px-4.5">Endpoint / CWE</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#222e3a]">
+                        {secTestFindings.map((f, i) => {
+                          const color = severityColor(f.severity);
+                          return (
+                            <tr
+                              key={i}
+                              onClick={() => handleOpenDetail({
+                                title: f.title,
+                                severity: f.severity,
+                                module: f.module,
+                                endpoint: `${f.meta?.endpoint || ""} · ${f.meta?.cwe || ""}`,
+                                evidence: f.evidence,
+                                explanation: f.explanation,
+                                remediation: f.remediation,
+                              })}
+                              className="hover:bg-white/[0.03] cursor-pointer transition-colors"
+                            >
+                              <td className="py-3 px-4.5 align-top">
+                                <span
+                                  className="font-mono text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full border whitespace-nowrap font-medium"
+                                  style={{
+                                    color,
+                                    borderColor: color,
+                                    backgroundColor: `${color}14`,
+                                  }}
+                                >
+                                  {f.severity}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4.5 align-top">
+                                <div className="font-semibold text-white">{f.title}</div>
+                                <div className="font-mono text-[#8a99ad] text-[10.5px] mt-0.5">{f.evidence}</div>
+                              </td>
+                              <td className="py-3 px-4.5 align-top font-mono text-[10.5px] text-[#8a99ad]">{f.module}</td>
+                              <td className="py-3 px-4.5 align-top font-mono text-[10.5px] text-[#8a99ad]">
+                                {f.meta?.endpoint} · {f.meta?.cwe}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
 
               {/* SCANNED REPOSITORIES GRID */}
@@ -704,50 +625,76 @@ export default function DashboardLayout() {
                 </div>
 
                 <div className="p-4.5 grid grid-cols-1 md:grid-cols-3 gap-4.5">
-                  {repos.map((r, i) => (
-                    <div
-                      key={i}
-                      onClick={() => setActiveNav("repositories")}
-                      className="bg-[#10151a] border border-[#283747] hover:border-[#38bdf8]/40 rounded-xl p-4 space-y-3.5 shadow-sm transition-all cursor-pointer"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="font-mono font-bold text-xs text-white">{r.name}</div>
-                          <div className="text-[10.5px] text-[#8a99ad] font-mono mt-0.5">{r.url}</div>
-                        </div>
-                        <div className="font-mono text-[10px] text-[#38bdf8] border border-[#2b3947] bg-[#38bdf8]/10 px-2 py-0.5 rounded font-medium">
-                          {r.branch}
-                        </div>
-                      </div>
-
-                      <div className="flex gap-5 font-mono mt-3">
-                        <div>
-                          <b className="text-sm text-white">{r.commits}</b>
-                          <span className="text-[9px] text-[#8a99ad] uppercase block mt-0.5">commits</span>
-                        </div>
-                        <div>
-                          <b className="text-sm text-white">{r.files}</b>
-                          <span className="text-[9px] text-[#8a99ad] uppercase block mt-0.5">files</span>
-                        </div>
-                        <div>
-                          <b className="text-sm text-white">{r.size}</b>
-                          <span className="text-[9px] text-[#8a99ad] uppercase block mt-0.5">size</span>
-                        </div>
-                      </div>
-
-                      <div className="flex h-1.5 rounded overflow-hidden bg-[#222e3a] mt-3">
-                        <div style={{ width: `${r.py}%` }} className="bg-[#4d9cff]" title={`Python ${r.py}%`} />
-                        <div style={{ width: `${r.js}%` }} className="bg-[#f2c94c]" title={`JavaScript ${r.js}%`} />
-                        <div style={{ width: `${r.other}%` }} className="bg-[#222e3a]" />
-                      </div>
-
-                      <div className="flex gap-3.5 text-[10px] font-mono text-[#8a99ad] mt-2">
-                        <span>● Python {r.pyCount}</span>
-                        <span>● JS {r.jsCount}</span>
-                        <span>● other</span>
-                      </div>
+                  {loading ? (
+                    Array.from({ length: 3 }).map((_, i) => (
+                      <SkeletonBlock key={i} className="h-44 rounded-xl" />
+                    ))
+                  ) : repos.length === 0 ? (
+                    <div className="md:col-span-3 p-8 text-center">
+                      <p className="font-mono text-xs text-[#8a99ad]">No repositories scanned yet</p>
+                      <p className="font-mono text-[10px] text-[#6f8390] mt-1">Use the CLI backend to scan a repository</p>
                     </div>
-                  ))}
+                  ) : (
+                    repos.slice(0, 6).map((r, i) => {
+                      const langs = r.languages || {};
+                      const langTotal = Object.values(langs).reduce((s, v) => s + v, 0) || 1;
+                      const langEntries = Object.entries(langs).sort((a, b) => b[1] - a[1]);
+                      const langColors = ["#4d9cff", "#f2c94c", "#38bdf8", "#10b981", "#a78bfa"];
+
+                      return (
+                        <div
+                          key={i}
+                          onClick={() => setActiveNav("repositories")}
+                          className="bg-[#10151a] border border-[#283747] hover:border-[#38bdf8]/40 rounded-xl p-4 space-y-3.5 shadow-sm transition-all cursor-pointer"
+                        >
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <div className="font-mono font-bold text-xs text-white">{r.name}</div>
+                              <div className="text-[10.5px] text-[#8a99ad] font-mono mt-0.5">{r.username}/{r.name}</div>
+                            </div>
+                            <div className="font-mono text-[10px] text-[#38bdf8] border border-[#2b3947] bg-[#38bdf8]/10 px-2 py-0.5 rounded font-medium">
+                              {r.default_branch}
+                            </div>
+                          </div>
+
+                          <div className="flex gap-5 font-mono mt-3">
+                            <div>
+                              <b className="text-sm text-white">{(r.commit_count || 0).toLocaleString()}</b>
+                              <span className="text-[9px] text-[#8a99ad] uppercase block mt-0.5">commits</span>
+                            </div>
+                            <div>
+                              <b className="text-sm text-white">{r.files_total || 0}</b>
+                              <span className="text-[9px] text-[#8a99ad] uppercase block mt-0.5">files</span>
+                            </div>
+                            <div>
+                              <b className="text-sm text-white">{formatBytes(r.total_size)}</b>
+                              <span className="text-[9px] text-[#8a99ad] uppercase block mt-0.5">size</span>
+                            </div>
+                          </div>
+
+                          <div className="flex h-1.5 rounded overflow-hidden bg-[#222e3a] mt-3">
+                            {langEntries.map(([lang, count], li) => (
+                              <div
+                                key={lang}
+                                style={{ width: `${(count / langTotal) * 100}%` }}
+                                className={`${li === 0 ? "rounded-l" : ""}`}
+                                title={`${lang} ${Math.round((count / langTotal) * 100)}%`}
+                                {...{ style: { width: `${(count / langTotal) * 100}%`, backgroundColor: langColors[li % langColors.length] } }}
+                              />
+                            ))}
+                          </div>
+
+                          <div className="flex gap-3.5 text-[10px] font-mono text-[#8a99ad] mt-2 flex-wrap">
+                            {langEntries.slice(0, 3).map(([lang, count], li) => (
+                              <span key={lang}>
+                                <span style={{ color: langColors[li % langColors.length] }}>●</span> {lang} {count}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
             </>

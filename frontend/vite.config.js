@@ -24,6 +24,11 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      "/repo": {
+        target: process.env.VITE_API_BASE_URL || "https://app.totalchaos.online",
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
 });

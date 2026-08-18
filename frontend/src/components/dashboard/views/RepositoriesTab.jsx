@@ -1,33 +1,47 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  FolderGit2,
-  GitBranch,
-  GitCommit,
-  FileCode,
-  Layers,
-  ShieldCheck,
-  ShieldAlert,
   Search,
   Plus,
   ExternalLink,
-  ChevronRight,
   Download,
-  Terminal,
-  Clock,
   Sparkles,
+  WifiOff,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { MOCK_REPOSITORIES } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
+import { repoApi, formatBytes } from "@/lib/api";
 
 export default function RepositoriesTab({ onSelectRepo, onInspectCommit }) {
+  const { token } = useAuth();
+  const [repos, setRepos] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLanguage, setSelectedLanguage] = useState("all");
-  const [activeRepoId, setActiveRepoId] = useState(MOCK_REPOSITORIES[0]?.id || 1);
+  const [activeRepoId, setActiveRepoId] = useState(null);
 
-  const repos = MOCK_REPOSITORIES.map((r) => ({
-    ...r,
-    healthScore: r.riskLevel === "low" ? 98 : r.riskLevel === "high" ? 64 : 32,
-  }));
+  useEffect(() => {
+    const fetchRepos = async () => {
+      if (!token) return;
+      setLoading(true);
+      try {
+        const data = await repoApi.getRepos(token);
+        const repoList = Array.isArray(data) ? data : [];
+        setRepos(repoList);
+        if (repoList.length > 0 && !activeRepoId) {
+          setActiveRepoId(repoList[0].id);
+        }
+      } catch (err) {
+        toast.error("Failed to load repositories: " + err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRepos();
+  }, [token]);
+
+  // Compute all unique languages across repos
+  const allLanguages = [...new Set(repos.flatMap((r) => Object.keys(r.languages || {})))];
 
   const filteredRepos = repos.filter((r) => {
     const matchesSearch =
@@ -39,7 +53,10 @@ export default function RepositoriesTab({ onSelectRepo, onInspectCommit }) {
     return matchesSearch && matchesLang;
   });
 
-  const activeRepo = repos.find((r) => r.id === activeRepoId) || repos[0];
+  // Computed KPIs
+  const totalCommits = repos.reduce((s, r) => s + (r.commit_count || 0), 0);
+  const totalFiles = repos.reduce((s, r) => s + (r.files_total || 0), 0);
+  const totalSize = repos.reduce((s, r) => s + (r.total_size || 0), 0);
 
   const handleScanRepo = (repoName) => {
     toast.info(`Initiating AST security audit on ${repoName}...`);
@@ -49,6 +66,8 @@ export default function RepositoriesTab({ onSelectRepo, onInspectCommit }) {
     toast.success("Exported repository architecture & security manifest (JSON)");
   };
 
+  const langColors = ["#4d9cff", "#f2c94c", "#38bdf8", "#10b981", "#a78bfa", "#f472b6"];
+
   return (
     <div className="space-y-7">
       {/* Top Page Header */}
@@ -56,7 +75,7 @@ export default function RepositoriesTab({ onSelectRepo, onInspectCommit }) {
         <div>
           <h1 className="font-mono text-lg font-bold tracking-tight text-white">Monitored Repositories</h1>
           <p className="text-xs text-[#8a99ad] mt-1 font-mono">
-            GET /repo · 4 codebases monitored · automated AST static analysis & branch tracking
+            GET /repo · {repos.length} codebases monitored · automated AST static analysis & branch tracking
           </p>
         </div>
         <div className="flex items-center gap-3 font-mono text-xs">
@@ -82,29 +101,29 @@ export default function RepositoriesTab({ onSelectRepo, onInspectCommit }) {
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
           <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#38bdf8] shadow-[0_0_10px_#38bdf8]" />
           <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Active Codebases</div>
-          <div className="font-mono text-xl font-bold mt-1.5 text-white">4 Monitored</div>
+          <div className="font-mono text-xl font-bold mt-1.5 text-white">{loading ? "…" : `${repos.length} Monitored`}</div>
           <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">100% git remote synced</div>
         </div>
 
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
           <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#38bdf8] shadow-[0_0_10px_#38bdf8]" />
           <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Indexed Commits</div>
-          <div className="font-mono text-xl font-bold mt-1.5 text-white">2,282 Total</div>
-          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">FastAPI: 13,250 upstream</div>
+          <div className="font-mono text-xl font-bold mt-1.5 text-white">{loading ? "…" : `${totalCommits.toLocaleString()} Total`}</div>
+          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">across all repositories</div>
         </div>
 
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#ff4d4f] shadow-[0_0_10px_#ff4d4f]" />
-          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Vulnerable Targets</div>
-          <div className="font-mono text-xl font-bold mt-1.5 text-[#ff4d4f]">2 Detected</div>
-          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">02_vulnerable_ecommerce, fintech</div>
+          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#38bdf8] shadow-[0_0_10px_#38bdf8]" />
+          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Total Files</div>
+          <div className="font-mono text-xl font-bold mt-1.5 text-white">{loading ? "…" : `${totalFiles.toLocaleString()} Tracked`}</div>
+          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">indexed for analysis</div>
         </div>
 
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
           <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#38bdf8] shadow-[0_0_10px_#38bdf8]" />
           <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Total Footprint</div>
-          <div className="font-mono text-xl font-bold mt-1.5 text-white">38.4 MB</div>
-          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">936 files indexed</div>
+          <div className="font-mono text-xl font-bold mt-1.5 text-white">{loading ? "…" : formatBytes(totalSize)}</div>
+          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">{totalFiles.toLocaleString()} files indexed</div>
         </div>
       </div>
 
@@ -124,8 +143,8 @@ export default function RepositoriesTab({ onSelectRepo, onInspectCommit }) {
         </div>
 
         {/* Language Filter Chips */}
-        <div className="flex items-center gap-2">
-          {["all", "Python", "JavaScript", "TypeScript", "SQL"].map((lang) => (
+        <div className="flex items-center gap-2 flex-wrap">
+          {["all", ...allLanguages.slice(0, 5)].map((lang) => (
             <button
               key={lang}
               onClick={() => setSelectedLanguage(lang)}
@@ -142,105 +161,131 @@ export default function RepositoriesTab({ onSelectRepo, onInspectCommit }) {
       </div>
 
       {/* Main Repositories Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5.5">
-        {filteredRepos.map((repo) => {
-          const isVulnerable = repo.riskLevel === "critical" || repo.riskLevel === "high";
-          const isSelected = activeRepoId === repo.id;
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5.5">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="bg-[#1a2330] rounded-xl h-56 animate-pulse" />
+          ))}
+        </div>
+      ) : filteredRepos.length === 0 ? (
+        <div className="text-center py-16">
+          <WifiOff className="w-8 h-8 mx-auto text-[#8a99ad] mb-3" />
+          <p className="font-mono text-sm text-[#8a99ad]">
+            {repos.length === 0 ? "No repositories found" : "No repos match your filters"}
+          </p>
+          <p className="font-mono text-xs text-[#6f8390] mt-1">
+            {repos.length === 0 ? "Use the CLI backend to scan a repository first" : "Try adjusting your search or language filter"}
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5.5">
+          {filteredRepos.map((repo) => {
+            const isSelected = activeRepoId === repo.id;
+            const langs = repo.languages || {};
+            const langTotal = Object.values(langs).reduce((s, v) => s + v, 0) || 1;
+            const langEntries = Object.entries(langs).sort((a, b) => b[1] - a[1]);
 
-          return (
-            <div
-              key={repo.id}
-              onClick={() => setActiveRepoId(repo.id)}
-              className={`bg-[#10151a] border rounded-xl p-5 space-y-4 shadow-[0_4px_20px_rgba(0,0,0,0.3)] cursor-pointer transition-all ${
-                isSelected
-                  ? "border-[#38bdf8] shadow-[0_0_15px_rgba(56,189,248,0.2)] bg-[#121820]"
-                  : "border-[#263544] hover:border-[#2f4255]"
-              }`}
-            >
-              {/* Header: Name + URL + Risk Status */}
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-mono font-bold text-sm text-white">{repo.name}</h3>
-                    <span className="font-mono text-[10px] text-[#38bdf8] bg-[#38bdf8]/10 border border-[#38bdf8]/30 px-1.5 py-0.5 rounded">
-                      {repo.default_branch || "main"}
-                    </span>
+            return (
+              <div
+                key={repo.id}
+                onClick={() => setActiveRepoId(repo.id)}
+                className={`bg-[#10151a] border rounded-xl p-5 space-y-4 shadow-[0_4px_20px_rgba(0,0,0,0.3)] cursor-pointer transition-all ${
+                  isSelected
+                    ? "border-[#38bdf8] shadow-[0_0_15px_rgba(56,189,248,0.2)] bg-[#121820]"
+                    : "border-[#263544] hover:border-[#2f4255]"
+                }`}
+              >
+                {/* Header: Name + URL + Branch */}
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-mono font-bold text-sm text-white">{repo.name}</h3>
+                      <span className="font-mono text-[10px] text-[#38bdf8] bg-[#38bdf8]/10 border border-[#38bdf8]/30 px-1.5 py-0.5 rounded">
+                        {repo.default_branch || "main"}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-[#8a99ad] font-mono mt-1 truncate max-w-sm">{repo.url}</p>
                   </div>
-                  <p className="text-[11px] text-[#8a99ad] font-mono mt-1 truncate max-w-sm">{repo.url}</p>
+
+                  {repo.tags && repo.tags.length > 0 && (
+                    <span className="font-mono text-[10px] text-[#38bdf8] bg-[#38bdf8]/10 border border-[#38bdf8]/30 px-2 py-0.5 rounded whitespace-nowrap">
+                      {repo.tags[0].name}
+                    </span>
+                  )}
                 </div>
 
-                <span
-                  className="font-mono text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full border whitespace-nowrap font-medium"
-                  style={{
-                    color: isVulnerable ? "#ff4d4f" : "#38bdf8",
-                    borderColor: isVulnerable ? "#ff4d4f" : "#38bdf8",
-                    backgroundColor: isVulnerable ? "rgba(255,77,79,.10)" : "rgba(56,189,248,.10)",
-                  }}
-                >
-                  {repo.riskLevel} risk
-                </span>
+                {/* Stats Row */}
+                <div className="grid grid-cols-3 gap-3 p-3 rounded-lg bg-[#0a0d10] border border-[#222e3a] text-center font-mono">
+                  <div>
+                    <span className="text-[9px] text-[#8a99ad] uppercase block">Commits</span>
+                    <b className="text-sm text-white">{(repo.commit_count || 0).toLocaleString()}</b>
+                  </div>
+                  <div>
+                    <span className="text-[9px] text-[#8a99ad] uppercase block">Files</span>
+                    <b className="text-sm text-white">{repo.files_total || 0}</b>
+                  </div>
+                  <div>
+                    <span className="text-[9px] text-[#8a99ad] uppercase block">Total Size</span>
+                    <b className="text-sm text-white">{formatBytes(repo.total_size)}</b>
+                  </div>
+                </div>
+
+                {/* Languages Bar */}
+                <div className="space-y-1.5">
+                  <div className="flex h-1.5 rounded overflow-hidden bg-[#222e3a]">
+                    {langEntries.map(([lang, count], li) => (
+                      <div
+                        key={lang}
+                        style={{
+                          width: `${(count / langTotal) * 100}%`,
+                          backgroundColor: langColors[li % langColors.length],
+                        }}
+                        title={`${lang} ${Math.round((count / langTotal) * 100)}%`}
+                      />
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] font-mono text-[#8a99ad]">
+                    <span>
+                      {langEntries.slice(0, 3).map(([lang, count], li) => (
+                        <span key={lang}>
+                          <span style={{ color: langColors[li % langColors.length] }}>●</span> {lang} ({Math.round((count / langTotal) * 100)}%)
+                          {li < Math.min(langEntries.length, 3) - 1 ? " · " : ""}
+                        </span>
+                      ))}
+                    </span>
+                    <span>{repo.updated_at ? `Updated ${new Date(repo.updated_at).toLocaleDateString()}` : ""}</span>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="pt-2 border-t border-[#253240] flex items-center justify-between">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleScanRepo(repo.name);
+                    }}
+                    className="px-3 py-1.5 rounded font-mono text-xs bg-[#141b21] border border-[#2b3947] text-[#d8e2e8] hover:border-[#38bdf8]/40 hover:text-white flex items-center gap-1.5 transition-all"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-[#38bdf8]" />
+                    <span>Run AST Scan</span>
+                  </button>
+
+                  <a
+                    href={repo.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-xs text-[#38bdf8] hover:underline font-mono flex items-center gap-1"
+                  >
+                    <span>Git Remote</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
               </div>
-
-              {/* Stats Row */}
-              <div className="grid grid-cols-3 gap-3 p-3 rounded-lg bg-[#0a0d10] border border-[#222e3a] text-center font-mono">
-                <div>
-                  <span className="text-[9px] text-[#8a99ad] uppercase block">Commits</span>
-                  <b className="text-sm text-white">{repo.commit_count?.toLocaleString() || "1,428"}</b>
-                </div>
-                <div>
-                  <span className="text-[9px] text-[#8a99ad] uppercase block">Files</span>
-                  <b className="text-sm text-white">{repo.files_total || "342"}</b>
-                </div>
-                <div>
-                  <span className="text-[9px] text-[#8a99ad] uppercase block">Total Size</span>
-                  <b className="text-sm text-white">
-                    {repo.total_size ? (repo.total_size / (1024 * 1024)).toFixed(1) + " MB" : "18.5 MB"}
-                  </b>
-                </div>
-              </div>
-
-              {/* Languages Bar */}
-              <div className="space-y-1.5">
-                <div className="flex h-1.5 rounded overflow-hidden bg-[#222e3a]">
-                  <div style={{ width: "55%" }} className="bg-[#4d9cff]" title="Python 55%" />
-                  <div style={{ width: "25%" }} className="bg-[#f2c94c]" title="JavaScript 25%" />
-                  <div style={{ width: "15%" }} className="bg-[#38bdf8]" title="TypeScript 15%" />
-                  <div style={{ width: "5%" }} className="bg-[#222e3a]" />
-                </div>
-                <div className="flex items-center justify-between text-[10px] font-mono text-[#8a99ad]">
-                  <span>● Python (55%) · JS (25%) · TS (15%)</span>
-                  <span>{repo.lastScanned || "Scanned 10m ago"}</span>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="pt-2 border-t border-[#253240] flex items-center justify-between">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleScanRepo(repo.name);
-                  }}
-                  className="px-3 py-1.5 rounded font-mono text-xs bg-[#141b21] border border-[#2b3947] text-[#d8e2e8] hover:border-[#38bdf8]/40 hover:text-white flex items-center gap-1.5 transition-all"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-[#38bdf8]" />
-                  <span>Run AST Scan</span>
-                </button>
-
-                <a
-                  href={repo.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="text-xs text-[#38bdf8] hover:underline font-mono flex items-center gap-1"
-                >
-                  <span>Git Remote</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

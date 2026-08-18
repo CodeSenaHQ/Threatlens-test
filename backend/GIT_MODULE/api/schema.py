@@ -29,7 +29,6 @@ class RepositoryResponse(BaseModel):
     updated_at: str
 
 class CommitAnalysisRequest(BaseModel):
-    repo_id: int
     data: list[dict[str, Any]]
 
 

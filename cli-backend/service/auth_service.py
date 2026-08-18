@@ -23,9 +23,9 @@ def password_login(identifier: str, password: str) -> dict :
     return {"status": "logged in"}
 
 
-
 def oauth_callback(access_token: str):
     if not access_token:
         raise HTTPException(detail="unable to verify account", status_code=400)
     print(access_token)
     return {"status": "logged in"}
+

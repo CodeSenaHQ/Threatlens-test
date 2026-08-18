@@ -138,9 +138,14 @@ function Navbar() {
               </button>
             </div>
           ) : (
-            <Link className="button button-primary nav-cta" href="/signup">
-              Sign Up <ArrowRight size={15} />
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link className="button button-ghost text-xs px-3 py-1.5 rounded-lg text-[#93c5fd] hover:text-white" href="/signin">
+                Sign In
+              </Link>
+              <Link className="button button-primary nav-cta" href="/signup">
+                Sign Up <ArrowRight size={15} />
+              </Link>
+            </div>
           )}
 
           <button className="mobile-menu-button" onClick={() => setOpen(!open)} aria-label="Toggle navigation">
@@ -156,7 +161,10 @@ function Navbar() {
             Sign Out (@{user.handle})
           </button>
         ) : (
-          <Link onClick={closeMenu} href="/signup" className="button button-primary">Sign Up <ArrowRight size={16} /></Link>
+          <div className="flex flex-col gap-2 pt-2">
+            <Link onClick={closeMenu} href="/signin" className="button button-ghost text-center">Sign In</Link>
+            <Link onClick={closeMenu} href="/signup" className="button button-primary text-center justify-center">Sign Up <ArrowRight size={16} /></Link>
+          </div>
         )}
       </div>
     </header>

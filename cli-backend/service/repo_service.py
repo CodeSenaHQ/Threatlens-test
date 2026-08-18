@@ -74,7 +74,7 @@ def build_commit_insert(repo: Repository, sha: str | None):
     ]
 
 
-def insert_commits(commits: list[dict], jwt: str):
+def insert_commits(repo_id: int, commits: list[dict], jwt: str):
     if not commits:
         return{"status" : "Already upto date"}
 
@@ -82,7 +82,7 @@ def insert_commits(commits: list[dict], jwt: str):
         raise RuntimeError("JWT token not found")
 
     response = httpx.post(
-        f"{config.BASE_URL}/commit",
+        f"{config.BASE_URL}/repo/{repo_id}/commits",
         json={
             "data": commits,
         },

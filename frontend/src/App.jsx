@@ -12,15 +12,15 @@ import LandingPage from "@/pages/landing/LandingPage";
 import AuthPage from "@/pages/auth/AuthPage";
 import OAuthCallback from "@/pages/auth/OAuthCallback";
 import CommitAnalysisPage from "@/pages/commit-analysis/CommitAnalysisPage";
-import DashboardPage from "@/pages/dashboard/DashboardPage";
+import DashboardLayout from "@/pages/dashboard/DashboardLayout";
 import NotFound from "@/pages/not-found/NotFound";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={LandingPage} />
-      <Route path="/dashboard" component={DashboardPage} />
-      <Route path="/operations" component={DashboardPage} />
+      <Route path="/dashboard" component={DashboardLayout} />
+      <Route path="/operations" component={DashboardLayout} />
       <Route path="/commit-analysis" component={CommitAnalysisPage} />
       <Route path="/signup">
         {() => <AuthPage initialMode="signup" />}

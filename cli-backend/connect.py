@@ -5,7 +5,7 @@ from fastapi.responses import RedirectResponse
 
 app = FastAPI()
 
-BASE_URL = "https://app.totalchaos.online/tc-auth"
+BASE_URL = "https://api.codesena.me/tc-auth"
 
 
 # response = httpx.get(

@@ -152,7 +152,7 @@ export default function AuthPage({ initialMode = "signup" }) {
   };
 
   const handleSocialLogin = (provider) => {
-    const base = import.meta.env.VITE_API_BASE_URL || "https://app.totalchaos.online";
+    const base = import.meta.env.VITE_API_BASE_URL || "https://api.codesena.me";
     const cb   = window.location.origin + "/api/oauth/callback";
     window.location.href = base + "/tc-auth/" + provider + "/login?frontend_url=" + encodeURIComponent(cb);
   };

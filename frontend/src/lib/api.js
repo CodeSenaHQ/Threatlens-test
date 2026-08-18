@@ -1,5 +1,5 @@
 // ThreatLens Unified Frontend API Client
-const API_BASE_URL = import.meta.env.VITE_API_URL || "";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || "";
 const SECTEST_BASE = "http://localhost:8765";
 
 export function parseJwt(token) {

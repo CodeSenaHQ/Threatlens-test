@@ -68,6 +68,11 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("threatlens_user");
   };
 
+  const updateUser = (updatedAccount) => {
+    setUser(updatedAccount);
+    localStorage.setItem("threatlens_user", JSON.stringify(updatedAccount));
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -77,6 +82,7 @@ export function AuthProvider({ children }) {
         isAuthenticated: Boolean(token && user),
         login,
         logout,
+        updateUser,
       }}
     >
       {children}

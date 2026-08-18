@@ -23,6 +23,9 @@ import AccountsTab from "./tabs/admin/AccountsTab";
 import SystemConfigTab from "./tabs/admin/SystemConfigTab";
 import SessionsTab from "./tabs/admin/SessionsTab";
 
+// Drawers & Modals
+import ProfileModal from "@/components/drawers/ProfileModal";
+
 // ── Loading Skeleton ──
 function SkeletonBlock({ className = "" }) {
   return <div className={`bg-[#1a2330] rounded animate-pulse ${className}`} />;
@@ -35,6 +38,7 @@ export default function DashboardLayout() {
   const [clockStr, setClockStr] = useState("--:--:--");
   const [selectedItem, setSelectedItem] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const userRole = (user?.role || "analyst").toLowerCase();
@@ -262,22 +266,36 @@ export default function DashboardLayout() {
 
         {/* Profile Chip & Logout */}
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2.5 px-3 py-1.5 border border-[#2b3947] rounded-full bg-[#10151a] shadow-sm hover:border-[#38bdf8]/40 transition-colors">
-            <div
-              className="w-6 h-6 rounded-full flex items-center justify-center font-mono text-[10px] font-bold text-[#03110c] shadow-sm"
-              style={{
-                background: "linear-gradient(135deg, #4d9cff, #38bdf8)",
-              }}
-            >
-              {user?.name ? user.name.slice(0, 2).toUpperCase() : "TL"}
-            </div>
+          <button
+            onClick={() => setIsProfileOpen(true)}
+            title="Edit Profile & Account Details"
+            className="flex items-center gap-2.5 px-3 py-1.5 border border-[#2b3947] hover:border-[#38bdf8]/60 rounded-full bg-[#10151a] hover:bg-[#141b21] shadow-sm transition-all cursor-pointer select-none group text-left"
+          >
+            {user?.avatar_url ? (
+              <img
+                src={user.avatar_url}
+                alt=""
+                className="w-6 h-6 rounded-full object-cover border border-[#38bdf8]/40"
+              />
+            ) : (
+              <div
+                className="w-6 h-6 rounded-full flex items-center justify-center font-mono text-[10px] font-bold text-[#03110c] shadow-sm group-hover:scale-105 transition-transform"
+                style={{
+                  background: "linear-gradient(135deg, #4d9cff, #38bdf8)",
+                }}
+              >
+                {user?.name ? user.name.slice(0, 2).toUpperCase() : "TL"}
+              </div>
+            )}
             <div>
-              <div className="font-mono text-[11px] text-white font-medium leading-none">{user?.name || "User"}</div>
+              <div className="font-mono text-[11px] text-white font-medium leading-none group-hover:text-[#38bdf8] transition-colors">
+                {user?.name || "User"}
+              </div>
               <div className="text-[#8a99ad] text-[9px] uppercase tracking-wider leading-none mt-0.5">
-                {user?.role || "analyst"}
+                {user?.role || "analyst"} · edit
               </div>
             </div>
-          </div>
+          </button>
 
           <button
             onClick={handleLogout}
@@ -369,7 +387,15 @@ export default function DashboardLayout() {
               ))}
             </>
           )}
-          <div className="mt-auto pt-4 border-t border-[#253240]">
+          <div className="mt-auto pt-4 border-t border-[#253240] space-y-1">
+            <button
+              onClick={() => setIsProfileOpen(true)}
+              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-[#8a99ad] hover:text-[#38bdf8] hover:bg-white/[0.04] border border-transparent hover:border-[#38bdf8]/20 transition-all text-left font-mono cursor-pointer"
+            >
+              <User className="w-3.5 h-3.5 text-[#38bdf8]" />
+              <span>Edit Profile</span>
+            </button>
+
             <button
               onClick={handleLogout}
               className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-[#8a99ad] hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all text-left font-mono cursor-pointer"
@@ -847,6 +873,9 @@ export default function DashboardLayout() {
           </div>
         </div>
       )}
+
+      {/* ---------- PROFILE & CREDENTIALS MODAL ---------- */}
+      <ProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
     </div>
   );
 }

@@ -281,4 +281,99 @@ export const authApi = {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
     }),
+
+  logoutAll: (token) =>
+    authRequest("/logout-all", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  // Dashboard admin endpoints
+  getPulse: () =>
+    authRequest("/config/pulse", { method: "GET" }),
+
+  getCounts: (token) =>
+    authRequest("/config/counts", {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  getConfig: (token) =>
+    authRequest("/config/load/", {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  // Profile management
+  updateProfile: (token, data) =>
+    authRequest("/me", {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify(data),
+    }),
+
+  updatePassword: (token, password) =>
+    authRequest("/update/password", {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ password }),
+    }),
+
+  // Session management
+  getSessions: (token, accountId) =>
+    authRequest(`/session/query?field=id&value=${accountId}`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  destroySession: (token, sessionId) =>
+    authRequest("/session/", {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ session_id: sessionId }),
+    }),
+
+  // Account management (superadmin)
+  getAccounts: (token, page = 1, limit = 20) =>
+    authRequest(`/account/?page=${page}&limit=${limit}`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  queryAccounts: (token, field, value) =>
+    authRequest(`/account/query?field=${field}&value=${encodeURIComponent(value)}`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+};
+
+// SecTest Vulnerability Scanner API
+const SECTEST_BASE = "http://localhost:8765";
+
+export const secTestApi = {
+  async getReport() {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      const res = await fetch(`${SECTEST_BASE}/report.json`, { signal: controller.signal });
+      clearTimeout(timeout);
+      if (!res.ok) throw new Error(`SecTest returned ${res.status}`);
+      return await res.json();
+    } catch {
+      return null;
+    }
+  },
+
+  async getFindings() {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      const res = await fetch(`${SECTEST_BASE}/api/findings`, { signal: controller.signal });
+      clearTimeout(timeout);
+      if (!res.ok) throw new Error(`SecTest returned ${res.status}`);
+      return await res.json();
+    } catch {
+      return null;
+    }
+  },
 };

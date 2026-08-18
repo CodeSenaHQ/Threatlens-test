@@ -198,3 +198,6 @@ docker-compose.local.yml
 # ==========================================================
 
 *.generated.*
+backend_status*
+BACKEND_STATUS*
+backend-status*

@@ -1,11 +1,12 @@
 from fastapi import FastAPI
 import requests , httpx
 from fastapi.responses import RedirectResponse
+from api import api_router
+
 
 
 app = FastAPI()
-
-BASE_URL = "https://api.codesena.me/tc-auth"
+app.include_router(api_router)
 
 
 # response = httpx.get(

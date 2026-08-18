@@ -6,6 +6,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import urlparse
+from utils.normalize import normalize_repo_url
 
 from git import Repo
 from git.exc import GitCommandError
@@ -78,7 +79,7 @@ class Repository:
     """
 
     def __init__(self, url: str):
-        self.url = self._normalize_url(url)
+        self.url = normalize_repo_url(url)
 
         self.username, self.repo_name = self._parse_repo_url()
 
@@ -123,29 +124,6 @@ class Repository:
     # ==========================================================
     # INTERNAL
     # ==========================================================
-
-    @staticmethod
-    def _normalize_url(url: str) -> str:
-        url = url.strip()
-
-        if not url:
-            raise ValueError(
-                "Repository URL cannot be empty."
-            )
-
-        parsed = urlparse(url)
-
-        if parsed.scheme != "https":
-            raise ValueError(
-                "Only HTTPS repositories are supported."
-            )
-
-        if not parsed.netloc:
-            raise ValueError(
-                "Invalid repository URL."
-            )
-
-        return url.rstrip("/")
 
     def _parse_repo_url(self) -> tuple[str, str]:
         """

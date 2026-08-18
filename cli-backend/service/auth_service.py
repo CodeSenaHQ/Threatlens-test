@@ -1,14 +1,15 @@
 import httpx 
 from fastapi import APIRouter
 from fastapi.exceptions import HTTPException
-from ..connect import app
-from ..config import config
+from connect import app
+from config import config
+from db import save_jwt
 
 router = APIRouter(app)
 
 def password_login(identifier: str, password: str) -> dict : 
     response = httpx.post(
-        f"{config.BASE_URL}/login/password",
+        f"{config.AUTH_BASE_URL}/login/password",
         json={
             "identifier": identifier,
             "password": password
@@ -18,7 +19,7 @@ def password_login(identifier: str, password: str) -> dict :
     data = response.json().get("access_token")
     if not data :
         raise HTTPException(detail="login failed" , status_code=400)
-    print(data)
+    save_jwt(data["access_token"])
 
     return {"status": "logged in"}
 
@@ -26,6 +27,6 @@ def password_login(identifier: str, password: str) -> dict :
 def oauth_callback(access_token: str):
     if not access_token:
         raise HTTPException(detail="unable to verify account", status_code=400)
-    print(access_token)
+    save_jwt(access_token)
     return {"status": "logged in"}
 

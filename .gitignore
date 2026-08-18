@@ -8,15 +8,13 @@ __pycache__/
 *$py.class
 
 # Python build / distribution
-test.py
-.env
-
-# Distribution / packaging
 .Python
 build/
 dist/
+*.egg
 *.egg-info/
 .eggs/
+pip-wheel-metadata/
 
 # Virtual environments
 .venv/
@@ -24,11 +22,6 @@ venv/
 env/
 ENV/
 virtualenv/
-.venv*/
-
-# Python packaging
-*.egg
-pip-wheel-metadata/
 
 # Testing / coverage
 .pytest_cache/
@@ -48,11 +41,11 @@ coverage.xml
 # Jupyter
 .ipynb_checkpoints/
 
+
 # ==========================================================
 # NODE.JS
 # ==========================================================
 
-# Dependencies
 node_modules/
 
 # Logs
@@ -62,7 +55,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Package manager files
+# Package manager caches
 .npm/
 .yarn/
 .pnpm-store/
@@ -72,18 +65,18 @@ dist/
 build/
 out/
 
+# Vite
+.vite/
+vite.config.*.timestamp-*
+
+
 # ==========================================================
 # REACT / FRONTEND
 # ==========================================================
 
-# React / Vite
-.vite/
-vite.config.*.timestamp-*
-
 # Next.js
 .next/
 .next/cache/
-out/
 
 # Gatsby
 .cache/
@@ -91,6 +84,7 @@ out/
 # React Native
 .expo/
 .expo-shared/
+
 
 # ==========================================================
 # ENVIRONMENT VARIABLES
@@ -100,6 +94,7 @@ out/
 .env.*
 !.env.example
 !.env.sample
+
 
 # ==========================================================
 # IDE / EDITORS
@@ -125,6 +120,7 @@ out/
 *.sublime-project
 *.sublime-workspace
 
+
 # ==========================================================
 # OS
 # ==========================================================
@@ -142,6 +138,7 @@ Desktop.ini
 # Linux
 *~
 
+
 # ==========================================================
 # DATABASE / LOCAL DATA
 # ==========================================================
@@ -151,10 +148,11 @@ Desktop.ini
 *.sqlite
 *.sqlite3
 
-# Local database files
+# SQLite temporary files
 *.db-journal
 *.db-shm
 *.db-wal
+
 
 # ==========================================================
 # LOGS
@@ -163,6 +161,7 @@ Desktop.ini
 *.log
 logs/
 
+
 # ==========================================================
 # TEMPORARY FILES
 # ==========================================================
@@ -170,8 +169,7 @@ logs/
 *.tmp
 *.temp
 *.bak
-*.swp
-*.swo
+
 
 # ==========================================================
 # SECRETS / LOCAL CONFIG
@@ -181,23 +179,32 @@ logs/
 *.key
 *.crt
 
-# Local config
 config.local.*
 settings.local.*
+
 
 # ==========================================================
 # DOCKER
 # ==========================================================
 
-# Docker override files
 docker-compose.override.yml
 docker-compose.local.yml
+
 
 # ==========================================================
 # GENERATED FILES
 # ==========================================================
 
 *.generated.*
+
 backend_status*
 BACKEND_STATUS*
-backend-status*
+backend-status*
+
+
+# ==========================================================
+# LOCAL DEVELOPMENT / TESTING
+# ==========================================================
+
+# Local test script
+test.py

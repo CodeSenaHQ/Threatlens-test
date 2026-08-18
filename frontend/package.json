@@ -8,8 +8,7 @@
     "build": "vite build",
     "start": "vite preview",
     "preview": "vite preview --host",
-    "check": "vite build",
-    "format": "prettier --write ."
+    "check": "vite build"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

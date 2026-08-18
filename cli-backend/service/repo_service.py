@@ -38,7 +38,7 @@ def fetch_latest_commit(repo_id: int, jwt: str):
         raise RuntimeError("JWT token not found")
     
     response = httpx.get(
-        f"{config.BASE_URL}/repo{repo_id}/commits?limit=1",
+        f"{config.BASE_URL}/repo/{repo_id}/commits?limit=1",
         headers={
             "Authorization": f"Bearer {jwt}",
         },
@@ -48,6 +48,9 @@ def fetch_latest_commit(repo_id: int, jwt: str):
     return response.json()
 
 
+from datetime import datetime
+
+
 def build_commit_insert(sha: str, repo: Repository):
     commits = repo.list_commits()
 
@@ -55,6 +58,45 @@ def build_commit_insert(sha: str, repo: Repository):
         if commit["sha"] == sha:
             commits_after = commits[:index]
 
-            return commits_after if commits_after else None
+            if not commits_after:
+                return None
+
+            return [
+                {
+                    **commit,
+                    "authored_at": (
+                        commit["authored_at"].isoformat()
+                        if isinstance(commit["authored_at"], datetime)
+                        else commit["authored_at"]
+                    ),
+                    "committed_at": (
+                        commit["committed_at"].isoformat()
+                        if isinstance(commit["committed_at"], datetime)
+                        else commit["committed_at"]
+                    ),
+                }
+                for commit in commits_after
+            ]
 
     return None
+
+
+def upsert_commits(commits: list[dict], jwt: str):
+
+    if not jwt:
+        raise RuntimeError("JWT token not found")
+
+    response = httpx.post(
+        f"{config.BASE_URL}/commit",
+        json={
+            "data": commits,
+        },
+        headers={
+            "Authorization": f"Bearer {jwt}",
+        },
+        timeout=30.0,
+    )
+
+    response.raise_for_status()
+
+    return response.json()

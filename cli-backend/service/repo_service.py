@@ -1,6 +1,5 @@
-from urllib import response
-import httpx
-
+import httpx 
+import json
 from analysis import (
     CommitAnalyzer,
     RepositoryAnalyzer,
@@ -48,27 +47,34 @@ def fetch_latest_commit(repo_id: int, jwt: str):
     return response.json()
 
 
-def build_commit_insert(sha: str, repo: Repository):
+
+def build_commit_insert(repo: Repository, sha: str | None):
     commits = repo.list_commits()
-    analysis = CommitAnalyzer(repo)
+    analyzer = CommitAnalyzer(repo)
 
-    for index, commit in enumerate(commits):
-        if commit["sha"] == sha:
-            commits_after = commits[:index]
+    if sha is None:
+        commits_to_analyze = commits
 
-            if not commits_after:
-                return None
+    else:
+        for index, commit in enumerate(commits):
+            if commit["sha"] == sha:
+                commits_to_analyze = commits[:index]
+                break
+        else:
+            return None
 
-            return [
-                analysis.analyze(commit["sha"])
-                for commit in commits_after
-            ]
+        if not commits_to_analyze:
+            return None
 
-    return None
+    return [
+        json.loads(
+            analyzer.analyze_json(commit["sha"])
+        )
+        for commit in commits_to_analyze
+    ]
 
 
-
-def upsert_commits(commits: list[dict], jwt: str):
+def insert_commits(commits: list[dict], jwt: str):
     if not commits:
         return{"status" : "Already upto date"}
 

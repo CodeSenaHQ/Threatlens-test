@@ -37,6 +37,16 @@ export default function DashboardLayout() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  const userRole = (user?.role || "analyst").toLowerCase();
+  const isAdmin = userRole !== "user";
+
+  // Redirect away from admin tabs if role is user
+  useEffect(() => {
+    if (!isAdmin && ["accounts", "config", "sessions"].includes(activeNav)) {
+      setActiveNav("dashboard");
+    }
+  }, [isAdmin, activeNav]);
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -332,29 +342,33 @@ export default function DashboardLayout() {
             </button>
           ))}
 
-          <div className="font-mono text-[10px] text-[#8a99ad] uppercase tracking-[1.5px] mt-4 mb-2 mx-2">
-            Admin
-          </div>
-          {[
-            { id: "accounts", icon: "☰", label: "Accounts" },
-            { id: "config", icon: "⚙", label: "System Config" },
-            { id: "sessions", icon: "◔", label: "Sessions" },
-          ].map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveNav(item.id)}
-              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs border transition-all text-left ${
-                activeNav === item.id
-                  ? "bg-[#141b21] text-white border-[#38bdf8]/40 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
-                  : "text-[#8a99ad] border-transparent hover:bg-white/[0.04] hover:text-white"
-              }`}
-            >
-              <span className={`w-4 text-center font-mono text-xs ${activeNav === item.id ? "text-[#38bdf8]" : ""}`}>
-                {item.icon}
-              </span>
-              <span>{item.label}</span>
-            </button>
-          ))}
+          {isAdmin && (
+            <>
+              <div className="font-mono text-[10px] text-[#8a99ad] uppercase tracking-[1.5px] mt-4 mb-2 mx-2">
+                Admin
+              </div>
+              {[
+                { id: "accounts", icon: "☰", label: "Accounts" },
+                { id: "config", icon: "⚙", label: "System Config" },
+                { id: "sessions", icon: "◔", label: "Sessions" },
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveNav(item.id)}
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs border transition-all text-left ${
+                    activeNav === item.id
+                      ? "bg-[#141b21] text-white border-[#38bdf8]/40 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
+                      : "text-[#8a99ad] border-transparent hover:bg-white/[0.04] hover:text-white"
+                  }`}
+                >
+                  <span className={`w-4 text-center font-mono text-xs ${activeNav === item.id ? "text-[#38bdf8]" : ""}`}>
+                    {item.icon}
+                  </span>
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </>
+          )}
           <div className="mt-auto pt-4 border-t border-[#253240]">
             <button
               onClick={handleLogout}

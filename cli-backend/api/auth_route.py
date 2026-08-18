@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from fastapi.responses import RedirectResponse
-from ..config import config
-from ..service.auth_service import oauth_callback , password_login
+from config import config
+from service.auth_service import oauth_callback , password_login
 
 router = APIRouter()
 
@@ -16,7 +16,7 @@ def oauth_login(provider):
 def callback(access_token: str):
     return oauth_callback(access_token=access_token)
 
-@router.post("password/login")
+@router.post("/password/login")
 def pass_login():
-   return password_login()
+   return password_login(identifier="atharv", password="atharv@112")
 

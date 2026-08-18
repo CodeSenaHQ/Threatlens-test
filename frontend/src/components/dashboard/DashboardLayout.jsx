@@ -1,488 +1,858 @@
-import React, { useState } from "react";
-import { Link } from "wouter";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  LayoutDashboard,
-  ShieldAlert,
-  GitBranch,
-  Settings,
-  Search,
-  ArrowLeft,
-  ShieldCheck,
-  Download,
-  Bell,
-  HardDrive,
-  FileCode,
-  Check,
-  Copy,
-  ChevronRight,
-  Activity,
-  Users,
-  Calendar,
-  Layers,
-  Sparkles,
-  FolderGit2,
-  ChevronDown,
-  X,
-  Plus
-} from "lucide-react";
-import { ThreatLensLogo } from "../ThreatLensLogo";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { USER_REPOSITORIES } from "@/lib/repositories";
-import { ProjectsOverviewView } from "./ProjectsOverviewView";
-import OverviewView from "./OverviewView";
-import SecurityView from "./SecurityView";
-import GitAnalyzerView from "./GitAnalyzerView";
-import SettingsView from "./SettingsView";
-import { InspectorPanel } from "./InspectorPanel";
+import { toast } from "sonner";
+import {
+  Copy,
+  Check,
+  X,
+} from "lucide-react";
+
+// Individual Tab Views
+import RepositoriesTab from "./views/RepositoriesTab";
+import CommitsTab from "./views/CommitsTab";
+import LiveFindingsTab from "./views/LiveFindingsTab";
+import SecretDetectionTab from "./views/SecretDetectionTab";
+import CicdDockerTab from "./views/CicdDockerTab";
+import AccountsTab from "./views/AccountsTab";
+import SystemConfigTab from "./views/SystemConfigTab";
+import SessionsTab from "./views/SessionsTab";
 
 export default function DashboardLayout() {
-  const { user, logout } = useAuth();
-  const [activeRepo, setActiveRepo] = useState(null); // null = Projects Overview, or Repo Object
-  const [currentNav, setCurrentNav] = useState("overview"); // sidebar tab
-  const [topTab, setTopTab] = useState("files"); // top category tab
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedItem, setSelectedItem] = useState(USER_REPOSITORIES[0]); // initially the first repo
-  const [isAuditing, setIsAuditing] = useState(false);
-  const [auditProgress, setAuditProgress] = useState(0);
-  const [isAttestationModalOpen, setIsAttestationModalOpen] = useState(false);
-  const [copiedDigest, setCopiedDigest] = useState(false);
-  const [isRepoDropdownOpen, setIsRepoDropdownOpen] = useState(false);
+  const { user } = useAuth();
+  const [activeNav, setActiveNav] = useState("dashboard");
+  const [clockStr, setClockStr] = useState("--:--:--");
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  // When a user selects a repository from projects list or dropdown
-  const handleOpenRepo = (repo) => {
-    setActiveRepo(repo);
-    setSelectedItem(repo.findings?.[0] || repo);
-    setCurrentNav("overview");
-    setIsRepoDropdownOpen(false);
-  };
+  // Live Digital Clock
+  useEffect(() => {
+    const pad = (n) => n.toString().padStart(2, "0");
+    const tick = () => {
+      const d = new Date();
+      setClockStr(`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`);
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
-  // Return to All Projects view
-  const handleBackToProjects = () => {
-    setActiveRepo(null);
-    setSelectedItem(USER_REPOSITORIES[0]);
-    setIsRepoDropdownOpen(false);
-  };
-
-  const handleRunAudit = () => {
-    if (isAuditing) return;
-    setIsAuditing(true);
-    setAuditProgress(0);
-
-    const interval = setInterval(() => {
-      setAuditProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsAuditing(false);
-          return 100;
-        }
-        return prev + 25;
-      });
-    }, 250);
-  };
-
-  const navItems = [
-    { id: "overview", label: activeRepo ? "SOC Findings" : "All Projects", icon: LayoutDashboard, count: activeRepo ? `${activeRepo.findings?.length || 0}` : `${USER_REPOSITORIES.length}` },
-    { id: "security", label: "Live Scanner", icon: ShieldAlert, count: "Active" },
-    { id: "git", label: "Git Commits", icon: GitBranch, count: activeRepo ? `${activeRepo.commitCount}` : "3.1k" },
-    { id: "settings", label: "Security Settings", icon: Settings },
+  const kpis = [
+    { label: "Critical findings", value: "3", sub: "secret_detection, security_code", type: "critical" },
+    { label: "High severity", value: "9", sub: "across 3 repositories", type: "high" },
+    { label: "Medium severity", value: "14", sub: "mostly suspicious_commit_pattern", type: "medium" },
+    { label: "Repos monitored", value: "3", sub: "13,250 commits indexed (fastapi)", type: "low" },
   ];
 
-  const topCategoryTabs = [
-    { id: "files", label: "SOC Files", icon: Layers },
-    { id: "activity", label: "Live Telemetry", icon: Activity },
-    { id: "schedule", label: "Scheduled Audits", icon: Calendar },
-    { id: "team", label: "SecOps Team", icon: Users },
+  const commits = [
+    {
+      sha: "8b4f7a6",
+      fullSha: "8b4f7a668a7de34693bb25d6f66abfcb4f7b095e",
+      msg: "fix(auth): parameterize login query",
+      meta: "Alex Vance · backend/routes/auth.py · 2 findings",
+      risk: "risk 28 · medium",
+      badgeClass: "badge-medium",
+      score: 28,
+      explanation: "Replaced raw string query execution with parameterized SQL statement bindings.",
+      diff: `--- a/backend/routes/auth.py\n+++ b/backend/routes/auth.py\n@@ -42,8 +42,14 @@\n-    query = f"SELECT * FROM users WHERE email = '{email}'"\n+    query = "SELECT id, email FROM users WHERE email = :email"`,
+    },
+    {
+      sha: "c19e2fd",
+      fullSha: "c19e2fd912830114092b19280194092830114092",
+      msg: "chore(ci): pin github actions to sha",
+      meta: "Priya Nair · .github/workflows/deploy.yml · 1 finding",
+      risk: "risk 8 · low",
+      badgeClass: "badge-low",
+      score: 8,
+      explanation: "Pinned unversioned third-party GitHub Actions to immutable 40-character commit hashes.",
+    },
+    {
+      sha: "f402a19",
+      fullSha: "f402a19011f592cb1475e330a8901f443810c512",
+      msg: "feat(search): add raw filter passthrough",
+      meta: "Alex Vance · api/v1/users/search.py · 3 findings",
+      risk: "risk 84 · critical",
+      badgeClass: "badge-critical",
+      score: 84,
+      explanation: "CRITICAL: Direct user parameter passed to database execution clause without escaping.",
+    },
+    {
+      sha: "a7710bb",
+      fullSha: "a7710bb3501a2ce08914efb900234acb7712aa90",
+      msg: "wip: skip auth for local testing",
+      meta: "Marcus Lee · middleware/session.py · 2 findings",
+      risk: "risk 62 · high",
+      badgeClass: "badge-high",
+      score: 62,
+      explanation: "HIGH: Authentication bypass logic committed into session middleware.",
+    },
+    {
+      sha: "031bd6e",
+      fullSha: "031bd6e8bca711832049e21196e2a871b53c19d4",
+      msg: "docs: update README badges",
+      meta: "Priya Nair · README.md · 0 findings",
+      risk: "risk 0 · low",
+      badgeClass: "badge-low",
+      score: 0,
+      explanation: "Documentation update with zero security impact.",
+    },
   ];
+
+  const findings = [
+    {
+      severity: "critical",
+      title: "SQL Injection Vector in User Query Filter",
+      evidence: "Payload: ' OR '1'='1 returned HTTP 200 with 150 rows.",
+      module: "injection",
+      endpoint: "POST /api/v1/users/search · CWE-89",
+      explanation: "Unsanitized user search parameters concatenated directly into PostgreSQL query builder clause.",
+      remediation: "Use parameterized prepared statement binding.",
+    },
+    {
+      severity: "high",
+      title: "Missing Content-Security-Policy header",
+      evidence: "Response lacks CSP, exposing app to XSS injection.",
+      module: "headers",
+      endpoint: "GET /repo · CWE-693",
+      explanation: "The HTTP response does not include a Content-Security-Policy header.",
+      remediation: "Add 'Content-Security-Policy: default-src \\'self\\''.",
+    },
+    {
+      severity: "high",
+      title: "Verbose stack trace exposed on 500",
+      evidence: "Internal file paths and package versions leaked.",
+      module: "exposure",
+      endpoint: "POST /repo/commit/analysis · CWE-209",
+      explanation: "Application uncaught exceptions return full tracebacks to client.",
+      remediation: "Implement global exception handler returning sanitized error response.",
+    },
+    {
+      severity: "medium",
+      title: "No rate limiting on OTP request endpoint",
+      evidence: "1000 req/min accepted without throttling.",
+      module: "ratelimit",
+      endpoint: "POST /tc-auth/otp/ · CWE-799",
+      explanation: "OTP generation endpoint allows brute-force flooding.",
+      remediation: "Configure sliding window rate limiter (5 requests / 60 seconds).",
+    },
+    {
+      severity: "medium",
+      title: "Weak JWT algorithm accepted",
+      evidence: "Server accepts alg:none on session validation.",
+      module: "auth",
+      endpoint: "GET /tc-auth/me · CWE-347",
+      explanation: "JWT decoder does not strictly whitelist cryptographic algorithms.",
+      remediation: "Enforce HS256/RS256 algorithm validation.",
+    },
+    {
+      severity: "info",
+      title: "Server header discloses framework version",
+      evidence: "Response includes uvicorn/0.30 in headers.",
+      module: "headers",
+      endpoint: "GET /tc-auth/config/pulse · CWE-200",
+      explanation: "Server banner leaks server stack information.",
+      remediation: "Disable server header in Uvicorn production startup.",
+    },
+  ];
+
+  const repos = [
+    {
+      name: "fastapi",
+      url: "fastapi/fastapi.git",
+      branch: "master",
+      commits: "13,250",
+      files: "420",
+      size: "9.2MB",
+      py: 83,
+      js: 5,
+      other: 12,
+      pyCount: 300,
+      jsCount: 18,
+    },
+    {
+      name: "threatlens-core",
+      url: "dev47929/threatlens-core",
+      branch: "main",
+      commits: "842",
+      files: "96",
+      size: "1.4MB",
+      py: 60,
+      js: 30,
+      other: 10,
+      pyCount: 58,
+      jsCount: 29,
+    },
+    {
+      name: "tc-auth-service",
+      url: "dev47929/tc-auth-service",
+      branch: "develop",
+      commits: "317",
+      files: "54",
+      size: "620KB",
+      py: 40,
+      js: 45,
+      other: 15,
+      pyCount: 22,
+      jsCount: 24,
+    },
+  ];
+
+  const handleOpenDetail = (item) => {
+    setSelectedItem(item);
+    setIsDrawerOpen(true);
+  };
+
+  const handleCopyPayload = (text) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    toast.success("Payload copied to clipboard!");
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
-    <div className="flex h-screen bg-[#06080d] text-[#edf2f7] font-sans overflow-hidden select-none">
-      {/* Background ambient lighting */}
-      <div className="fixed inset-0 z-0 opacity-15 pointer-events-none bg-[radial-gradient(#2546ff_1px,transparent_1px)] [background-size:24px_24px]" />
-      <div className="fixed -top-40 left-1/4 w-[600px] h-[300px] bg-[#2546ff]/10 rounded-full blur-[140px] pointer-events-none" />
-
-      {/* LEFT SIDEBAR */}
-      <aside className="relative z-20 w-60 border-r border-white/[0.07] bg-[#0a0d15]/95 backdrop-blur-xl flex flex-col shrink-0 justify-between">
-        <div className="flex flex-col flex-1 min-h-0">
-          {/* Brand header */}
-          <div className="p-5 border-b border-white/[0.06] flex items-center justify-between">
-            <Link href="/" className="flex items-center">
-              <ThreatLensLogo className="h-6 w-auto" />
-            </Link>
+    <div
+      className="min-h-screen text-[#d8e2e8] flex flex-col select-none"
+      style={{
+        backgroundColor: "#0a0d10",
+        fontFamily: "'IBM Plex Sans', 'Segoe UI', sans-serif",
+        backgroundImage:
+          "linear-gradient(#222d38 1px, transparent 1px), linear-gradient(90deg, #222d38 1px, transparent 1px)",
+        backgroundSize: "34px 34px",
+        backgroundAttachment: "fixed",
+      }}
+    >
+      {/* ---------- TOPBAR ---------- */}
+      <header
+        className="flex items-center justify-between px-8 py-4 border-b border-[#253240] sticky top-0 z-30 shadow-md"
+        style={{
+          background: "linear-gradient(180deg, rgba(16,21,26,.97), rgba(16,21,26,.90))",
+          backdropFilter: "blur(8px)",
+        }}
+      >
+        {/* Brand */}
+        <div className="flex items-center gap-3">
+          <div
+            className="w-6.5 h-6.5 rounded-sm"
+            style={{
+              width: "26px",
+              height: "26px",
+              background: "conic-gradient(from 220deg, #38bdf8, #0284c7 40%, transparent 41%)",
+              boxShadow: "0 0 16px rgba(56,189,248,.65)",
+            }}
+          />
+          <div className="font-mono font-bold tracking-wide text-base text-white">
+            Threat<span className="text-[#38bdf8]">Lens</span>
           </div>
+          <div className="font-mono text-[10px] text-[#8a99ad] tracking-[1.5px] uppercase ml-2 px-2 py-0.5 border border-[#2b3947] bg-[#12181f] rounded">
+            Dev Instance
+          </div>
+        </div>
 
-          {/* Active Repo Switcher Card in Sidebar */}
-          <div className="p-3 border-b border-white/[0.06]">
-            <div className="relative">
-              <button
-                onClick={() => setIsRepoDropdownOpen(!isRepoDropdownOpen)}
-                className="w-full flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] text-xs transition-all text-left group"
-              >
-                <div className="flex items-center gap-2 min-w-0">
+        {/* Pulse Strip */}
+        <div className="hidden md:flex items-center gap-5 font-mono text-[11px] text-[#8a99ad]">
+          <div className="flex items-center">
+            <span
+              className="w-2 h-2 rounded-full inline-block mr-2 animate-pulse"
+              style={{
+                backgroundColor: "#38bdf8",
+                boxShadow: "0 0 10px #38bdf8",
+              }}
+            />
+            API pulse: <span className="text-[#38bdf8] ml-1 font-semibold">nominal</span>
+          </div>
+          <div>
+            Scanner :8765 · <span className="text-[#38bdf8] font-semibold">online</span>
+          </div>
+          <div className="text-[#d8e2e8] font-bold">{clockStr}</div>
+        </div>
+
+        {/* Profile Chip */}
+        <div className="flex items-center gap-2.5 px-3 py-1.5 border border-[#2b3947] rounded-full bg-[#10151a] shadow-sm hover:border-[#38bdf8]/40 transition-colors">
+          <div
+            className="w-6 h-6 rounded-full flex items-center justify-center font-mono text-[10px] font-bold text-[#03110c] shadow-sm"
+            style={{
+              background: "linear-gradient(135deg, #4d9cff, #38bdf8)",
+            }}
+          >
+            {user?.name ? user.name.slice(0, 2).toUpperCase() : "DV"}
+          </div>
+          <div>
+            <div className="font-mono text-[11px] text-white font-medium leading-none">{user?.name || "Dev"}</div>
+            <div className="text-[#8a99ad] text-[9px] uppercase tracking-wider leading-none mt-0.5">
+              {user?.role || "superadmin"}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* ---------- SHELL LAYOUT ---------- */}
+      <div className="grid grid-cols-1 md:grid-cols-[230px_1fr] flex-1 min-h-[calc(100vh-62px)]">
+        {/* Navigation Sidebar */}
+        <nav className="hidden md:flex flex-col gap-1 border-r border-[#253240] p-5.5 bg-[#0a0d10]/95">
+          <div className="font-mono text-[10px] text-[#8a99ad] uppercase tracking-[1.5px] my-3 mx-2">
+            Overview
+          </div>
+          <button
+            onClick={() => setActiveNav("dashboard")}
+            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs border transition-all text-left ${
+              activeNav === "dashboard"
+                ? "bg-[#141b21] text-white border-[#38bdf8]/40 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
+                : "text-[#8a99ad] border-transparent hover:bg-white/[0.04] hover:text-white"
+            }`}
+          >
+            <span className={`w-4 text-center font-mono text-xs ${activeNav === "dashboard" ? "text-[#38bdf8]" : ""}`}>
+              ▣
+            </span>
+            <span>Dashboard</span>
+          </button>
+          <button
+            onClick={() => setActiveNav("repositories")}
+            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs border transition-all text-left ${
+              activeNav === "repositories"
+                ? "bg-[#141b21] text-white border-[#38bdf8]/40 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
+                : "text-[#8a99ad] border-transparent hover:bg-white/[0.04] hover:text-white"
+            }`}
+          >
+            <span className={`w-4 text-center font-mono text-xs ${activeNav === "repositories" ? "text-[#38bdf8]" : ""}`}>
+              ◧
+            </span>
+            <span>Repositories</span>
+          </button>
+          <button
+            onClick={() => setActiveNav("commits")}
+            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs border transition-all text-left ${
+              activeNav === "commits"
+                ? "bg-[#141b21] text-white border-[#38bdf8]/40 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
+                : "text-[#8a99ad] border-transparent hover:bg-white/[0.04] hover:text-white"
+            }`}
+          >
+            <span className={`w-4 text-center font-mono text-xs ${activeNav === "commits" ? "text-[#38bdf8]" : ""}`}>
+              ↯
+            </span>
+            <span>Commits</span>
+          </button>
+
+          <div className="font-mono text-[10px] text-[#8a99ad] uppercase tracking-[1.5px] mt-4 mb-2 mx-2">
+            Security
+          </div>
+          <button
+            onClick={() => setActiveNav("findings")}
+            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs border transition-all text-left ${
+              activeNav === "findings"
+                ? "bg-[#141b21] text-white border-[#38bdf8]/40 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
+                : "text-[#8a99ad] border-transparent hover:bg-white/[0.04] hover:text-white"
+            }`}
+          >
+            <span className={`w-4 text-center font-mono text-xs ${activeNav === "findings" ? "text-[#38bdf8]" : ""}`}>
+              ⌁
+            </span>
+            <span>Live Findings</span>
+          </button>
+          <button
+            onClick={() => setActiveNav("secrets")}
+            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs border transition-all text-left ${
+              activeNav === "secrets"
+                ? "bg-[#141b21] text-white border-[#38bdf8]/40 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
+                : "text-[#8a99ad] border-transparent hover:bg-white/[0.04] hover:text-white"
+            }`}
+          >
+            <span className={`w-4 text-center font-mono text-xs ${activeNav === "secrets" ? "text-[#38bdf8]" : ""}`}>
+              ⚑
+            </span>
+            <span>Secret Detection</span>
+          </button>
+          <button
+            onClick={() => setActiveNav("cicd")}
+            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs border transition-all text-left ${
+              activeNav === "cicd"
+                ? "bg-[#141b21] text-white border-[#38bdf8]/40 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
+                : "text-[#8a99ad] border-transparent hover:bg-white/[0.04] hover:text-white"
+            }`}
+          >
+            <span className={`w-4 text-center font-mono text-xs ${activeNav === "cicd" ? "text-[#38bdf8]" : ""}`}>
+              ◫
+            </span>
+            <span>CI/CD & Docker</span>
+          </button>
+
+          <div className="font-mono text-[10px] text-[#8a99ad] uppercase tracking-[1.5px] mt-4 mb-2 mx-2">
+            Admin
+          </div>
+          <button
+            onClick={() => setActiveNav("accounts")}
+            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs border transition-all text-left ${
+              activeNav === "accounts"
+                ? "bg-[#141b21] text-white border-[#38bdf8]/40 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
+                : "text-[#8a99ad] border-transparent hover:bg-white/[0.04] hover:text-white"
+            }`}
+          >
+            <span className={`w-4 text-center font-mono text-xs ${activeNav === "accounts" ? "text-[#38bdf8]" : ""}`}>
+              ☰
+            </span>
+            <span>Accounts</span>
+          </button>
+          <button
+            onClick={() => setActiveNav("config")}
+            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs border transition-all text-left ${
+              activeNav === "config"
+                ? "bg-[#141b21] text-white border-[#38bdf8]/40 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
+                : "text-[#8a99ad] border-transparent hover:bg-white/[0.04] hover:text-white"
+            }`}
+          >
+            <span className={`w-4 text-center font-mono text-xs ${activeNav === "config" ? "text-[#38bdf8]" : ""}`}>
+              ⚙
+            </span>
+            <span>System Config</span>
+          </button>
+          <button
+            onClick={() => setActiveNav("sessions")}
+            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs border transition-all text-left ${
+              activeNav === "sessions"
+                ? "bg-[#141b21] text-white border-[#38bdf8]/40 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
+                : "text-[#8a99ad] border-transparent hover:bg-white/[0.04] hover:text-white"
+            }`}
+          >
+            <span className={`w-4 text-center font-mono text-xs ${activeNav === "sessions" ? "text-[#38bdf8]" : ""}`}>
+              ◔
+            </span>
+            <span>Sessions</span>
+          </button>
+        </nav>
+
+        {/* Main Content Area */}
+        <main className="p-8 lg:p-10 pb-20 space-y-7 max-w-[1600px] w-full">
+          {activeNav === "dashboard" && (
+            <>
+              {/* Page Head */}
+              <div className="flex flex-wrap items-end justify-between gap-4 pb-2 border-b border-[#253240]/60">
+                <div>
+                  <h1 className="font-mono text-lg font-bold tracking-tight text-white">Security Overview</h1>
+                  <p className="text-xs text-[#8a99ad] mt-1 font-mono">
+                    repo.threatlens.local · scanning 3 repositories · live DAST daemon on :8765
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 font-mono text-xs">
+                  <button
+                    onClick={() => toast.success("Exported full security summary (CSV / JSON)")}
+                    className="px-4 py-2 rounded-lg border border-[#2b3947] bg-[#10151a] text-[#d8e2e8] hover:border-white/[0.2] hover:bg-[#141b21] shadow-sm transition-all cursor-pointer"
+                  >
+                    Export report
+                  </button>
+                  <button
+                    onClick={() => setActiveNav("findings")}
+                    className="px-4 py-2 rounded-lg border border-[#38bdf8] bg-[#38bdf8] text-[#04140c] font-bold hover:brightness-110 shadow-[0_0_16px_rgba(56,189,248,0.4)] transition-all cursor-pointer"
+                  >
+                    Run new scan
+                  </button>
+                </div>
+              </div>
+
+              {/* KPI ROW */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4.5">
+                {kpis.map((k, i) => (
                   <div
-                    className="w-5 h-5 rounded-lg flex items-center justify-center shrink-0"
-                    style={{
-                      backgroundColor: `${activeRepo?.primaryColor || "#3b82f6"}20`,
-                      color: activeRepo?.primaryColor || "#3b82f6",
-                    }}
+                    key={i}
+                    className="bg-[#10151a] border border-[#263544] hover:border-[#38bdf8]/40 rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-all"
                   >
-                    <FolderGit2 className="w-3.5 h-3.5" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="font-bold text-white truncate text-[11px]">
-                      {activeRepo ? activeRepo.name : "All Repositories"}
-                    </div>
-                    <div className="text-[9px] text-[#64748b] font-mono truncate">
-                      {activeRepo ? activeRepo.language : "5 Projects Active"}
-                    </div>
-                  </div>
-                </div>
-                <ChevronDown className="w-3.5 h-3.5 text-[#64748b] group-hover:text-white shrink-0 ml-1" />
-              </button>
-
-              {/* Repo dropdown menu */}
-              <AnimatePresence>
-                {isRepoDropdownOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
-                    className="absolute top-full left-0 right-0 mt-1 z-50 p-1.5 rounded-xl bg-[#0e1320] border border-white/[0.12] shadow-2xl space-y-0.5 text-xs max-h-60 overflow-y-auto"
-                  >
-                    <button
-                      onClick={handleBackToProjects}
-                      className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-colors ${
-                        activeRepo === null ? "bg-[#2546ff]/20 text-[#93c5fd]" : "text-[#8a99ad] hover:text-white hover:bg-white/5"
-                      }`}
+                    <div
+                      className="absolute left-0 top-0 bottom-0 w-[3.5px]"
+                      style={{
+                        backgroundColor:
+                          k.type === "critical"
+                            ? "#ff4d4f"
+                            : k.type === "high"
+                            ? "#ff9a3c"
+                            : k.type === "medium"
+                            ? "#f2c94c"
+                            : "#38bdf8",
+                        boxShadow:
+                          k.type === "critical"
+                            ? "0 0 10px #ff4d4f"
+                            : k.type === "high"
+                            ? "0 0 10px #ff9a3c"
+                            : k.type === "medium"
+                            ? "0 0 10px #f2c94c"
+                            : "0 0 10px #38bdf8",
+                      }}
+                    />
+                    <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">{k.label}</div>
+                    <div
+                      className="font-mono text-xl font-bold mt-1.5"
+                      style={{
+                        color:
+                          k.type === "critical"
+                            ? "#ff4d4f"
+                            : k.type === "high"
+                            ? "#ff9a3c"
+                            : k.type === "medium"
+                            ? "#f2c94c"
+                            : "#38bdf8",
+                      }}
                     >
-                      <span>📂 All Projects</span>
-                      <span className="text-[10px] font-mono text-[#64748b]">5</span>
-                    </button>
+                      {k.value}
+                    </div>
+                    <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">{k.sub}</div>
+                  </div>
+                ))}
+              </div>
 
-                    <div className="my-1 border-t border-white/[0.06]" />
+              {/* GAUGE + COMMITS SPLIT */}
+              <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-5.5">
+                {/* Left: Latest Analyzed Commits */}
+                <div className="bg-[#10151a] border border-[#263544] hover:border-[#2f4255] rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)] flex flex-col justify-between transition-all">
+                  <div>
+                    <div className="flex items-center justify-between p-3 px-4 border-b border-[#253240] bg-[#12181f]/60">
+                      <h2 className="font-mono text-xs font-bold text-white uppercase tracking-wider">
+                        Latest analyzed commits
+                      </h2>
+                      <div className="font-mono text-[10px] text-[#8a99ad]">GET /repo/12/commits</div>
+                    </div>
 
-                    {USER_REPOSITORIES.map((repo) => (
-                      <button
-                        key={repo.id}
-                        onClick={() => handleOpenRepo(repo)}
-                        className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-colors ${
-                          activeRepo?.id === repo.id ? "bg-[#2546ff]/20 text-[#93c5fd]" : "text-[#8a99ad] hover:text-white hover:bg-white/5"
-                        }`}
-                      >
-                        <span className="truncate">{repo.name}</span>
-                        <span
-                          className={`text-[9px] font-mono px-1 rounded ${
-                            repo.grade === "A+"
-                              ? "text-[#4ade80] bg-[#22c55e]/10"
-                              : repo.grade === "A"
-                              ? "text-[#60a5fa] bg-[#3b82f6]/10"
-                              : "text-[#fbbf24] bg-[#f59e0b]/10"
-                          }`}
+                    <div className="divide-y divide-[#222e3a]">
+                      {commits.map((c, i) => (
+                        <div
+                          key={i}
+                          onClick={() => handleOpenDetail(c)}
+                          className="grid grid-cols-[auto_1fr_auto] gap-3.5 items-center p-3 px-4.5 hover:bg-white/[0.03] cursor-pointer transition-colors"
                         >
-                          {repo.grade}
-                        </span>
-                      </button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-
-          {/* Navigation group */}
-          <nav className="p-3 space-y-1 overflow-y-auto flex-1">
-            <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#475569] font-mono">
-              {activeRepo ? `${activeRepo.name} SOC` : "Organization"}
-            </div>
-
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = currentNav === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setCurrentNav(item.id)}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                    isActive
-                      ? "bg-[#2546ff]/15 text-[#93c5fd] border border-[#2546ff]/30 shadow-[0_0_20px_rgba(37,70,255,0.15)] font-bold"
-                      : "text-[#8a99ad] hover:text-white hover:bg-white/[0.04] border border-transparent"
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Icon className={`w-4 h-4 ${isActive ? "text-[#4d8eff]" : "text-[#64748b]"}`} />
-                    <span>{item.label}</span>
+                          <span className="font-mono text-[#38bdf8] bg-[#38bdf8]/10 px-2 py-0.5 rounded text-[11px] border border-[#38bdf8]/30 font-semibold shadow-sm">
+                            {c.sha}
+                          </span>
+                          <div className="min-w-0 pr-2">
+                            <div className="text-[#d8e2e8] text-xs font-semibold truncate">{c.msg}</div>
+                            <div className="text-[#8a99ad] text-[10.5px] font-mono truncate mt-0.5">{c.meta}</div>
+                          </div>
+                          <span
+                            className="font-mono text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full border whitespace-nowrap"
+                            style={{
+                              color:
+                                c.score >= 80
+                                  ? "#ff4d4f"
+                                  : c.score >= 50
+                                  ? "#ff9a3c"
+                                  : c.score >= 20
+                                  ? "#f2c94c"
+                                  : "#38bdf8",
+                              borderColor:
+                                c.score >= 80
+                                  ? "#ff4d4f"
+                                  : c.score >= 50
+                                  ? "#ff9a3c"
+                                  : c.score >= 20
+                                  ? "#f2c94c"
+                                  : "#38bdf8",
+                              backgroundColor:
+                                c.score >= 80
+                                  ? "rgba(255,77,79,.10)"
+                                  : c.score >= 50
+                                  ? "rgba(255,154,60,.10)"
+                                  : c.score >= 20
+                                  ? "rgba(242,201,76,.10)"
+                                  : "rgba(56,189,248,.10)",
+                            }}
+                          >
+                            {c.risk}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  {item.count && (
-                    <span
-                      className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${
-                        isActive
-                          ? "bg-[#2546ff]/20 text-[#93c5fd]"
-                          : "bg-white/5 text-[#64748b]"
-                      }`}
+                </div>
+
+                {/* Right: Repo Risk Score Gauge + Pulse */}
+                <div className="bg-[#10151a] border border-[#263544] hover:border-[#2f4255] rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)] flex flex-col justify-between transition-all">
+                  <div>
+                    <div className="flex items-center justify-between p-3 px-4 border-b border-[#253240] bg-[#12181f]/60">
+                      <h2 className="font-mono text-xs font-bold text-white uppercase tracking-wider">
+                        Repo risk score
+                      </h2>
+                      <div className="font-mono text-[10px] text-[#8a99ad]">weighted</div>
+                    </div>
+
+                    <div className="flex items-center gap-6 p-5 px-6">
+                      <div className="relative w-24 h-24 shrink-0">
+                        <svg width="96" height="96" viewBox="0 0 120 120" className="-rotate-90">
+                          <circle cx="60" cy="60" r="50" fill="none" stroke="#222e3a" strokeWidth="10" />
+                          <circle
+                            cx="60"
+                            cy="60"
+                            r="50"
+                            fill="none"
+                            stroke="#ff9a3c"
+                            strokeWidth="10"
+                            strokeDasharray="314"
+                            strokeDashoffset="105"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center font-mono">
+                          <b className="text-lg text-white font-bold">58</b>
+                          <span className="text-[8.5px] text-[#8a99ad] uppercase tracking-wider">/ 100</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-2 text-xs font-mono">
+                        <div className="flex items-center gap-2.5">
+                          <span className="w-2.5 h-2.5 rounded-sm bg-[#ff4d4f] shadow-[0_0_6px_#ff4d4f]" />
+                          <span>Critical × 40</span>
+                        </div>
+                        <div className="flex items-center gap-2.5">
+                          <span className="w-2.5 h-2.5 rounded-sm bg-[#ff9a3c] shadow-[0_0_6px_#ff9a3c]" />
+                          <span>High × 20</span>
+                        </div>
+                        <div className="flex items-center gap-2.5">
+                          <span className="w-2.5 h-2.5 rounded-sm bg-[#f2c94c] shadow-[0_0_6px_#f2c94c]" />
+                          <span>Medium × 8</span>
+                        </div>
+                        <div className="flex items-center gap-2.5">
+                          <span className="w-2.5 h-2.5 rounded-sm bg-[#38bdf8] shadow-[0_0_6px_#38bdf8]" />
+                          <span>Low × 2</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-[#253240]">
+                    <div className="flex items-center justify-between p-2.5 px-4 border-b border-[#253240]/60 bg-[#12181f]/40">
+                      <h2 className="font-mono text-xs font-bold text-white">System pulse</h2>
+                      <div className="font-mono text-[10px] text-[#8a99ad]">/tc-auth/config/pulse</div>
+                    </div>
+                    <div className="p-3.5 px-4 font-mono text-[11px] text-[#8a99ad] leading-relaxed">
+                      accounts: <span className="text-white font-bold">18</span> · sessions:{" "}
+                      <span className="text-white font-bold">6</span> · oauth:{" "}
+                      <span className="text-white font-bold">4</span> · otp:{" "}
+                      <span className="text-white font-bold">1</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* LIVE SECTEST FINDINGS TABLE */}
+              <div className="bg-[#10151a] border border-[#263544] hover:border-[#2f4255] rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-all">
+                <div className="flex items-center justify-between p-3 px-4 border-b border-[#253240] bg-[#12181f]/60">
+                  <h2 className="font-mono text-xs font-bold text-white uppercase tracking-wider">
+                    Live SecTest findings
+                  </h2>
+                  <div className="font-mono text-[10px] text-[#8a99ad]">GET :8765/report.json · scanned 4 min ago</div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="border-b border-[#253240] text-[10px] font-mono uppercase tracking-wider text-[#8a99ad] bg-[#0c1015]">
+                        <th className="py-3 px-4.5">Severity</th>
+                        <th className="py-3 px-4.5">Finding</th>
+                        <th className="py-3 px-4.5">Module</th>
+                        <th className="py-3 px-4.5">Endpoint / CWE</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#222e3a]">
+                      {findings.map((f, i) => {
+                        const isCrit = f.severity === "critical";
+                        const isHigh = f.severity === "high";
+                        const isMed = f.severity === "medium";
+                        const isInfo = f.severity === "info";
+                        const color = isCrit
+                          ? "#ff4d4f"
+                          : isHigh
+                          ? "#ff9a3c"
+                          : isMed
+                          ? "#f2c94c"
+                          : isInfo
+                          ? "#4d9cff"
+                          : "#38bdf8";
+
+                        return (
+                          <tr
+                            key={i}
+                            onClick={() => handleOpenDetail(f)}
+                            className="hover:bg-white/[0.03] cursor-pointer transition-colors"
+                          >
+                            <td className="py-3 px-4.5 align-top">
+                              <span
+                                className="font-mono text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full border whitespace-nowrap font-medium"
+                                style={{
+                                  color: color,
+                                  borderColor: color,
+                                  backgroundColor: `${color}14`,
+                                }}
+                              >
+                                {f.severity}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4.5 align-top">
+                              <div className="font-semibold text-white">{f.title}</div>
+                              <div className="font-mono text-[#8a99ad] text-[10.5px] mt-0.5">{f.evidence}</div>
+                            </td>
+                            <td className="py-3 px-4.5 align-top font-mono text-[10.5px] text-[#8a99ad]">{f.module}</td>
+                            <td className="py-3 px-4.5 align-top font-mono text-[10.5px] text-[#8a99ad]">{f.endpoint}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* SCANNED REPOSITORIES GRID */}
+              <div className="bg-[#10151a] border border-[#263544] hover:border-[#2f4255] rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-all">
+                <div className="flex items-center justify-between p-3 px-4 border-b border-[#253240] bg-[#12181f]/60">
+                  <h2 className="font-mono text-xs font-bold text-white uppercase tracking-wider">
+                    Scanned repositories
+                  </h2>
+                  <div className="font-mono text-[10px] text-[#8a99ad]">GET /repo</div>
+                </div>
+
+                <div className="p-4.5 grid grid-cols-1 md:grid-cols-3 gap-4.5">
+                  {repos.map((r, i) => (
+                    <div
+                      key={i}
+                      onClick={() => setActiveNav("repositories")}
+                      className="bg-[#10151a] border border-[#283747] hover:border-[#38bdf8]/40 rounded-xl p-4 space-y-3.5 shadow-sm transition-all cursor-pointer"
                     >
-                      {item.count}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="font-mono font-bold text-xs text-white">{r.name}</div>
+                          <div className="text-[10.5px] text-[#8a99ad] font-mono mt-0.5">{r.url}</div>
+                        </div>
+                        <div className="font-mono text-[10px] text-[#38bdf8] border border-[#2b3947] bg-[#38bdf8]/10 px-2 py-0.5 rounded font-medium">
+                          {r.branch}
+                        </div>
+                      </div>
 
-            <div className="pt-4 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#475569] font-mono">
-              Workspaces
-            </div>
+                      <div className="flex gap-5 font-mono mt-3">
+                        <div>
+                          <b className="text-sm text-white">{r.commits}</b>
+                          <span className="text-[9px] text-[#8a99ad] uppercase block mt-0.5">commits</span>
+                        </div>
+                        <div>
+                          <b className="text-sm text-white">{r.files}</b>
+                          <span className="text-[9px] text-[#8a99ad] uppercase block mt-0.5">files</span>
+                        </div>
+                        <div>
+                          <b className="text-sm text-white">{r.size}</b>
+                          <span className="text-[9px] text-[#8a99ad] uppercase block mt-0.5">size</span>
+                        </div>
+                      </div>
 
-            <Link
-              href="/commit-analysis"
-              className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-[#8a99ad] hover:text-white hover:bg-white/[0.04] transition-all"
-            >
-              <div className="flex items-center gap-2.5">
-                <FileCode className="w-4 h-4 text-[#4d8eff]" />
-                <span>Diff Workspace</span>
-              </div>
-            </Link>
-          </nav>
-        </div>
+                      <div className="flex h-1.5 rounded overflow-hidden bg-[#222e3a] mt-3">
+                        <div style={{ width: `${r.py}%` }} className="bg-[#4d9cff]" title={`Python ${r.py}%`} />
+                        <div style={{ width: `${r.js}%` }} className="bg-[#f2c94c]" title={`JavaScript ${r.js}%`} />
+                        <div style={{ width: `${r.other}%` }} className="bg-[#222e3a]" />
+                      </div>
 
-        {/* Storage / Engine Capacity gauge */}
-        <div className="p-3 border-t border-white/[0.06] space-y-3">
-          <div className="p-3.5 rounded-2xl bg-[#06080d] border border-white/[0.06] space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2 font-semibold text-white">
-                <HardDrive className="w-3.5 h-3.5 text-[#4d8eff]" />
-                <span>AST Index Tree</span>
-              </div>
-              <ChevronRight className="w-3 h-3 text-[#475569]" />
-            </div>
-
-            <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-[#2546ff] to-[#4d8eff]"
-                style={{ width: activeRepo ? "68%" : "84%" }}
-              />
-            </div>
-
-            <div className="text-[10px] text-[#64748b] font-mono">
-              {activeRepo ? `${activeRepo.commitCount} Commits Indexed` : "3,170 Total Commits Indexed"}
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      {/* CENTER WORKSPACE + TOPBAR */}
-      <div className="flex-1 flex flex-col overflow-hidden relative z-10 min-w-0">
-        {/* TOPBAR */}
-        <header className="h-16 border-b border-white/[0.07] bg-[#0a0d15]/80 backdrop-blur-md px-6 flex items-center justify-between shrink-0 gap-4">
-          {/* Breadcrumbs / Back Navigation */}
-          <div className="flex items-center gap-2 text-xs font-mono">
-            <button
-              onClick={handleBackToProjects}
-              className={`hover:text-white transition-colors ${
-                activeRepo === null ? "text-white font-bold" : "text-[#8a99ad]"
-              }`}
-            >
-              Projects
-            </button>
-            {activeRepo && (
-              <>
-                <ChevronRight className="w-3.5 h-3.5 text-[#475569]" />
-                <span className="text-[#93c5fd] font-bold">{activeRepo.name}</span>
-                <ChevronRight className="w-3.5 h-3.5 text-[#475569]" />
-                <span className="text-[#64748b]">
-                  {currentNav === "overview" && "Findings"}
-                  {currentNav === "security" && "SecTest Scanner"}
-                  {currentNav === "git" && "Commits"}
-                  {currentNav === "settings" && "Settings"}
-                </span>
-              </>
-            )}
-          </div>
-
-          {/* Right Top Header Actions */}
-          <div className="flex items-center gap-3 shrink-0">
-            {/* Search Input */}
-            <div className="relative w-56 hidden md:block">
-              <Search className="absolute left-3 top-2.5 w-3.5 h-3.5 text-[#64748b]" />
-              <input
-                type="text"
-                placeholder="Search anything..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#06080d] border border-white/[0.08] rounded-xl pl-9 pr-3 py-1.5 text-xs text-white placeholder-[#475569] focus:outline-none focus:border-[#4d8eff] transition-colors"
-              />
-            </div>
-
-            {/* Notification Bell */}
-            <button
-              onClick={() => setIsAttestationModalOpen(true)}
-              className="relative p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-[#8a99ad] hover:text-white transition-colors"
-              title="Notifications & Attestation Ledger"
-            >
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#22c55e] ring-2 ring-[#0a0d15]" />
-            </button>
-
-            {/* User Profile Avatar Pill */}
-            <div className="flex items-center gap-2 pl-2 border-l border-white/[0.07]">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#2546ff] to-[#4d8eff] p-0.5 shadow-sm">
-                <div className="w-full h-full rounded-full bg-[#0a0d15] flex items-center justify-center text-xs font-bold text-white uppercase font-mono">
-                  {user?.name ? user.name.slice(0, 2) : "TL"}
+                      <div className="flex gap-3.5 text-[10px] font-mono text-[#8a99ad] mt-2">
+                        <span>● Python {r.pyCount}</span>
+                        <span>● JS {r.jsCount}</span>
+                        <span>● other</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-              <div className="hidden lg:block text-left">
-                <div className="text-xs font-semibold text-white leading-tight">
-                  {user?.name || "Security Analyst"}
-                </div>
-                <div className="text-[9px] text-[#64748b] font-mono uppercase">
-                  {user?.role || "SUPERADMIN"}
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
+            </>
+          )}
 
-        {/* Center Main Scrollable Area */}
-        <main className="flex-1 overflow-y-auto p-6 space-y-6">
-          <AnimatePresence mode="wait">
-            {/* If no repo is active, show the All Projects Overview */}
-            {activeRepo === null && currentNav === "overview" && (
-              <motion.div
-                key="projects-overview"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.2 }}
-              >
-                <ProjectsOverviewView
-                  selectedRepo={selectedItem}
-                  onSelectRepo={(repo) => setSelectedItem(repo)}
-                  onOpenRepo={(repo) => handleOpenRepo(repo)}
-                />
-              </motion.div>
-            )}
+          {activeNav === "repositories" && <RepositoriesTab onInspectCommit={handleOpenDetail} />}
 
-            {/* If a repo is active, show the repo's specific SOC view */}
-            {activeRepo !== null && currentNav === "overview" && (
-              <motion.div
-                key={`repo-overview-${activeRepo.id}`}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.2 }}
-              >
-                <OverviewView
-                  activeRepo={activeRepo}
-                  selectedItem={selectedItem}
-                  onSelectItem={(item) => setSelectedItem(item)}
-                  onRunAudit={handleRunAudit}
-                  isAuditing={isAuditing}
-                />
-              </motion.div>
-            )}
+          {activeNav === "commits" && <CommitsTab onInspectCommit={handleOpenDetail} />}
 
-            {currentNav === "security" && (
-              <motion.div
-                key="security"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.2 }}
-              >
-                <SecurityView onSelectFinding={(f) => setSelectedItem(f)} />
-              </motion.div>
-            )}
+          {activeNav === "findings" && <LiveFindingsTab onInspectFinding={handleOpenDetail} />}
 
-            {currentNav === "git" && (
-              <motion.div
-                key="git"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.2 }}
-              >
-                <GitAnalyzerView activeRepo={activeRepo} onSelectFinding={(f) => setSelectedItem(f)} />
-              </motion.div>
-            )}
+          {activeNav === "secrets" && <SecretDetectionTab />}
 
-            {currentNav === "settings" && (
-              <motion.div
-                key="settings"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.2 }}
-              >
-                <SettingsView />
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {activeNav === "cicd" && <CicdDockerTab />}
+
+          {activeNav === "accounts" && <AccountsTab />}
+
+          {activeNav === "config" && <SystemConfigTab />}
+
+          {activeNav === "sessions" && <SessionsTab />}
         </main>
       </div>
 
-      {/* RIGHT PERSISTENT INSPECTOR PANEL */}
-      <InspectorPanel
-        item={selectedItem}
-        onClose={() => setSelectedItem(null)}
-        onOpenRepo={(repo) => handleOpenRepo(repo)}
-      />
+      {/* ---------- FOOTER ---------- */}
+      <footer className="px-8 py-4 border-t border-[#253240] text-[#8a99ad] font-mono text-[10.5px] flex items-center justify-between bg-[#0a0d10]">
+        <div>ThreatLens dashboard · live security telemetry</div>
+        <div>local time {clockStr}</div>
+      </footer>
 
-      {/* Cryptographic Attestation Modal */}
-      <AnimatePresence>
-        {isAttestationModalOpen && (
-          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-lg bg-[#0a0d15] border border-white/15 rounded-2xl p-6 shadow-2xl space-y-4 text-xs"
-            >
-              <div className="flex items-center justify-between pb-3 border-b border-white/10">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-5 h-5 text-[#4ade80]" />
-                  <span className="font-bold text-sm text-white">
-                    ThreatLens Cryptographic Attestation Certificate
-                  </span>
+      {/* ---------- SLIDE-OVER DETAIL DRAWER ---------- */}
+      {isDrawerOpen && selectedItem && (
+        <div className="fixed inset-0 z-50 overflow-hidden select-none">
+          <div
+            onClick={() => setIsDrawerOpen(false)}
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+          />
+
+          <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+            <div className="w-screen max-w-lg bg-[#10151a] border-l border-[#283747] shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col justify-between p-6.5 overflow-y-auto space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-start justify-between pb-3 border-b border-[#253240]">
+                  <div>
+                    <span className="font-mono text-[10px] text-[#38bdf8] uppercase tracking-wider font-semibold">
+                      {selectedItem.sha ? `Commit ${selectedItem.sha}` : `Finding · ${selectedItem.module || "SecTest"}`}
+                    </span>
+                    <h2 className="text-base font-mono font-bold text-white mt-1">
+                      {selectedItem.title || selectedItem.msg || selectedItem.message}
+                    </h2>
+                  </div>
+                  <button
+                    onClick={() => setIsDrawerOpen(false)}
+                    className="p-1.5 rounded-lg text-[#8a99ad] hover:text-white hover:bg-white/[0.06] transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
-                <button
-                  onClick={() => setIsAttestationModalOpen(false)}
-                  className="p-1 rounded text-[#8a99ad] hover:text-white"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+
+                {selectedItem.explanation && (
+                  <div className="space-y-1.5">
+                    <p className="font-mono text-[10px] uppercase text-[#8a99ad] tracking-wider">Technical Analysis:</p>
+                    <p className="text-xs text-[#d8e2e8] leading-relaxed p-3.5 rounded-lg bg-[#0a0d10] border border-[#253240]">
+                      {selectedItem.explanation}
+                    </p>
+                  </div>
+                )}
+
+                {(selectedItem.evidence || selectedItem.diff) && (
+                  <div className="space-y-1.5">
+                    <p className="font-mono text-[10px] uppercase text-[#8a99ad] tracking-wider">Evidence / Trace:</p>
+                    <pre className="text-[11px] font-mono text-[#38bdf8] p-3.5 rounded-lg bg-[#0a0d10] border border-[#253240] overflow-x-auto whitespace-pre-wrap">
+                      {selectedItem.evidence || selectedItem.diff}
+                    </pre>
+                  </div>
+                )}
+
+                {selectedItem.remediation && (
+                  <div className="space-y-1.5">
+                    <p className="font-mono text-[10px] uppercase text-[#38bdf8] tracking-wider font-bold">Recommended Fix:</p>
+                    <p className="text-xs text-white p-3.5 rounded-lg bg-[#38bdf8]/10 border border-[#38bdf8]/30 font-mono">
+                      {selectedItem.remediation}
+                    </p>
+                  </div>
+                )}
               </div>
 
-              <div className="p-4 rounded-xl bg-[#06080d] border border-white/10 space-y-2 font-mono text-[11px]">
-                <div className="text-[#8a99ad]">// Immutable Polygon Audit Receipt</div>
-                <div><span className="text-[#64748b]">Engine:</span> ThreatLens SecTest v2.4</div>
-                <div><span className="text-[#64748b]">Target:</span> {activeRepo?.fullName || "ThreatLens / ThreatLens-Core"}</div>
-                <div><span className="text-[#64748b]">Commit:</span> 7f8a92b3c109d...</div>
-                <div><span className="text-[#64748b]">Merkle Root:</span> 0x8a9012f4b931e9c91039820fa929bc91030e8a7199201948</div>
-                <div><span className="text-[#64748b]">Block:</span> {activeRepo?.proofBlock || "#48,192"}</div>
-                <div><span className="text-[#64748b]">Status:</span> <span className="text-[#4ade80]">ANCHORED &amp; VERIFIED</span></div>
-              </div>
+              <div className="pt-4 border-t border-[#253240] flex items-center justify-between">
+                <button
+                  onClick={() => handleCopyPayload(JSON.stringify(selectedItem, null, 2))}
+                  className="px-4 py-2 rounded-lg font-mono text-xs bg-[#141b21] border border-[#2b3947] text-[#d8e2e8] hover:border-white/[0.2] hover:bg-[#1a232b] flex items-center gap-2 transition-all"
+                >
+                  {copied ? <Check className="w-3.5 h-3.5 text-[#38bdf8]" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copied ? "Copied" : "Copy Payload"}</span>
+                </button>
 
-              <div className="flex justify-end gap-2 pt-2">
                 <button
-                  onClick={() => setIsAttestationModalOpen(false)}
-                  className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white font-semibold"
+                  onClick={() => setIsDrawerOpen(false)}
+                  className="px-4.5 py-2 rounded-lg font-mono text-xs bg-[#38bdf8] text-[#04140c] font-bold hover:brightness-110 shadow-[0_0_14px_rgba(56,189,248,0.4)] transition-all"
                 >
-                  Close
-                </button>
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText("0x8a9012f4b931e9c91039820fa929bc91030e8a7199201948");
-                    setCopiedDigest(true);
-                    setTimeout(() => setCopiedDigest(false), 2000);
-                  }}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#2546ff] hover:bg-[#1d3bef] text-white font-semibold"
-                >
-                  {copiedDigest ? <Check className="w-3.5 h-3.5 text-[#4ade80]" /> : <Copy className="w-3.5 h-3.5" />}
-                  {copiedDigest ? "Copied" : "Copy Merkle Digest"}
+                  Done
                 </button>
               </div>
-            </motion.div>
+            </div>
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
     </div>
   );
 }

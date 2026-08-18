@@ -81,6 +81,9 @@ vite.config.*.timestamp-*
 # Gatsby
 .cache/
 
+personal/
+.personal/
+
 # React Native
 .expo/
 .expo-shared/

@@ -56,11 +56,11 @@ button { font: inherit; }
 .section { position: relative; padding: 136px 0; }
 .section-eyebrow { display: inline-flex; align-items: center; gap: 9px; font: 600 10px/1 "IBM Plex Mono", monospace; letter-spacing: .13em; text-transform: uppercase; color: #b8caff; }
 .eyebrow-pulse { display: inline-block; width: 6px; height: 6px; background: #4d8eff; transform: rotate(45deg); }
-h1, h2, h3, p { margin-top: 0; }
-h1, h2, h3 { font-family: "Sora", sans-serif; letter-spacing: -.045em; }
-h2 { margin-bottom: 0; font-size: clamp(2.25rem, 4vw, 4rem); line-height: 1.08; font-weight: 600; }
-h1 span { font-style: normal; color: #4d8eff; background: transparent; }
-h2 em { font-style: normal; color: #4d8eff; background: transparent; }
+.site-shell h1, .site-shell h2, .site-shell h3, .site-shell p { margin-top: 0; }
+.site-shell h1, .site-shell h2, .site-shell h3 { font-family: "Sora", sans-serif; letter-spacing: -.045em; }
+.site-shell h2 { margin-bottom: 0; font-size: clamp(2.25rem, 4vw, 4rem); line-height: 1.08; font-weight: 600; }
+.site-shell h1 span { font-style: normal; color: #4d8eff; background: transparent; }
+.site-shell h2 em { font-style: normal; color: #4d8eff; background: transparent; }
 .mono-label { font: 500 10px/1 "IBM Plex Mono", monospace; letter-spacing: .14em; color: #7d8b99; text-transform: uppercase; }
 .button { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 42px; padding: 0 17px; border: 1px solid rgba(255, 255, 255, 0.08); font-size: 13px; font-weight: 600; transition: transform 160ms var(--ease-out), background 180ms var(--ease-out), border-color 180ms var(--ease-out); }
 .button:active { transform: scale(.98); }

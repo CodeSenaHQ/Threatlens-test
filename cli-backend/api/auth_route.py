@@ -19,3 +19,4 @@ def callback(access_token: str):
 @router.post("password/login")
 def pass_login():
    return password_login()
+

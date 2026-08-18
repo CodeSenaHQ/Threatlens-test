@@ -1,11 +1,9 @@
 import httpx 
 from fastapi import APIRouter
 from fastapi.exceptions import HTTPException
-from connect import app
 from config import config
 from db import save_jwt
 
-router = APIRouter(app)
 
 def password_login(identifier: str, password: str) -> dict : 
     response = httpx.post(

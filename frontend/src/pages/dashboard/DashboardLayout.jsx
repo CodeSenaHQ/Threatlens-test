@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { authApi, repoApi, secTestApi, severityColor, formatBytes, timeAgo } from "@/lib/api";
 import { toast } from "sonner";
+import { useLocation } from "wouter";
 import {
   Copy,
   Check,
@@ -9,6 +10,7 @@ import {
   Loader2,
   AlertTriangle,
   WifiOff,
+  LogOut,
 } from "lucide-react";
 
 // Domain-Based Tab Views
@@ -27,12 +29,23 @@ function SkeletonBlock({ className = "" }) {
 }
 
 export default function DashboardLayout() {
-  const { user, token } = useAuth();
+  const { user, token, logout } = useAuth();
+  const [, setLocation] = useLocation();
   const [activeNav, setActiveNav] = useState("dashboard");
   const [clockStr, setClockStr] = useState("--:--:--");
   const [selectedItem, setSelectedItem] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast.success("Successfully signed out");
+      setLocation("/login");
+    } catch (err) {
+      toast.error("Logout failed: " + (err.message || "Unknown error"));
+    }
+  };
 
   // ── Live data state ──
   const [pulse, setPulse] = useState(null);
@@ -237,22 +250,33 @@ export default function DashboardLayout() {
           <div className="text-[#d8e2e8] font-bold">{clockStr}</div>
         </div>
 
-        {/* Profile Chip */}
-        <div className="flex items-center gap-2.5 px-3 py-1.5 border border-[#2b3947] rounded-full bg-[#10151a] shadow-sm hover:border-[#38bdf8]/40 transition-colors">
-          <div
-            className="w-6 h-6 rounded-full flex items-center justify-center font-mono text-[10px] font-bold text-[#03110c] shadow-sm"
-            style={{
-              background: "linear-gradient(135deg, #4d9cff, #38bdf8)",
-            }}
-          >
-            {user?.name ? user.name.slice(0, 2).toUpperCase() : "TL"}
-          </div>
-          <div>
-            <div className="font-mono text-[11px] text-white font-medium leading-none">{user?.name || "User"}</div>
-            <div className="text-[#8a99ad] text-[9px] uppercase tracking-wider leading-none mt-0.5">
-              {user?.role || "analyst"}
+        {/* Profile Chip & Logout */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5 px-3 py-1.5 border border-[#2b3947] rounded-full bg-[#10151a] shadow-sm hover:border-[#38bdf8]/40 transition-colors">
+            <div
+              className="w-6 h-6 rounded-full flex items-center justify-center font-mono text-[10px] font-bold text-[#03110c] shadow-sm"
+              style={{
+                background: "linear-gradient(135deg, #4d9cff, #38bdf8)",
+              }}
+            >
+              {user?.name ? user.name.slice(0, 2).toUpperCase() : "TL"}
+            </div>
+            <div>
+              <div className="font-mono text-[11px] text-white font-medium leading-none">{user?.name || "User"}</div>
+              <div className="text-[#8a99ad] text-[9px] uppercase tracking-wider leading-none mt-0.5">
+                {user?.role || "analyst"}
+              </div>
             </div>
           </div>
+
+          <button
+            onClick={handleLogout}
+            title="Sign out of ThreatLens"
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-[#2b3947] hover:border-rose-500/40 rounded-full bg-[#10151a] hover:bg-rose-500/10 text-[#8a99ad] hover:text-rose-400 font-mono text-[11px] transition-all cursor-pointer shadow-sm"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Sign Out</span>
+          </button>
         </div>
       </header>
 
@@ -331,6 +355,15 @@ export default function DashboardLayout() {
               <span>{item.label}</span>
             </button>
           ))}
+          <div className="mt-auto pt-4 border-t border-[#253240]">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-[#8a99ad] hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all text-left font-mono cursor-pointer"
+            >
+              <LogOut className="w-3.5 h-3.5 text-rose-400" />
+              <span>Sign Out</span>
+            </button>
+          </div>
         </nav>
 
         {/* Main Content Area */}

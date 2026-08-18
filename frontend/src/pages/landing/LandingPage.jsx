@@ -439,7 +439,6 @@ function TerminalShowcase() {
       <div className="container">
         <div className="split-heading">
           <div>
-            <span className="section-eyebrow"><i className="eyebrow-pulse" /> DEVELOPER WORKFLOW</span>
             <h2>Terminal-first security execution</h2>
           </div>
           <p>Two complementary modes designed for engineering workflows: an interactive terminal user interface and an automated CLI scanner.</p>
@@ -569,7 +568,7 @@ function ValueProposition() {
     <section className="section proof-section" id="product">
       <div className="container">
         <div className="split-heading">
-          <div><span className="section-eyebrow"><i className="eyebrow-pulse" /> Core Platform</span><h2>How ThreatLens works</h2></div>
+          <div><h2>How ThreatLens works</h2></div>
           <p>A unified security platform combining AI code analysis, active vulnerability testing, and blockchain-backed proof.</p>
         </div>
         <div className="value-cards">
@@ -602,7 +601,6 @@ function HowItWorks() {
     <section className="section process-section" id="how-it-works">
       <div className="container">
         <div className="split-heading centered-heading">
-          <span className="section-eyebrow"><i className="eyebrow-pulse" /> PROCESS PIPELINE</span>
           <h2>From commit to cryptographic proof</h2>
         </div>
         <div className="process-rail">
@@ -636,7 +634,6 @@ function SecurityReport() {
     <section className="section report-section" id="report">
       <div className="container report-layout">
         <FadeIn className="report-intro">
-          <span className="section-eyebrow"><i className="eyebrow-pulse" /> LIVE TELEMETRY</span>
           <h2>Automated security reports you can trust</h2>
           <p>Every scan produces a comprehensive, verified security report with actionable remediation guidance and cryptographic proof of testing.</p>
           <div className="report-intro-list">
@@ -685,7 +682,6 @@ function BlockchainTrust() {
       <div className="trust-art" /><div className="trust-grid" />
       <div className="container trust-layout">
         <FadeIn className="trust-copy">
-          <span className="section-eyebrow"><i className="eyebrow-pulse" /> BLOCKCHAIN VERIFICATION</span>
           <h2>Proof of security that can&apos;t be altered</h2>
           <p>Security claims without proof are just words. ThreatLens cryptographically hashes every finding, exploit test, and report — then anchors that proof permanently to Polygon.</p>
           <Link className="button button-primary" href="/signup">Start Securing Your Code <ArrowRight size={15} /></Link>

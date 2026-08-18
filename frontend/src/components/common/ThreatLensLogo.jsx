@@ -3,7 +3,7 @@ import React from "react";
 export function ThreatLensLogo({
   className = "h-7 w-auto",
   idPrefix = "tl",
-  showBadge = true,
+  showBadge = false,
   showText = true,
   iconOnly = false,
   height,
@@ -105,7 +105,7 @@ export function ThreatLensLogo({
       className={`inline-flex items-center gap-2.5 select-none ${className}`}
       style={{ height, width }}
       role="img"
-      aria-label="ThreatLens AI"
+      aria-label="ThreatLens"
     >
       {EmblemIcon}
       <span className="flex items-center tracking-tight font-['Plus_Jakarta_Sans','Sora','Inter',sans-serif] leading-none">

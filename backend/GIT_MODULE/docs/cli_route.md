@@ -268,7 +268,6 @@ None.
 
 ```json
 {
-  "repo_id": 12,
   "data": [
     {
       "commit": {
@@ -296,7 +295,8 @@ None.
 
 Important note:
 
-- The saved repository ID comes from the path (`/{repo_id}`), not body `repo_id`.
+- The request body now includes only `data`.
+- The repository ID is taken from the path parameter `/{repo_id}`.
 
 ### Fetch example
 
@@ -310,7 +310,6 @@ const res = await fetch(`${baseUrl}/repo/${repoId}/commits`, {
     Authorization: `Bearer ${accessToken}`,
   },
   body: JSON.stringify({
-    repo_id: repoId,
     data: [
       {
         commit: {

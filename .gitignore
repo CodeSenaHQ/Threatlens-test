@@ -7,15 +7,12 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-<<<<<<< HEAD
 # Python build / distribution
-=======
 test.py
 .env
 
 # Distribution / packaging
 .Python
->>>>>>> 8765da59fd9e9a9b6d7f50a4af722183c54bb562
 build/
 dist/
 *.egg-info/

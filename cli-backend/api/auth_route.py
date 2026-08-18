@@ -8,7 +8,7 @@ router = APIRouter()
 @router.get("/{provider}/login")
 def oauth_login(provider):
     return RedirectResponse(
-        f"{config.BASE_URL}/{provider}/login"
+        f"{config.AUTH_BASE_URL}/{provider}/login"
         "?frontend_url=http://localhost:1234"
     )
 

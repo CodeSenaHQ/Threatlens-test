@@ -107,7 +107,7 @@ const FALLBACK_FINDINGS = [
   },
 ];
 
-export default function OverviewView({ onSelectItem, selectedItem, onRunAudit, isAuditing }) {
+export default function OverviewView({ onSelectItem, selectedItem, onRunAudit, isAuditing, activeRepo }) {
   const { token } = useAuth();
   const [scanReport, setScanReport] = useState(null);
   const [activeCard, setActiveCard] = useState("repo");
@@ -118,9 +118,10 @@ export default function OverviewView({ onSelectItem, selectedItem, onRunAudit, i
     secTestApi.getReport().then(r => setScanReport(r)).catch(() => {});
   }, []);
 
-  const rawFindings = scanReport?.findings || FALLBACK_FINDINGS;
+  const repoFindings = activeRepo?.findings || FALLBACK_FINDINGS;
+  const rawFindings = scanReport?.findings || repoFindings;
   const findings = rawFindings.map((f, i) => ({
-    ...FALLBACK_FINDINGS[i % FALLBACK_FINDINGS.length],
+    ...(repoFindings[i % repoFindings.length] || FALLBACK_FINDINGS[0]),
     ...f,
   }));
 
@@ -133,6 +134,7 @@ export default function OverviewView({ onSelectItem, selectedItem, onRunAudit, i
     <div className="space-y-6">
       {/* Quick Access 4-Card Section */}
       <QuickAccessCards
+        activeRepo={activeRepo}
         activeCard={activeCard}
         onSelectCard={(cardId) => setActiveCard(cardId)}
       />
@@ -142,9 +144,9 @@ export default function OverviewView({ onSelectItem, selectedItem, onRunAudit, i
         {/* Panel Header with Breadcrumbs & Action Buttons */}
         <div className="p-4 sm:px-6 border-b border-white/[0.07] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-xs font-mono">
-            <span className="text-[#8a99ad] hover:text-white cursor-pointer">SOC</span>
+            <span className="text-[#8a99ad] hover:text-white cursor-pointer">Projects</span>
             <ChevronRight className="w-3.5 h-3.5 text-[#475569]" />
-            <span className="text-[#8a99ad] hover:text-white cursor-pointer">ThreatLens Engine</span>
+            <span className="text-[#8a99ad] hover:text-white cursor-pointer">{activeRepo?.name || "ThreatLens Core"}</span>
             <ChevronRight className="w-3.5 h-3.5 text-[#475569]" />
             <span className="text-white font-bold">Security Findings</span>
           </div>

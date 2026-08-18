@@ -11,14 +11,19 @@ import {
   Users,
   Activity,
   GitCommit,
+  FolderGit2,
   Clock,
   ShieldAlert,
   ShieldCheck,
-  Lock
+  Lock,
+  ArrowRight,
+  GitBranch,
+  Layers,
+  Cpu
 } from "lucide-react";
 import { SeverityBadge } from "./SeverityBadge";
 
-export function InspectorPanel({ item, onClose }) {
+export function InspectorPanel({ item, onClose, onOpenRepo }) {
   const [activeTab, setActiveTab] = useState("activity");
   const [copiedKey, setCopiedKey] = useState(null);
 
@@ -31,7 +36,7 @@ export function InspectorPanel({ item, onClose }) {
         <div className="space-y-1">
           <div className="text-xs font-bold text-white">Item Inspector</div>
           <p className="text-[11px] text-[#475569] max-w-[180px]">
-            Select any vulnerability finding or commit to inspect its telemetry, diffs, and proofs.
+            Select any repository, vulnerability finding, or commit to inspect its telemetry, diffs, and proofs.
           </p>
         </div>
       </aside>
@@ -44,9 +49,150 @@ export function InspectorPanel({ item, onClose }) {
     setTimeout(() => setCopiedKey(null), 2000);
   };
 
-  const isFinding = Boolean(item.severity || item.cwe || item.module || item.title);
-  const isCommit = Boolean(item.hash || item.shortHash);
+  // Check item type
+  const isRepo = Boolean(item.languages || item.fullName || item.commitCount);
+  const isFinding = Boolean(!isRepo && (item.severity || item.cwe || item.module || item.title));
+  const isCommit = Boolean(!isRepo && (item.hash || item.shortHash));
 
+  const reviewers = [
+    { name: "Dev Sharma", initials: "DS", color: "from-[#2546ff] to-[#4d8eff]" },
+    { name: "Alex Vance", initials: "AV", color: "from-[#06b6d4] to-[#3b82f6]" },
+    { name: "SecTest Bot", initials: "AI", color: "from-[#a855f7] to-[#ec4899]" },
+  ];
+
+  // ===================== REPOSITORY VIEW IN INSPECTOR =====================
+  if (isRepo) {
+    return (
+      <aside className="w-80 border-l border-white/[0.07] bg-[#0a0d15]/95 backdrop-blur-xl flex flex-col shrink-0 h-full overflow-y-auto z-20">
+        {/* Header */}
+        <div className="p-4 border-b border-white/[0.07] flex items-start justify-between gap-2">
+          <div className="flex items-start gap-3 min-w-0">
+            <div
+              className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 border border-white/[0.08]"
+              style={{
+                background: `${item.primaryColor || "#3b82f6"}15`,
+                color: item.primaryColor || "#3b82f6",
+              }}
+            >
+              <FolderGit2 className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <h4 className="text-xs font-bold text-white leading-tight truncate">{item.name}</h4>
+              <div className="text-[10px] text-[#64748b] font-mono mt-0.5 truncate">
+                {item.fullName || item.name}
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1 rounded-lg text-[#64748b] hover:text-white hover:bg-white/5 transition-colors shrink-0"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="p-4 space-y-5 flex-1">
+          {/* Primary Action Button: Enter Workspace */}
+          <button
+            onClick={() => onOpenRepo?.(item)}
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#2546ff] hover:bg-[#1d3bef] text-white text-xs font-bold transition-all shadow-[0_0_20px_rgba(37,70,255,0.25)] border border-white/10"
+          >
+            <span>Open Repository SOC</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+
+          {/* Security Posture & Grade Card */}
+          <div className="p-3 rounded-xl bg-[#06080d] border border-white/[0.06] space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono text-[#64748b] uppercase">Security Posture</span>
+              <span
+                className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono border ${
+                  item.grade === "A+"
+                    ? "bg-[#22c55e]/15 text-[#4ade80] border-[#22c55e]/30"
+                    : item.grade === "A"
+                    ? "bg-[#3b82f6]/15 text-[#60a5fa] border-[#3b82f6]/30"
+                    : "bg-[#f59e0b]/15 text-[#fbbf24] border-[#f59e0b]/30"
+                }`}
+              >
+                Grade {item.grade} · {item.securityScore}%
+              </span>
+            </div>
+            <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-[#2546ff] to-[#4ade80]"
+                style={{ width: `${item.securityScore}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-[10px] text-[#8a99ad] pt-1">
+              <span>{item.vulnerabilitiesSummary?.critical || 0} Critical</span>
+              <span>{item.vulnerabilitiesSummary?.total || 0} Findings</span>
+              <span>{item.commitCount} Commits</span>
+            </div>
+          </div>
+
+          {/* Language Composition */}
+          {item.languages && (
+            <div className="space-y-2">
+              <div className="text-[10px] font-mono text-[#64748b] uppercase">Codebase Composition</div>
+              <div className="flex h-2 rounded-full overflow-hidden bg-white/[0.04]">
+                {item.languages.map((lang) => (
+                  <div
+                    key={lang.name}
+                    className="h-full"
+                    style={{ width: `${lang.pct}%`, background: lang.color }}
+                  />
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-2 text-[10px] text-[#8a99ad]">
+                {item.languages.map((lang) => (
+                  <span key={lang.name} className="flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-sm" style={{ background: lang.color }} />
+                    {lang.name} {lang.pct}%
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* SecOps Reviewers */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-[10px] font-mono text-[#64748b] uppercase">
+              <span>Project Reviewers</span>
+              <span className="text-[#4d8eff] cursor-pointer">Manage</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="flex -space-x-1.5 overflow-hidden">
+                {reviewers.map((r, i) => (
+                  <div
+                    key={i}
+                    title={r.name}
+                    className={`inline-block h-6 w-6 rounded-full ring-2 ring-[#0a0d15] bg-gradient-to-tr ${r.color} text-[9px] font-bold text-white flex items-center justify-center uppercase font-mono shadow-sm`}
+                  >
+                    {r.initials}
+                  </div>
+                ))}
+              </div>
+              <span className="text-[10px] text-[#64748b] font-mono ml-1">+2 Analysts</span>
+            </div>
+          </div>
+
+          {/* Ledger Attestation Receipt */}
+          <div className="p-3 rounded-xl bg-[#06080d] border border-white/[0.06] space-y-1.5">
+            <div className="text-[10px] text-[#64748b] font-mono uppercase">Polygon PoS Anchor</div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-mono text-white font-bold">{item.proofBlock || "#48,192"}</span>
+              <span className="text-[10px] font-semibold text-[#4ade80] flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5" /> Verified
+              </span>
+            </div>
+            <div className="text-[10px] text-[#475569]">Last automated AST audit {item.lastScanDate}</div>
+          </div>
+        </div>
+      </aside>
+    );
+  }
+
+  // ===================== FINDING OR COMMIT DETAIL VIEW =====================
   const title = item.title || item.message || "Selected Item";
   const subtitle = item.id
     ? `${item.id} · ${item.module || "SecTest"} · Active Finding`
@@ -59,12 +205,6 @@ export function InspectorPanel({ item, onClose }) {
     item.module || (isCommit ? "Git Commit" : "Security"),
     item.severity?.toUpperCase(),
   ].filter(Boolean);
-
-  const reviewers = [
-    { name: "Dev Sharma", initials: "DS", color: "from-[#2546ff] to-[#4d8eff]" },
-    { name: "Alex Vance", initials: "AV", color: "from-[#06b6d4] to-[#3b82f6]" },
-    { name: "SecTest Bot", initials: "AI", color: "from-[#a855f7] to-[#ec4899]" },
-  ];
 
   return (
     <aside className="w-80 border-l border-white/[0.07] bg-[#0a0d15]/95 backdrop-blur-xl flex flex-col shrink-0 h-full overflow-y-auto z-20">
@@ -107,7 +247,7 @@ export function InspectorPanel({ item, onClose }) {
           </div>
         </div>
 
-        {/* Reviewers / Sharing Section */}
+        {/* Reviewers Section */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-[11px]">
             <span className="font-semibold text-[#8a99ad] uppercase tracking-wider text-[10px] font-mono">
@@ -185,7 +325,7 @@ export function InspectorPanel({ item, onClose }) {
           </div>
         </div>
 
-        {/* Tab Content 1: Activity Timeline Stream */}
+        {/* Tab Content 1: Activity Timeline */}
         {activeTab === "activity" && (
           <div className="space-y-4 pt-1">
             <div className="relative pl-5 space-y-4 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-px before:bg-white/[0.08]">
@@ -225,7 +365,7 @@ export function InspectorPanel({ item, onClose }) {
           </div>
         )}
 
-        {/* Tab Content 2: Remediation / Diff */}
+        {/* Tab Content 2: Remediation Diff */}
         {activeTab === "diff" && (
           <div className="space-y-3 pt-1">
             <div className="text-[11px] text-[#8a99ad] leading-relaxed">
@@ -255,7 +395,7 @@ export function InspectorPanel({ item, onClose }) {
           </div>
         )}
 
-        {/* Tab Content 3: Proof Hash & Merkle Receipt */}
+        {/* Tab Content 3: Proof */}
         {activeTab === "proof" && (
           <div className="space-y-3 pt-1">
             <div className="text-[11px] text-[#8a99ad]">

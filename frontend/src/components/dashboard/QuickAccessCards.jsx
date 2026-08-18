@@ -10,32 +10,32 @@ import {
   Cpu
 } from "lucide-react";
 
-export function QuickAccessCards({ onSelectCard, activeCard }) {
+export function QuickAccessCards({ onSelectCard, activeCard, activeRepo }) {
   const cards = [
     {
       id: "repo",
-      title: "ThreatLens Core",
-      meta: "1.4k Commits · 342 files",
-      size: "18.4 MB",
+      title: activeRepo ? activeRepo.name : "ThreatLens Core",
+      meta: activeRepo ? `${activeRepo.commitCount.toLocaleString()} Commits · ${activeRepo.fileCount} files` : "1.4k Commits · 342 files",
+      size: activeRepo ? activeRepo.size : "18.4 MB",
       icon: FolderGit2,
-      color: "#3b82f6",
+      color: activeRepo?.primaryColor || "#3b82f6",
       bgGradient: "from-[#2546ff]/20 to-[#3b82f6]/10",
       badge: "ACTIVE",
     },
     {
       id: "engine",
       title: "SecTest Engine",
-      meta: "v2.4 · 5 Fuzz Modules",
-      size: "360 Probes",
+      meta: activeRepo ? `${activeRepo.vulnerabilitiesSummary?.total || 0} Findings Detected` : "v2.4 · 5 Fuzz Modules",
+      size: activeRepo ? (activeRepo.vulnerabilitiesSummary?.critical > 0 ? `${activeRepo.vulnerabilitiesSummary.critical} Critical` : "Clean") : "360 Probes",
       icon: Cpu,
-      color: "#06b6d4",
-      bgGradient: "from-[#06b6d4]/20 to-[#3b82f6]/10",
-      badge: "ONLINE",
+      color: activeRepo?.vulnerabilitiesSummary?.critical > 0 ? "#f43f5e" : "#06b6d4",
+      bgGradient: activeRepo?.vulnerabilitiesSummary?.critical > 0 ? "from-[#f43f5e]/20 to-[#fb7185]/10" : "from-[#06b6d4]/20 to-[#3b82f6]/10",
+      badge: activeRepo?.vulnerabilitiesSummary?.critical > 0 ? "ATTENTION" : "ONLINE",
     },
     {
       id: "ledger",
       title: "Polygon Ledger",
-      meta: "Block #48,192 · PoS",
+      meta: `Block ${activeRepo?.proofBlock || "#48,192"} · PoS`,
       size: "SHA-256",
       icon: Link2,
       color: "#a855f7",
@@ -45,12 +45,12 @@ export function QuickAccessCards({ onSelectCard, activeCard }) {
     {
       id: "score",
       title: "Security Index",
-      meta: "0 Leaks · 100% AST",
-      size: "98.4% · A+",
+      meta: activeRepo ? `${activeRepo.language}` : "0 Leaks · 100% AST",
+      size: activeRepo ? `${activeRepo.securityScore}% · ${activeRepo.grade}` : "98.4% · A+",
       icon: ShieldCheck,
-      color: "#22c55e",
-      bgGradient: "from-[#22c55e]/20 to-[#10b981]/10",
-      badge: "GRADE A+",
+      color: activeRepo?.grade === "A+" ? "#22c55e" : activeRepo?.grade === "A" ? "#3b82f6" : "#f59e0b",
+      bgGradient: activeRepo?.grade === "A+" ? "from-[#22c55e]/20 to-[#10b981]/10" : "from-[#f59e0b]/20 to-[#fbbf24]/10",
+      badge: `GRADE ${activeRepo?.grade || "A+"}`,
     },
   ];
 

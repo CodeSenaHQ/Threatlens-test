@@ -21,10 +21,15 @@ import {
   Calendar,
   Layers,
   Sparkles,
-  X
+  FolderGit2,
+  ChevronDown,
+  X,
+  Plus
 } from "lucide-react";
 import { ThreatLensLogo } from "../ThreatLensLogo";
 import { useAuth } from "@/contexts/AuthContext";
+import { USER_REPOSITORIES } from "@/lib/repositories";
+import { ProjectsOverviewView } from "./ProjectsOverviewView";
 import OverviewView from "./OverviewView";
 import SecurityView from "./SecurityView";
 import GitAnalyzerView from "./GitAnalyzerView";
@@ -33,29 +38,31 @@ import { InspectorPanel } from "./InspectorPanel";
 
 export default function DashboardLayout() {
   const { user, logout } = useAuth();
-  const [currentNav, setCurrentNav] = useState("overview"); // sidebar
-  const [topTab, setTopTab] = useState("files"); // top category tabs
+  const [activeRepo, setActiveRepo] = useState(null); // null = Projects Overview, or Repo Object
+  const [currentNav, setCurrentNav] = useState("overview"); // sidebar tab
+  const [topTab, setTopTab] = useState("files"); // top category tab
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedItem, setSelectedItem] = useState({
-    id: "SEC-8041",
-    module: "injection",
-    title: "SQL Injection Vector in User Query Filter",
-    severity: "critical",
-    status: "active",
-    sharing: "Public",
-    size: "150 rows",
-    date: "Yesterday",
-    cwe: "CWE-89",
-    explanation: "Unsanitized user input string was concatenated directly into PostgreSQL query builder clause allowing arbitrary database dump.",
-    remediation: "Replace raw string template with parameterized prepared statement binding.",
-    evidence: "Payload: ' OR '1'='1 returned HTTP 200 with 150 rows instead of 1.",
-    diffSnippet: "- const query = `SELECT * FROM users WHERE org_id = '${req.body.orgId}'`;\n+ const query = `SELECT * FROM users WHERE org_id = $1`;",
-    meta: { endpoint: "POST /api/v1/users/search", cwe: "CWE-89", proof_hash: "0x9f4a7c2e88b13904a0ef1982bca48192a0e" }
-  });
+  const [selectedItem, setSelectedItem] = useState(USER_REPOSITORIES[0]); // initially the first repo
   const [isAuditing, setIsAuditing] = useState(false);
   const [auditProgress, setAuditProgress] = useState(0);
   const [isAttestationModalOpen, setIsAttestationModalOpen] = useState(false);
   const [copiedDigest, setCopiedDigest] = useState(false);
+  const [isRepoDropdownOpen, setIsRepoDropdownOpen] = useState(false);
+
+  // When a user selects a repository from projects list or dropdown
+  const handleOpenRepo = (repo) => {
+    setActiveRepo(repo);
+    setSelectedItem(repo.findings?.[0] || repo);
+    setCurrentNav("overview");
+    setIsRepoDropdownOpen(false);
+  };
+
+  // Return to All Projects view
+  const handleBackToProjects = () => {
+    setActiveRepo(null);
+    setSelectedItem(USER_REPOSITORIES[0]);
+    setIsRepoDropdownOpen(false);
+  };
 
   const handleRunAudit = () => {
     if (isAuditing) return;
@@ -75,9 +82,9 @@ export default function DashboardLayout() {
   };
 
   const navItems = [
-    { id: "overview", label: "All Findings", icon: LayoutDashboard, count: "5" },
+    { id: "overview", label: activeRepo ? "SOC Findings" : "All Projects", icon: LayoutDashboard, count: activeRepo ? `${activeRepo.findings?.length || 0}` : `${USER_REPOSITORIES.length}` },
     { id: "security", label: "Live Scanner", icon: ShieldAlert, count: "Active" },
-    { id: "git", label: "Git Commits", icon: GitBranch, count: "1.4k" },
+    { id: "git", label: "Git Commits", icon: GitBranch, count: activeRepo ? `${activeRepo.commitCount}` : "3.1k" },
     { id: "settings", label: "Security Settings", icon: Settings },
   ];
 
@@ -90,7 +97,7 @@ export default function DashboardLayout() {
 
   return (
     <div className="flex h-screen bg-[#06080d] text-[#edf2f7] font-sans overflow-hidden select-none">
-      {/* Subtle background ambient mesh */}
+      {/* Background ambient lighting */}
       <div className="fixed inset-0 z-0 opacity-15 pointer-events-none bg-[radial-gradient(#2546ff_1px,transparent_1px)] [background-size:24px_24px]" />
       <div className="fixed -top-40 left-1/4 w-[600px] h-[300px] bg-[#2546ff]/10 rounded-full blur-[140px] pointer-events-none" />
 
@@ -104,10 +111,88 @@ export default function DashboardLayout() {
             </Link>
           </div>
 
+          {/* Active Repo Switcher Card in Sidebar */}
+          <div className="p-3 border-b border-white/[0.06]">
+            <div className="relative">
+              <button
+                onClick={() => setIsRepoDropdownOpen(!isRepoDropdownOpen)}
+                className="w-full flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] text-xs transition-all text-left group"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <div
+                    className="w-5 h-5 rounded-lg flex items-center justify-center shrink-0"
+                    style={{
+                      backgroundColor: `${activeRepo?.primaryColor || "#3b82f6"}20`,
+                      color: activeRepo?.primaryColor || "#3b82f6",
+                    }}
+                  >
+                    <FolderGit2 className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-bold text-white truncate text-[11px]">
+                      {activeRepo ? activeRepo.name : "All Repositories"}
+                    </div>
+                    <div className="text-[9px] text-[#64748b] font-mono truncate">
+                      {activeRepo ? activeRepo.language : "5 Projects Active"}
+                    </div>
+                  </div>
+                </div>
+                <ChevronDown className="w-3.5 h-3.5 text-[#64748b] group-hover:text-white shrink-0 ml-1" />
+              </button>
+
+              {/* Repo dropdown menu */}
+              <AnimatePresence>
+                {isRepoDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    className="absolute top-full left-0 right-0 mt-1 z-50 p-1.5 rounded-xl bg-[#0e1320] border border-white/[0.12] shadow-2xl space-y-0.5 text-xs max-h-60 overflow-y-auto"
+                  >
+                    <button
+                      onClick={handleBackToProjects}
+                      className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-colors ${
+                        activeRepo === null ? "bg-[#2546ff]/20 text-[#93c5fd]" : "text-[#8a99ad] hover:text-white hover:bg-white/5"
+                      }`}
+                    >
+                      <span>📂 All Projects</span>
+                      <span className="text-[10px] font-mono text-[#64748b]">5</span>
+                    </button>
+
+                    <div className="my-1 border-t border-white/[0.06]" />
+
+                    {USER_REPOSITORIES.map((repo) => (
+                      <button
+                        key={repo.id}
+                        onClick={() => handleOpenRepo(repo)}
+                        className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-colors ${
+                          activeRepo?.id === repo.id ? "bg-[#2546ff]/20 text-[#93c5fd]" : "text-[#8a99ad] hover:text-white hover:bg-white/5"
+                        }`}
+                      >
+                        <span className="truncate">{repo.name}</span>
+                        <span
+                          className={`text-[9px] font-mono px-1 rounded ${
+                            repo.grade === "A+"
+                              ? "text-[#4ade80] bg-[#22c55e]/10"
+                              : repo.grade === "A"
+                              ? "text-[#60a5fa] bg-[#3b82f6]/10"
+                              : "text-[#fbbf24] bg-[#f59e0b]/10"
+                          }`}
+                        >
+                          {repo.grade}
+                        </span>
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+
           {/* Navigation group */}
           <nav className="p-3 space-y-1 overflow-y-auto flex-1">
             <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#475569] font-mono">
-              Core Security
+              {activeRepo ? `${activeRepo.name} SOC` : "Organization"}
             </div>
 
             {navItems.map((item) => {
@@ -158,24 +243,26 @@ export default function DashboardLayout() {
           </nav>
         </div>
 
-        {/* Storage / Engine Capacity gauge (matching reference design bottom widget) */}
+        {/* Storage / Engine Capacity gauge */}
         <div className="p-3 border-t border-white/[0.06] space-y-3">
           <div className="p-3.5 rounded-2xl bg-[#06080d] border border-white/[0.06] space-y-2">
             <div className="flex items-center justify-between text-xs">
               <div className="flex items-center gap-2 font-semibold text-white">
                 <HardDrive className="w-3.5 h-3.5 text-[#4d8eff]" />
-                <span>AST Index</span>
+                <span>AST Index Tree</span>
               </div>
               <ChevronRight className="w-3 h-3 text-[#475569]" />
             </div>
 
-            {/* Progress bar */}
             <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
-              <div className="h-full rounded-full bg-gradient-to-r from-[#2546ff] to-[#4d8eff] w-[71%]" />
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-[#2546ff] to-[#4d8eff]"
+                style={{ width: activeRepo ? "68%" : "84%" }}
+              />
             </div>
 
             <div className="text-[10px] text-[#64748b] font-mono">
-              1,428 of 2,000 Commits Indexed
+              {activeRepo ? `${activeRepo.commitCount} Commits Indexed` : "3,170 Total Commits Indexed"}
             </div>
           </div>
         </div>
@@ -183,33 +270,36 @@ export default function DashboardLayout() {
 
       {/* CENTER WORKSPACE + TOPBAR */}
       <div className="flex-1 flex flex-col overflow-hidden relative z-10 min-w-0">
-        {/* TOPBAR (Category Tabs + Search + Notifications + Profile) */}
+        {/* TOPBAR */}
         <header className="h-16 border-b border-white/[0.07] bg-[#0a0d15]/80 backdrop-blur-md px-6 flex items-center justify-between shrink-0 gap-4">
-          {/* Top Category Tabs */}
-          <div className="flex items-center gap-1 overflow-x-auto">
-            {topCategoryTabs.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = topTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setTopTab(tab.id)}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap ${
-                    isActive
-                      ? "bg-[#2546ff]/15 text-[#93c5fd] border border-[#2546ff]/30 shadow-[0_0_15px_rgba(37,70,255,0.1)]"
-                      : "text-[#8a99ad] hover:text-white hover:bg-white/[0.03]"
-                  }`}
-                >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? "text-[#4d8eff]" : "text-[#64748b]"}`} />
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
+          {/* Breadcrumbs / Back Navigation */}
+          <div className="flex items-center gap-2 text-xs font-mono">
+            <button
+              onClick={handleBackToProjects}
+              className={`hover:text-white transition-colors ${
+                activeRepo === null ? "text-white font-bold" : "text-[#8a99ad]"
+              }`}
+            >
+              Projects
+            </button>
+            {activeRepo && (
+              <>
+                <ChevronRight className="w-3.5 h-3.5 text-[#475569]" />
+                <span className="text-[#93c5fd] font-bold">{activeRepo.name}</span>
+                <ChevronRight className="w-3.5 h-3.5 text-[#475569]" />
+                <span className="text-[#64748b]">
+                  {currentNav === "overview" && "Findings"}
+                  {currentNav === "security" && "SecTest Scanner"}
+                  {currentNav === "git" && "Commits"}
+                  {currentNav === "settings" && "Settings"}
+                </span>
+              </>
+            )}
           </div>
 
           {/* Right Top Header Actions */}
           <div className="flex items-center gap-3 shrink-0">
-            {/* Search Input Pill */}
+            {/* Search Input */}
             <div className="relative w-56 hidden md:block">
               <Search className="absolute left-3 top-2.5 w-3.5 h-3.5 text-[#64748b]" />
               <input
@@ -253,15 +343,34 @@ export default function DashboardLayout() {
         {/* Center Main Scrollable Area */}
         <main className="flex-1 overflow-y-auto p-6 space-y-6">
           <AnimatePresence mode="wait">
-            {currentNav === "overview" && (
+            {/* If no repo is active, show the All Projects Overview */}
+            {activeRepo === null && currentNav === "overview" && (
               <motion.div
-                key="overview"
+                key="projects-overview"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ProjectsOverviewView
+                  selectedRepo={selectedItem}
+                  onSelectRepo={(repo) => setSelectedItem(repo)}
+                  onOpenRepo={(repo) => handleOpenRepo(repo)}
+                />
+              </motion.div>
+            )}
+
+            {/* If a repo is active, show the repo's specific SOC view */}
+            {activeRepo !== null && currentNav === "overview" && (
+              <motion.div
+                key={`repo-overview-${activeRepo.id}`}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.2 }}
               >
                 <OverviewView
+                  activeRepo={activeRepo}
                   selectedItem={selectedItem}
                   onSelectItem={(item) => setSelectedItem(item)}
                   onRunAudit={handleRunAudit}
@@ -290,7 +399,7 @@ export default function DashboardLayout() {
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.2 }}
               >
-                <GitAnalyzerView onSelectFinding={(f) => setSelectedItem(f)} />
+                <GitAnalyzerView activeRepo={activeRepo} onSelectFinding={(f) => setSelectedItem(f)} />
               </motion.div>
             )}
 
@@ -309,10 +418,11 @@ export default function DashboardLayout() {
         </main>
       </div>
 
-      {/* RIGHT PERSISTENT INSPECTOR PANEL (3rd Column) */}
+      {/* RIGHT PERSISTENT INSPECTOR PANEL */}
       <InspectorPanel
         item={selectedItem}
         onClose={() => setSelectedItem(null)}
+        onOpenRepo={(repo) => handleOpenRepo(repo)}
       />
 
       {/* Cryptographic Attestation Modal */}
@@ -343,10 +453,10 @@ export default function DashboardLayout() {
               <div className="p-4 rounded-xl bg-[#06080d] border border-white/10 space-y-2 font-mono text-[11px]">
                 <div className="text-[#8a99ad]">// Immutable Polygon Audit Receipt</div>
                 <div><span className="text-[#64748b]">Engine:</span> ThreatLens SecTest v2.4</div>
-                <div><span className="text-[#64748b]">Target:</span> github.com/ThreatLens/ThreatLens</div>
+                <div><span className="text-[#64748b]">Target:</span> {activeRepo?.fullName || "ThreatLens / ThreatLens-Core"}</div>
                 <div><span className="text-[#64748b]">Commit:</span> 7f8a92b3c109d...</div>
                 <div><span className="text-[#64748b]">Merkle Root:</span> 0x8a9012f4b931e9c91039820fa929bc91030e8a7199201948</div>
-                <div><span className="text-[#64748b]">Block:</span> #48,192</div>
+                <div><span className="text-[#64748b]">Block:</span> {activeRepo?.proofBlock || "#48,192"}</div>
                 <div><span className="text-[#64748b]">Status:</span> <span className="text-[#4ade80]">ANCHORED &amp; VERIFIED</span></div>
               </div>
 

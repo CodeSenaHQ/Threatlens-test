@@ -28,8 +28,9 @@ const REPO_STATS = {
   ],
 };
 
-export default function GitAnalyzerView({ onSelectFinding }) {
-  const [selectedCommit, setSelectedCommit] = useState(SAMPLE_COMMITS[0]);
+export default function GitAnalyzerView({ onSelectFinding, activeRepo }) {
+  const commits = activeRepo?.commits?.length ? activeRepo.commits : SAMPLE_COMMITS;
+  const [selectedCommit, setSelectedCommit] = useState(commits[0] || SAMPLE_COMMITS[0]);
   const [copiedSha, setCopiedSha] = useState(null);
 
   const copyHash = (hash) => {
@@ -37,6 +38,13 @@ export default function GitAnalyzerView({ onSelectFinding }) {
     setCopiedSha(hash);
     setTimeout(() => setCopiedSha(null), 2000);
   };
+
+  const repoName = activeRepo?.name || REPO_STATS.name;
+  const defaultBranch = activeRepo?.defaultBranch || REPO_STATS.branch;
+  const commitCount = activeRepo?.commitCount || REPO_STATS.commitCount;
+  const fileCount = activeRepo?.fileCount || REPO_STATS.totalFiles;
+  const size = activeRepo?.size || REPO_STATS.totalSize;
+  const languages = activeRepo?.languages || REPO_STATS.languages;
 
   return (
     <div className="space-y-5">
@@ -53,17 +61,17 @@ export default function GitAnalyzerView({ onSelectFinding }) {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-white">{REPO_STATS.owner} / {REPO_STATS.name}</h2>
+                <h2 className="text-base font-bold text-white">ThreatLens / {repoName}</h2>
                 <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium bg-[#4d8eff]/10 border border-[#4d8eff]/20 text-[#93c5fd]">
-                  {REPO_STATS.branch}
+                  {defaultBranch}
                 </span>
               </div>
               <div className="flex items-center gap-3 mt-1 text-[11px] text-[#475569]">
-                <span>{REPO_STATS.commitCount.toLocaleString()} commits</span>
+                <span>{commitCount.toLocaleString()} commits</span>
                 <span>·</span>
-                <span>{REPO_STATS.totalFiles} files</span>
+                <span>{fileCount} files</span>
                 <span>·</span>
-                <span>{REPO_STATS.totalSize}</span>
+                <span>{size}</span>
               </div>
             </div>
           </div>
@@ -78,7 +86,7 @@ export default function GitAnalyzerView({ onSelectFinding }) {
         {/* Language bar */}
         <div className="space-y-2">
           <div className="flex h-2 rounded-full overflow-hidden bg-white/[0.04]">
-            {REPO_STATS.languages.map(lang => (
+            {languages.map(lang => (
               <div
                 key={lang.name}
                 className="h-full transition-all"
@@ -87,7 +95,7 @@ export default function GitAnalyzerView({ onSelectFinding }) {
             ))}
           </div>
           <div className="flex flex-wrap gap-3">
-            {REPO_STATS.languages.map(lang => (
+            {languages.map(lang => (
               <span key={lang.name} className="flex items-center gap-1.5 text-[11px] text-[#64748b]">
                 <span className="w-2.5 h-2.5 rounded-sm" style={{ background: lang.color }} />
                 {lang.name} {lang.pct}%

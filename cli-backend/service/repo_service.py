@@ -48,11 +48,9 @@ def fetch_latest_commit(repo_id: int, jwt: str):
     return response.json()
 
 
-from datetime import datetime
-
-
 def build_commit_insert(sha: str, repo: Repository):
     commits = repo.list_commits()
+    analysis = CommitAnalyzer(repo)
 
     for index, commit in enumerate(commits):
         if commit["sha"] == sha:
@@ -62,26 +60,17 @@ def build_commit_insert(sha: str, repo: Repository):
                 return None
 
             return [
-                {
-                    **commit,
-                    "authored_at": (
-                        commit["authored_at"].isoformat()
-                        if isinstance(commit["authored_at"], datetime)
-                        else commit["authored_at"]
-                    ),
-                    "committed_at": (
-                        commit["committed_at"].isoformat()
-                        if isinstance(commit["committed_at"], datetime)
-                        else commit["committed_at"]
-                    ),
-                }
+                analysis.analyze(commit["sha"])
                 for commit in commits_after
             ]
 
     return None
 
 
+
 def upsert_commits(commits: list[dict], jwt: str):
+    if not commits:
+        return{"status" : "Already upto date"}
 
     if not jwt:
         raise RuntimeError("JWT token not found")

@@ -32,8 +32,9 @@
 # ============================================================
 
 import re
-from dataclasses import asdict, dataclass
+import json
 from pathlib import Path
+from dataclasses import asdict, dataclass
 
 @dataclass
 class Finding:
@@ -247,6 +248,7 @@ class CommitAnalyzer:
     # PUBLIC API
     # ==========================================================
 
+
     def analyze(self, sha: str) -> dict:
         """
         Analyze exactly one commit identified by SHA.
@@ -341,6 +343,13 @@ class CommitAnalyzer:
                 for finding in findings
             ],
         }
+    
+    def analyze_json(self, sha: str) -> str:
+        return json.dumps(
+            self.analyze(sha),
+            indent=2,
+            default=str,
+        )
 
     # ==========================================================
     # AUTHOR / COMMITTER

@@ -19,8 +19,8 @@ import {
   RefreshCw,
   Cpu,
 } from "lucide-react";
-import { SAMPLE_COMMITS, CommitsAPI } from "../lib/api";
-import { ThreatLensLogo } from "./ThreatLensLogo";
+import { SAMPLE_COMMITS, CommitsAPI } from "@/lib/api";
+import { ThreatLensLogo } from "@/components/common/ThreatLensLogo";
 
 function CommitAnalysisPanel({
   commitHash,

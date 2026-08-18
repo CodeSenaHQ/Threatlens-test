@@ -46,9 +46,9 @@ import {
 } from "lucide-react";
 import React, { useEffect, useId, useRef, useState } from "react";
 import { Link } from "wouter";
-import { useAuth } from "../contexts/AuthContext";
-import { ThreatLensLogo } from "./ThreatLensLogo";
-import FloatingLines from "../Animations/FloatingLines";
+import { useAuth } from "@/contexts/AuthContext";
+import { ThreatLensLogo } from "@/components/common/ThreatLensLogo";
+import FloatingLines from "@/components/common/FloatingLines";
 
 const heroImage = "/terminal_cli_preview.jpg";
 

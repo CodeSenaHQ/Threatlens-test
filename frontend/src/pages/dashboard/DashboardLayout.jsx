@@ -11,15 +11,15 @@ import {
   WifiOff,
 } from "lucide-react";
 
-// Individual Tab Views
-import RepositoriesTab from "./views/RepositoriesTab";
-import CommitsTab from "./views/CommitsTab";
-import LiveFindingsTab from "./views/LiveFindingsTab";
-import SecretDetectionTab from "./views/SecretDetectionTab";
-import CicdDockerTab from "./views/CicdDockerTab";
-import AccountsTab from "./views/AccountsTab";
-import SystemConfigTab from "./views/SystemConfigTab";
-import SessionsTab from "./views/SessionsTab";
+// Domain-Based Tab Views
+import RepositoriesTab from "./tabs/repositories/RepositoriesTab";
+import CommitsTab from "./tabs/commits/CommitsTab";
+import LiveFindingsTab from "./tabs/security/LiveFindingsTab";
+import SecretDetectionTab from "./tabs/security/SecretDetectionTab";
+import CicdDockerTab from "./tabs/security/CicdDockerTab";
+import AccountsTab from "./tabs/admin/AccountsTab";
+import SystemConfigTab from "./tabs/admin/SystemConfigTab";
+import SessionsTab from "./tabs/admin/SessionsTab";
 
 // ── Loading Skeleton ──
 function SkeletonBlock({ className = "" }) {

@@ -3,13 +3,17 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import React from "react";
 import { Toaster } from "sonner";
 import { Route, Switch } from "wouter";
-import ErrorBoundary from "./components/ErrorBoundary";
-import AuthPage from "./components/AuthPage";
-import CommitAnalysisPage from "./components/CommitAnalysisPage";
-import DashboardPage from "./components/DashboardPage";
-import LandingPage from "./components/LandingPage";
-import NotFound from "./components/NotFound";
-import OAuthCallback from "./components/OAuthCallback";
+
+// Common Components
+import ErrorBoundary from "@/components/common/ErrorBoundary";
+
+// Page Views
+import LandingPage from "@/pages/landing/LandingPage";
+import AuthPage from "@/pages/auth/AuthPage";
+import OAuthCallback from "@/pages/auth/OAuthCallback";
+import CommitAnalysisPage from "@/pages/commit-analysis/CommitAnalysisPage";
+import DashboardPage from "@/pages/dashboard/DashboardPage";
+import NotFound from "@/pages/not-found/NotFound";
 
 function Router() {
   return (

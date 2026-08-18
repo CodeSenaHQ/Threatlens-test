@@ -9,7 +9,7 @@ import {
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { toast } from "sonner";
-import { ThreatLensLogo } from "@/components/ThreatLensLogo";
+import { ThreatLensLogo } from "@/components/common/ThreatLensLogo";
 
 const LANGUAGES = [
   { code: "en", label: "English",  flag: "🇺🇸" },

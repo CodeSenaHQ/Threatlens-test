@@ -10,7 +10,7 @@ import {
   HelpCircle,
   LogOut,
 } from "lucide-react";
-import { ThreatLensLogo } from "@/components/ThreatLensLogo";
+import { ThreatLensLogo } from "@/components/common/ThreatLensLogo";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Sidebar({ activeTab, setActiveTab, onNewTask }) {

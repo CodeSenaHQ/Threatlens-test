@@ -3,12 +3,12 @@ from .commit import CommitAnalyzer
 from repo.repository import Repository
 import json
 
-repo = Repository("https://github.com/atharv-thakre/tc_auth")
+repo = Repository("https://github.com/dev47929/ThreatLens")
 analysis = CommitAnalyzer(repo)
 
 commits = repo.list_commits(
     branch="main",
-    limit=60,
+    limit=2,
 )
 
 for commit in commits:
@@ -27,6 +27,6 @@ for commit in commits:
 # analyzer = RepositoryAnalyzer(repo)
 
 # result = analyzer.analyze().to_dict()
-# print(json.dumps(result, indent=3))
+# print(json.dumps(result, indent=2, default=str))
 
-# repo.close()
+repo.close()

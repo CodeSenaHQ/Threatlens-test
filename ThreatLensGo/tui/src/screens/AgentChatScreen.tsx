@@ -302,25 +302,9 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
               <Text color="white">{msg.text}</Text>
             </Box>
           ))}
-
-          {/* Active Streamed Assistant Response */}
-          {currentAgentText ? (
-            <Box
-              flexDirection="column"
-              marginY={0}
-              paddingX={1}
-              borderStyle="single"
-              borderColor="green"
-            >
-              <Text bold color="green">
-                🛡️ Agent (Streaming):
-              </Text>
-              <Text color="white">{currentAgentText}</Text>
-            </Box>
-          ) : null}
         </Box>
 
-        {/* Live Tool Badges */}
+        {/* 1. Live Tool Invocations (Rendered first) */}
         {tools.length > 0 ? (
           <Box flexDirection="column" marginY={1}>
             <Text color="gray" dimColor>
@@ -338,7 +322,7 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
           </Box>
         ) : null}
 
-        {/* Diff Approval Modal */}
+        {/* 2. Diff Approval Modal (If approval requested by edit_file) */}
         {activeApproval ? (
           <Box marginY={1}>
             <DiffApprovalModal
@@ -348,8 +332,26 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
               onCancel={handleCancel}
             />
           </Box>
-        ) : (
-          /* Interactive Input Prompt */
+        ) : null}
+
+        {/* 3. Agent's Response (Rendered after all tool calls) */}
+        {currentAgentText ? (
+          <Box
+            flexDirection="column"
+            marginY={1}
+            paddingX={1}
+            borderStyle="single"
+            borderColor="green"
+          >
+            <Text bold color="green">
+              🛡️ Agent:
+            </Text>
+            <Text color="white">{currentAgentText}</Text>
+          </Box>
+        ) : null}
+
+        {/* 4. Interactive Input Prompt */}
+        {!activeApproval && (
           <Box flexDirection="column" marginTop={1}>
             <Box
               borderStyle="round"

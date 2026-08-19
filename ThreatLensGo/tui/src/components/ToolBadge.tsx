@@ -1,6 +1,5 @@
 import React from 'react';
 import { Box, Text } from 'ink';
-import Spinner from 'ink-spinner';
 
 export interface ToolBadgeProps {
   toolName: string;
@@ -27,6 +26,8 @@ export const ToolBadge: React.FC<ToolBadgeProps> = ({
         return '✏️';
       case 'run_sectest':
         return '🛡️';
+      case 'verify_remediation':
+        return '✅';
       default:
         return '⚡';
     }
@@ -44,42 +45,51 @@ export const ToolBadge: React.FC<ToolBadgeProps> = ({
   return (
     <Box
       flexDirection="column"
-      marginY={1}
+      marginY={0}
       paddingX={1}
-      borderStyle="round"
+      borderStyle="single"
       borderColor={status === 'running' ? 'yellow' : status === 'error' ? 'red' : 'green'}
     >
       <Box flexDirection="row" alignItems="center">
         {status === 'running' ? (
-          <Text color="yellow">
-            <Spinner type="dots" />{' '}
+          <Text color="yellow" bold>
+            ▶{' '}
           </Text>
         ) : status === 'completed' ? (
-          <Text color="green">✓ </Text>
+          <Text color="green" bold>
+            ✓{' '}
+          </Text>
         ) : (
-          <Text color="red">✗ </Text>
+          <Text color="red" bold>
+            ✗{' '}
+          </Text>
         )}
-        <Text color="cyan" bold>
-          {getToolIcon()} [{toolName}]
+        <Text color="white" bold>
+          {getToolIcon()} {toolName}
         </Text>
         {args ? (
-          <Text color="gray">
-            {' '}{getArgsSummary()}
+          <Text color="gray" dimColor>
+            {' '}
+            {getArgsSummary()}
           </Text>
         ) : null}
       </Box>
 
-      {status === 'completed' && result ? (
+      {status === 'running' ? (
+        <Box marginTop={0} paddingLeft={2}>
+          <Text color="yellow" dimColor>
+            Executing...
+          </Text>
+        </Box>
+      ) : result ? (
         <Box marginTop={0} paddingLeft={2}>
           <Text color="gray" dimColor>
-            {typeof result === 'string'
-              ? result.slice(0, 80)
-              : typeof result === 'object'
-              ? (result.details || result.snippet || result.status || 'Executed successfully')
-              : 'Done'}
+            ↳ {typeof result === 'object' ? JSON.stringify(result).slice(0, 70) + '...' : String(result).slice(0, 70)}
           </Text>
         </Box>
       ) : null}
     </Box>
   );
 };
+
+export default ToolBadge;

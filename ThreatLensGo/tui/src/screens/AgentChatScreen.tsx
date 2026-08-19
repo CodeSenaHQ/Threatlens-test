@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, Text, useInput } from 'ink';
 import TextInput from 'ink-text-input';
-import Spinner from 'ink-spinner';
 import { TerminalLayout } from '../components/TerminalLayout.js';
 import { ToolBadge } from '../components/ToolBadge.js';
 import { DiffApprovalModal } from '../components/DiffApprovalModal.js';
@@ -44,6 +43,7 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
   const [activeApproval, setActiveApproval] = useState<DiffApprovalPayload | null>(null);
   const [statusMessage, setStatusMessage] = useState<string>('Initializing codebase index and agent engine...');
   const [isRunning, setIsRunning] = useState<boolean>(false);
+
   const managerRef = useRef<ThreatLensAgentManager | null>(null);
   const textBufferRef = useRef<string>('');
   const flushTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -110,7 +110,7 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
             flushTimerRef.current = setTimeout(() => {
               flushTimerRef.current = null;
               flushTextBuffer();
-            }, 40);
+            }, 75); // 75ms calm buffer flush (zero screen jump)
           }
           break;
 
@@ -250,6 +250,9 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
     ? `${managerStats.totalFiles} Files · ${managerStats.totalSymbols} AST Symbols · Model: ${managerStats.modelName}`
     : 'Deterministic Codebase Intelligence, AST Analysis & Automated Patching';
 
+  // Keep last 4 messages to preserve stable terminal height
+  const visibleMessages = messages.slice(-4);
+
   return (
     <TerminalLayout
       title="ThreatLens Autonomous Codebase Agent"
@@ -269,11 +272,13 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
         {/* Status Bar */}
         <Box flexDirection="row" alignItems="center" marginBottom={1}>
           {isRunning ? (
-            <Text color="yellow">
-              <Spinner type="dots" />{' '}
+            <Text color="yellow" bold>
+              ⚡{' '}
             </Text>
           ) : (
-            <Text color="cyan">● </Text>
+            <Text color="green" bold>
+              ●{' '}
+            </Text>
           )}
           <Text color="gray" italic>
             {statusMessage}
@@ -281,8 +286,8 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
         </Box>
 
         {/* Message History */}
-        <Box flexDirection="column" marginBottom={1}>
-          {messages.map((msg) => (
+        <Box flexDirection="column" marginBottom={0}>
+          {visibleMessages.map((msg) => (
             <Box
               key={msg.id}
               flexDirection="column"
@@ -302,7 +307,7 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
           {currentAgentText ? (
             <Box
               flexDirection="column"
-              marginY={1}
+              marginY={0}
               paddingX={1}
               borderStyle="single"
               borderColor="green"
@@ -317,7 +322,7 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
 
         {/* Live Tool Badges */}
         {tools.length > 0 ? (
-          <Box flexDirection="column" marginBottom={1}>
+          <Box flexDirection="column" marginY={1}>
             <Text color="gray" dimColor>
               Active Tool Invocations:
             </Text>
@@ -367,7 +372,7 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
                 Commands: &apos;audit /api/search&apos; · &apos;fix sql injection&apos; · &apos;find symbols&apos;
               </Text>
               <Text color="gray" dimColor>
-                [Enter: Send] [Esc: Back]
+                esc cancel / back
               </Text>
             </Box>
           </Box>
@@ -376,3 +381,5 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
     </TerminalLayout>
   );
 };
+
+export default AgentChatScreen;

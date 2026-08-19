@@ -22,16 +22,16 @@ This implementation plan defines the complete engineering roadmap for building t
 ┌───────────────────────────────────────────────────▼────────────────────┐
 │                    Codebase Intelligence & Agent Engine                │
 │                                                                        │
-│  ┌────────────────────────┐  Autonomous Loop   ┌───────────────────┐  │
-│  │      Agent Tools       │ ◄─────────────────►│ Multi-Turn LLM    │  │
-│  │ - search_code (Ripgrep)│                    │ (Plan-Search-Read-│  │
-│  │ - find_symbol (AST)    │                    │  Edit-Verify-Fix) │  │
-│  │ - read_file / edit_file│                    └───────────────────┘  │
-│  │ - run_sectest / verify │                                           │
-│  └───────────┬────────────┘                                           │
-│              │                                                        │
+│  ┌────────────────────────┐  Autonomous Loop   ┌───────────────────┐   │
+│  │      Agent Tools       │ ◄─────────────────►│ Multi-Turn LLM    │   │
+│  │ - search_code (Ripgrep)│                    │ (Plan-Search-Read-│   │
+│  │ - find_symbol (AST)    │                    │  Edit-Verify-Fix) │   │
+│  │ - read_file / edit_file│                    └───────────────────┘   │
+│  │ - run_sectest / verify │                                            │
+│  └───────────┬────────────┘                                            │
+│              │                                                         │
 │  ┌───────────▼──────────────────────────────────────────────────────┐  │
-│  │                  Unified Search & Graph Engine                    │  │
+│  │                  Unified Search & Graph Engine                   │  │
 │  │  ┌──────────────────┐  ┌──────────────────┐  ┌────────────────┐  │  │
 │  │  │ AST Symbol Store │  │ Dependency Graph │  │ Ripgrep Engine │  │  │
 │  │  │ (Tree-sitter TS) │  │ (Imports/Calls)  │  │(@vscode/rg)    │  │  │

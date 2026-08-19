@@ -54,7 +54,7 @@ export const ScreenRenderer: React.FC = () => {
 
 export const App: React.FC = () => {
   return (
-    <NavigationProvider initialScreen={{ type: 'login' }}>
+    <NavigationProvider initialScreen={{ type: 'mainMenu' }}>
       <SecuritySessionProvider>
         <Box flexDirection="column">
           <ScreenRenderer />

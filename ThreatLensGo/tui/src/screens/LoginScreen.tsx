@@ -97,23 +97,34 @@ export const LoginScreen: React.FC = () => {
   }, [username, password, push]);
 
   useInput(
-    (_input, key) => {
+    (input, key) => {
       if (key.escape) {
         if (method !== null) {
           setMethod(null);
           setError('');
           setOauthStatus('waiting');
+        } else {
+          // Direct bypass to main menu
+          push({ type: 'mainMenu' });
+        }
+      } else if (method === null) {
+        if (input === '1') {
+          handleSelectMethod(AUTH_METHODS[0]);
+        } else if (input === '2') {
+          handleSelectMethod(AUTH_METHODS[1]);
+        } else if (input === '3') {
+          handleSelectMethod(AUTH_METHODS[2]);
+        } else if (input === '0' || input === 'q' || key.return) {
+          push({ type: 'mainMenu' });
         }
       } else if (key.tab && method === 'credentials') {
         setActiveField((prev) => (prev === 'username' ? 'password' : 'username'));
         setError('');
       } else if (key.return && (method === 'github' || method === 'google')) {
-        if (oauthStatus === 'success') {
-          push({ type: 'mainMenu' });
-        }
+        push({ type: 'mainMenu' });
       }
     },
-    { isActive: isInteractive }
+    { isActive: true }
   );
 
   return (

@@ -121,6 +121,7 @@ export class OpenAILLMClient implements LLMClient {
       model: this.model,
       messages,
       tools: tools.length > 0 ? tools : undefined,
+      max_tokens: 4096,
       stream: true,
     };
 

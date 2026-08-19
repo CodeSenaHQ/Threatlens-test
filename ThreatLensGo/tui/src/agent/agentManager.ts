@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import path from 'node:path';
 import { SqliteIndexStore } from '../indexer/sqliteStore.js';
 import { FileScanner } from '../indexer/fileScanner.js';

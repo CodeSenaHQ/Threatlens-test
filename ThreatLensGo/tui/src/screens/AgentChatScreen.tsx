@@ -45,6 +45,16 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
   const [statusMessage, setStatusMessage] = useState<string>('Initializing codebase index and agent engine...');
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const managerRef = useRef<ThreatLensAgentManager | null>(null);
+  const textBufferRef = useRef<string>('');
+  const flushTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const flushTextBuffer = () => {
+    if (textBufferRef.current) {
+      const textToAppend = textBufferRef.current;
+      textBufferRef.current = '';
+      setCurrentAgentText((prev) => prev + textToAppend);
+    }
+  };
 
   // Initialize Agent Manager if controller not provided
   useEffect(() => {
@@ -78,6 +88,9 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
 
     return () => {
       isMounted = false;
+      if (flushTimerRef.current) {
+        clearTimeout(flushTimerRef.current);
+      }
       if (managerRef.current) {
         managerRef.current.shutdown().catch(() => {});
       }
@@ -92,7 +105,13 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
       switch (event.type) {
         case 'token':
           setIsRunning(true);
-          setCurrentAgentText((prev) => prev + event.delta);
+          textBufferRef.current += event.delta;
+          if (!flushTimerRef.current) {
+            flushTimerRef.current = setTimeout(() => {
+              flushTimerRef.current = null;
+              flushTextBuffer();
+            }, 40);
+          }
           break;
 
         case 'status':
@@ -100,6 +119,11 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
           break;
 
         case 'tool_start':
+          if (flushTimerRef.current) {
+            clearTimeout(flushTimerRef.current);
+            flushTimerRef.current = null;
+          }
+          flushTextBuffer();
           setIsRunning(true);
           setTools((prev) => [
             ...prev.filter((t) => t.callId !== event.callId),
@@ -123,11 +147,21 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
           break;
 
         case 'require_approval':
+          if (flushTimerRef.current) {
+            clearTimeout(flushTimerRef.current);
+            flushTimerRef.current = null;
+          }
+          flushTextBuffer();
           setActiveApproval(event.payload);
           setStatusMessage('Waiting for user code modification approval');
           break;
 
         case 'done':
+          if (flushTimerRef.current) {
+            clearTimeout(flushTimerRef.current);
+            flushTimerRef.current = null;
+          }
+          flushTextBuffer();
           setIsRunning(false);
           setActiveApproval(null);
           setStatusMessage(`Finished: ${event.summary}`);
@@ -140,6 +174,11 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
           break;
 
         case 'error':
+          if (flushTimerRef.current) {
+            clearTimeout(flushTimerRef.current);
+            flushTimerRef.current = null;
+          }
+          flushTextBuffer();
           setIsRunning(false);
           setActiveApproval(null);
           setStatusMessage(`Error: ${event.error}`);

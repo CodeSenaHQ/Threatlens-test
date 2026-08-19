@@ -1,29 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { Box, Text } from 'ink';
 
 const TIPS = [
+  'Press 0 to launch the autonomous AI ThreatLens security agent',
   'Run /git to audit public repositories for leaked secrets & CVEs',
   'Run /target to configure the active endpoint for security assessments',
   'Run /ddos to simulate flood, slowloris, and burst-spike traffic loads',
   'Run /sqli to fuzz query strings & request bodies for SQL injection',
   'Run /xss to probe reflection points, storage sinks, and DOM sinks',
   'Run /exfil to inspect API responses and headers for sensitive data leakage',
-  'Press Tab or type / at any time to open the quick command palette',
+  'Press Tab or 0-9 at any time for quick navigation',
 ];
 
 export const AnimatedTip: React.FC = () => {
-  const [tipIndex, setTipIndex] = useState(0);
-
-  // Cycle tips gently every 5 seconds (clean, zero flickering)
-  useEffect(() => {
-    const tipTimer = setInterval(() => {
-      setTipIndex((prev) => (prev + 1) % TIPS.length);
-    }, 5000);
-
-    return () => clearInterval(tipTimer);
+  // Stable tip per mount (no re-render timer causing input jitter)
+  const currentTip = useMemo(() => {
+    const idx = Math.floor(Math.random() * TIPS.length);
+    return TIPS[idx];
   }, []);
-
-  const currentTip = TIPS[tipIndex] || TIPS[0];
 
   return (
     <Box flexDirection="row" alignItems="center" justifyContent="center" marginY={1}>

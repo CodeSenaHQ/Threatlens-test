@@ -47,16 +47,6 @@ export const AnimatedLogo: React.FC<{ subtitle?: string }> = ({
   subtitle = 'OFFENSIVE SECURITY & VULNERABILITY ASSESSMENT',
 }) => {
   const { columns } = useTerminalSize();
-  const [frame, setFrame] = useState(0);
-
-  // Smooth color wave interval (160ms for silky-smooth wave glide)
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setFrame((prev) => (prev + 1) % NEON_PALETTE.length);
-    }, 160);
-
-    return () => clearInterval(timer);
-  }, []);
 
   const isWide = columns >= 114;
   const logoLines = isWide ? LARGE_LOGO : COMPACT_LOGO;
@@ -72,7 +62,7 @@ export const AnimatedLogo: React.FC<{ subtitle?: string }> = ({
             return (
               <Box key={lineIndex} flexDirection="row">
                 {chunks.map((chunk, chunkIndex) => {
-                  const colorIndex = (chunkIndex + frame) % NEON_PALETTE.length;
+                  const colorIndex = chunkIndex % NEON_PALETTE.length;
                   const color = NEON_PALETTE[colorIndex] || '#38BDF8';
 
                   return (
@@ -86,9 +76,9 @@ export const AnimatedLogo: React.FC<{ subtitle?: string }> = ({
           })}
         </Box>
 
-        {/* Small by CodeSena with pulsing cyan accent */}
+        {/* Small by CodeSena with cyan accent */}
         <Box paddingBottom={isWide ? 1 : 0} marginLeft={2}>
-          <Text color={NEON_PALETTE[(frame + 3) % NEON_PALETTE.length] || 'cyan'} bold>
+          <Text color="#38BDF8" bold>
             by CodeSena
           </Text>
         </Box>

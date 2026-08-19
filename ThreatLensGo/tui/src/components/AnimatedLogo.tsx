@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Box, Text } from 'ink';
 import { useTerminalSize } from '../hooks/useTerminalSize.js';
+import { useFrameIndex } from '../hooks/useSpinnerFrame.js';
 
 // Ultra-clean, crystal-clear 6-line block art for "THREATLENSGO" (104 cols)
 const LARGE_LOGO = [
@@ -19,9 +20,10 @@ const COMPACT_LOGO = [
   ' ▀  ▀ ▀ ▀ ▀ ▀▀▀ ▀ ▀  ▀  ▀▀▀ ▀▀▀ ▀  ▀ ▀▀▀  ▀▀▀ ▀▀▀',
 ];
 
-// Vibrant cyberpunk neon wave gradient palette
+// Vibrant cyberpunk neon wave gradient palette — extended for smoother waves
 const NEON_PALETTE = [
   '#38BDF8', // Electric Sky
+  '#22D3EE', // Bright Cyan
   '#2DD4BF', // Mint Teal
   '#34D399', // Emerald
   '#A3E635', // Neon Lime
@@ -32,7 +34,14 @@ const NEON_PALETTE = [
   '#C084FC', // Purple
   '#818CF8', // Indigo
   '#60A5FA', // Blue
-  '#22D3EE', // Bright Cyan
+];
+
+// Subtitle cycling taglines
+const TAGLINES = [
+  'OFFENSIVE SECURITY & VULNERABILITY ASSESSMENT',
+  'AUTONOMOUS CODEBASE INTELLIGENCE & PATCHING',
+  'ADVANCED THREAT DETECTION & SIMULATION ENGINE',
+  'POWERED BY CODESENA · AI-DRIVEN PENTESTING',
 ];
 
 function splitIntoChunks(str: string, size: number): string[] {
@@ -44,13 +53,21 @@ function splitIntoChunks(str: string, size: number): string[] {
 }
 
 export const AnimatedLogo: React.FC<{ subtitle?: string }> = ({
-  subtitle = 'OFFENSIVE SECURITY & VULNERABILITY ASSESSMENT',
+  subtitle,
 }) => {
   const { columns } = useTerminalSize();
 
   const isWide = columns >= 114;
   const logoLines = isWide ? LARGE_LOGO : COMPACT_LOGO;
   const chunkSize = isWide ? 8 : 4;
+
+  // Wave sweep: offset advances every 120ms, creating a flowing neon gradient
+  const waveOffset = useFrameIndex(NEON_PALETTE.length, 120);
+
+  // Tagline rotation every 4 seconds (independent slower tick)
+  const taglineIndex = useFrameIndex(TAGLINES.length, 4000);
+
+  const displaySubtitle = subtitle ?? TAGLINES[taglineIndex] ?? TAGLINES[0];
 
   return (
     <Box flexDirection="column" alignItems="center" marginY={1}>
@@ -62,8 +79,9 @@ export const AnimatedLogo: React.FC<{ subtitle?: string }> = ({
             return (
               <Box key={lineIndex} flexDirection="row">
                 {chunks.map((chunk, chunkIndex) => {
-                  const colorIndex = chunkIndex % NEON_PALETTE.length;
-                  const color = NEON_PALETTE[colorIndex] || '#38BDF8';
+                  // Offset each chunk by its position + current wave frame for the sweep effect
+                  const colorIndex = (chunkIndex + waveOffset + lineIndex) % NEON_PALETTE.length;
+                  const color = NEON_PALETTE[colorIndex] ?? '#38BDF8';
 
                   return (
                     <Text key={chunkIndex} color={color} bold>
@@ -76,7 +94,7 @@ export const AnimatedLogo: React.FC<{ subtitle?: string }> = ({
           })}
         </Box>
 
-        {/* Small by CodeSena with cyan accent */}
+        {/* Small by CodeSena with animated accent */}
         <Box paddingBottom={isWide ? 1 : 0} marginLeft={2}>
           <Text color="#38BDF8" bold>
             by CodeSena
@@ -84,13 +102,18 @@ export const AnimatedLogo: React.FC<{ subtitle?: string }> = ({
         </Box>
       </Box>
 
-      {subtitle ? (
-        <Box marginTop={1} flexDirection="row" alignItems="center">
-          <Text dimColor color="gray" bold>
-            {subtitle}
-          </Text>
-        </Box>
-      ) : null}
+      {/* Animated subtitle tagline */}
+      <Box marginTop={1} flexDirection="row" alignItems="center">
+        <Text color="#22D3EE" bold dimColor>
+          {'◈ '}
+        </Text>
+        <Text dimColor color="gray" bold>
+          {displaySubtitle}
+        </Text>
+        <Text color="#22D3EE" bold dimColor>
+          {' ◈'}
+        </Text>
+      </Box>
     </Box>
   );
 };

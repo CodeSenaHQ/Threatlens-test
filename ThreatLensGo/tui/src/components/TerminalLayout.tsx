@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Text } from 'ink';
 import { useTerminalSize } from '../hooks/useTerminalSize.js';
 import { useSecuritySession } from '../state/securitySession.js';
+import { StatusDot, StatusType } from './StatusDot.js';
 
 export interface TerminalLayoutProps {
   title: string;
@@ -10,10 +11,18 @@ export interface TerminalLayoutProps {
   step?: number;
   totalSteps?: number;
   statusText?: string;
-  statusType?: 'ready' | 'success' | 'warning' | 'error';
+  statusType?: StatusType;
   keyHints?: string;
   accentColor?: string;
   children: React.ReactNode;
+}
+
+// Step fill bar using block chars
+function buildStepBar(step: number, total: number): string {
+  const bars = Array.from({ length: total }, (_, i) =>
+    i < step ? '▰' : '▱'
+  );
+  return bars.join(' ');
 }
 
 export const TerminalLayout: React.FC<TerminalLayoutProps> = ({
@@ -31,31 +40,8 @@ export const TerminalLayout: React.FC<TerminalLayoutProps> = ({
   const { columns } = useTerminalSize();
   const { targetUrl } = useSecuritySession();
 
+  // NO animation hooks here — StatusDot handles its own re-renders in isolation
   const width = Math.max(60, columns > 2 ? columns - 2 : 78);
-
-  const getStatusColor = () => {
-    switch (statusType) {
-      case 'success':
-        return 'green';
-      case 'error':
-        return 'red';
-      case 'warning':
-        return 'yellow';
-      case 'ready':
-      default:
-        return 'cyan';
-    }
-  };
-
-  const renderStepDots = () => {
-    if (!step || !totalSteps) return null;
-    const dots: string[] = [];
-    for (let i = 1; i <= totalSteps; i++) {
-      dots.push(i <= step ? '●' : '○');
-    }
-    return `[ ${dots.join(' ')} ]`;
-  };
-
   const dividerLength = Math.max(10, width - 4);
 
   return (
@@ -65,29 +51,21 @@ export const TerminalLayout: React.FC<TerminalLayoutProps> = ({
       paddingX={1}
       marginY={1}
     >
-      {/* Top Minimalist Header */}
+      {/* Top Minimalist Header — fully static, no animation */}
       <Box flexDirection="row" justifyContent="space-between" marginBottom={1}>
         <Box flexDirection="row" alignItems="center">
-          <Text bold color="yellow">
-            threatlensgo
-          </Text>
-          <Text color="cyan">
-            {' '}by CodeSena
-          </Text>
-          <Text color="gray"> › </Text>
-          <Text color="white" bold>
-            {breadcrumb.toLowerCase()}
-          </Text>
+          <Text bold color="yellow">threatlensgo</Text>
+          <Text color="cyan"> by CodeSena</Text>
+          <Text color="#818CF8"> › </Text>
+          <Text color="white" bold>{'['}</Text>
+          <Text color={accentColor} bold>{breadcrumb.toLowerCase()}</Text>
+          <Text color="white" bold>{']'}</Text>
         </Box>
         <Box flexDirection="row">
           {targetUrl ? (
-            <Text color="gray">
-              target › <Text color="cyan" bold>{targetUrl}</Text>
-            </Text>
+            <Text color="gray">{'⬡ '}<Text color="cyan" bold>{targetUrl}</Text></Text>
           ) : (
-            <Text dimColor color="gray">
-              standalone mode
-            </Text>
+            <Text dimColor color="gray">standalone mode</Text>
           )}
         </Box>
       </Box>
@@ -96,33 +74,29 @@ export const TerminalLayout: React.FC<TerminalLayoutProps> = ({
       <Box
         flexDirection="column"
         borderStyle="round"
-        borderColor="gray"
+        borderColor={accentColor}
         paddingX={2}
         paddingY={1}
       >
-        {/* Step Counter & Title */}
+        {/* Step Counter & Title — static */}
         <Box flexDirection="column" marginBottom={1}>
           {step && totalSteps ? (
-            <Box flexDirection="row" marginBottom={0}>
-              <Text color="yellow" bold>
-                ● STEP {step} OF {totalSteps}
-              </Text>
-              <Text color="gray">  {renderStepDots()}</Text>
+            <Box flexDirection="row" marginBottom={0} alignItems="center">
+              <Text color="yellow" bold>● STEP {step}/{totalSteps}{'  '}</Text>
+              <Text color="#818CF8" bold>{buildStepBar(step, totalSteps)}</Text>
             </Box>
           ) : null}
 
-          <Text bold color={accentColor}>
-            {title}
-          </Text>
+          <Text bold color={accentColor}>{title}</Text>
           {subtitle ? (
-            <Text color="gray">{subtitle}</Text>
+            <Text color="gray" dimColor>{subtitle}</Text>
           ) : null}
         </Box>
 
-        {/* Divider */}
+        {/* Divider — static */}
         <Box marginBottom={1}>
-          <Text dimColor color="gray">
-            {'─'.repeat(dividerLength - 4)}
+          <Text color={accentColor} dimColor>
+            {'╌'.repeat(Math.max(1, dividerLength - 4))}
           </Text>
         </Box>
 
@@ -131,33 +105,21 @@ export const TerminalLayout: React.FC<TerminalLayoutProps> = ({
           {children}
         </Box>
 
-        {/* Card Footer Key Hints */}
+        {/* Card Footer — StatusDot is isolated; only IT re-renders on animation ticks */}
         <Box flexDirection="row" justifyContent="space-between" marginTop={1}>
-          <Box flexDirection="row">
-            <Text color={getStatusColor()} bold>
-              ● {statusText.toUpperCase()}
-            </Text>
+          <Box flexDirection="row" alignItems="center">
+            <StatusDot statusType={statusType} statusText={statusText} />
           </Box>
           <Box flexDirection="row">
-            <Text dimColor color="gray">
-              {keyHints}
-            </Text>
+            <Text dimColor color="gray">{keyHints}</Text>
           </Box>
         </Box>
       </Box>
 
-      {/* Bottom OpenCode-Style Statusline */}
+      {/* Bottom Statusline — static */}
       <Box flexDirection="row" justifyContent="space-between" marginTop={1}>
-        <Box flexDirection="row">
-          <Text dimColor color="gray">
-            ThreatLensGo:main
-          </Text>
-        </Box>
-        <Box flexDirection="row">
-          <Text dimColor color="gray">
-            0.1.0
-          </Text>
-        </Box>
+        <Text dimColor color="gray">ThreatLensGo:main</Text>
+        <Text dimColor color="gray">v0.1.0</Text>
       </Box>
     </Box>
   );

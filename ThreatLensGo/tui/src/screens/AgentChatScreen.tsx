@@ -4,6 +4,8 @@ import TextInput from 'ink-text-input';
 import { TerminalLayout } from '../components/TerminalLayout.js';
 import { ToolBadge } from '../components/ToolBadge.js';
 import { DiffApprovalModal } from '../components/DiffApprovalModal.js';
+import { Spinner } from '../components/Spinner.js';
+import { StreamCursor } from '../components/StreamCursor.js';
 import { useNavigation } from '../state/navigation.js';
 import { AgentController, AgentEvent, DiffApprovalPayload } from '../agent/types.js';
 import { ThreatLensAgentManager, AgentManagerStats } from '../agent/agentManager.js';
@@ -44,6 +46,7 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
   const [statusMessage, setStatusMessage] = useState<string>('Initializing codebase index and agent engine...');
   const [isRunning, setIsRunning] = useState<boolean>(false);
 
+  // NO animation hooks here — Spinner/StreamCursor are isolated leaf components
   const managerRef = useRef<ThreatLensAgentManager | null>(null);
   const textBufferRef = useRef<string>('');
   const flushTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -106,11 +109,12 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
         case 'token':
           setIsRunning(true);
           textBufferRef.current += event.delta;
+          // 120ms buffer — large enough to batch token events without creating visual stutter
           if (!flushTimerRef.current) {
             flushTimerRef.current = setTimeout(() => {
               flushTimerRef.current = null;
               flushTextBuffer();
-            }, 75); // 75ms calm buffer flush (zero screen jump)
+            }, 120);
           }
           break;
 
@@ -235,7 +239,6 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
     }
   };
 
-  // Keyboard navigation when not typing
   useInput((input, key) => {
     if (key.escape && !activeApproval) {
       if (isRunning && controller) {
@@ -252,6 +255,8 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
 
   // Keep last 4 messages to preserve stable terminal height
   const visibleMessages = messages.slice(-4);
+  const runningTools = tools.filter((t) => t.status === 'running');
+  const doneTools = tools.filter((t) => t.status !== 'running');
 
   return (
     <TerminalLayout
@@ -269,23 +274,19 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
       }
     >
       <Box flexDirection="column" paddingY={0}>
-        {/* Status Bar */}
+        {/* Status Bar — Spinner is an isolated leaf: only IT re-renders every 80ms */}
         <Box flexDirection="row" alignItems="center" marginBottom={1}>
           {isRunning ? (
-            <Text color="yellow" bold>
-              ⚡{' '}
-            </Text>
+            <Box marginRight={1}>
+              <Spinner type="dots" intervalMs={80} color="#38BDF8" bold />
+            </Box>
           ) : (
-            <Text color="green" bold>
-              ●{' '}
-            </Text>
+            <Text color="green" bold>✓ </Text>
           )}
-          <Text color="gray" italic>
-            {statusMessage}
-          </Text>
+          <Text color="gray" italic>{statusMessage}</Text>
         </Box>
 
-        {/* Message History */}
+        {/* Message History — static text, no animation */}
         <Box flexDirection="column" marginBottom={0}>
           {visibleMessages.map((msg) => (
             <Box
@@ -293,24 +294,24 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
               flexDirection="column"
               marginY={0}
               paddingX={1}
-              borderStyle="single"
-              borderColor={msg.sender === 'user' ? 'cyan' : 'gray'}
+              borderStyle="round"
+              borderColor={msg.sender === 'user' ? 'cyan' : '#34D399'}
             >
-              <Text bold color={msg.sender === 'user' ? 'cyan' : 'green'}>
-                {msg.sender === 'user' ? '👤 User:' : '🛡️ Agent:'}
+              <Text bold color={msg.sender === 'user' ? 'cyan' : '#34D399'}>
+                {msg.sender === 'user' ? '◈ You:' : '⬡ Agent:'}
               </Text>
               <Text color="white">{msg.text}</Text>
             </Box>
           ))}
         </Box>
 
-        {/* 1. Live Tool Invocations (Rendered first) */}
-        {tools.length > 0 ? (
+        {/* Running Tool Invocations */}
+        {runningTools.length > 0 ? (
           <Box flexDirection="column" marginY={1}>
-            <Text color="gray" dimColor>
-              Active Tool Invocations:
+            <Text color="#818CF8" bold>
+              ⚡ Active Tools ({runningTools.length})
             </Text>
-            {tools.map((t) => (
+            {runningTools.map((t) => (
               <ToolBadge
                 key={t.callId}
                 toolName={t.toolName}
@@ -322,7 +323,22 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
           </Box>
         ) : null}
 
-        {/* 2. Diff Approval Modal (If approval requested by edit_file) */}
+        {/* Completed tools (compact, no animation) */}
+        {doneTools.length > 0 && !isRunning ? (
+          <Box flexDirection="column" marginY={0}>
+            {doneTools.slice(-2).map((t) => (
+              <ToolBadge
+                key={t.callId}
+                toolName={t.toolName}
+                args={t.args}
+                status={t.status}
+                result={t.result}
+              />
+            ))}
+          </Box>
+        ) : null}
+
+        {/* Diff Approval Modal */}
         {activeApproval ? (
           <Box marginY={1}>
             <DiffApprovalModal
@@ -334,48 +350,49 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
           </Box>
         ) : null}
 
-        {/* 3. Agent's Response (Rendered after all tool calls) */}
+        {/* Agent Streaming Response — StreamCursor is isolated, text is stable */}
         {currentAgentText ? (
           <Box
             flexDirection="column"
             marginY={1}
             paddingX={1}
-            borderStyle="single"
-            borderColor="green"
+            borderStyle="round"
+            borderColor="#34D399"
           >
-            <Text bold color="green">
-              🛡️ Agent:
-            </Text>
-            <Text color="white">{currentAgentText}</Text>
+            <Text bold color="#34D399">⬡ Agent:</Text>
+            <Box flexDirection="row">
+              <Text color="white">{currentAgentText}</Text>
+              {isRunning ? <StreamCursor /> : null}
+            </Box>
           </Box>
         ) : null}
 
-        {/* 4. Interactive Input Prompt */}
+        {/* Input Prompt */}
         {!activeApproval && (
           <Box flexDirection="column" marginTop={1}>
             <Box
               borderStyle="round"
-              borderColor={isRunning ? 'gray' : 'cyan'}
+              borderColor={isRunning ? '#818CF8' : 'cyan'}
               paddingX={1}
               flexDirection="row"
             >
-              <Text bold color="cyan">
-                {'> '}
-              </Text>
+              <Text bold color={isRunning ? '#818CF8' : 'cyan'}>{'> '}</Text>
               <TextInput
                 value={inputQuery}
                 onChange={setInputQuery}
                 onSubmit={() => handleSend()}
-                placeholder={isRunning ? 'Agent is executing tools...' : 'Ask agent to inspect code, run sectests, or fix vulnerabilities...'}
+                placeholder={
+                  isRunning
+                    ? 'Agent is executing tools...'
+                    : 'Ask agent to inspect code, run sectests, or fix vulnerabilities...'
+                }
               />
             </Box>
             <Box marginTop={0} paddingX={1} flexDirection="row" justifyContent="space-between">
               <Text color="gray" dimColor>
-                Commands: &apos;audit /api/search&apos; · &apos;fix sql injection&apos; · &apos;find symbols&apos;
+                {'audit /api/search · fix sql injection · find symbols'}
               </Text>
-              <Text color="gray" dimColor>
-                esc cancel / back
-              </Text>
+              <Text color="gray" dimColor>esc cancel / back</Text>
             </Box>
           </Box>
         )}

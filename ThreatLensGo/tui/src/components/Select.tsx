@@ -12,7 +12,7 @@ export interface SelectOption<V extends string = string> {
 const CustomIndicator: React.FC<IndicatorProps> = ({ isSelected }) => {
   return (
     <Box width={3}>
-      <Text color={isSelected ? 'yellow' : 'gray'} bold={isSelected}>
+      <Text color={isSelected ? '#818CF8' : 'gray'} bold={isSelected}>
         {isSelected ? '❯' : ' '}
       </Text>
     </Box>
@@ -24,17 +24,30 @@ const CustomItem: React.FC<ItemProps> = ({ isSelected, label }) => {
   const match = label.match(/^(.*?)\s*\((.*?)\)$/);
 
   if (match && match[1] && match[2]) {
-    const title = match[1];
-    const desc = match[2];
+    const title = match[1].trim();
+    const desc = match[2].trim();
 
     return (
-      <Box flexDirection="row" flexWrap="wrap">
-        <Text color={isSelected ? 'yellow' : 'white'} bold={isSelected}>
-          {title}
-        </Text>
-        <Text dimColor color="gray">
-          {' '}─ {desc}
-        </Text>
+      <Box flexDirection="column">
+        <Box flexDirection="row" flexWrap="nowrap">
+          {isSelected && (
+            <Text color="#818CF8" bold>{'▌ '}</Text>
+          )}
+          <Text
+            color={isSelected ? 'white' : 'white'}
+            bold={isSelected}
+            dimColor={!isSelected}
+          >
+            {title}
+          </Text>
+        </Box>
+        {isSelected ? (
+          <Box paddingLeft={isSelected ? 4 : 0}>
+            <Text dimColor color="gray">
+              {desc}
+            </Text>
+          </Box>
+        ) : null}
       </Box>
     );
   }
@@ -43,21 +56,43 @@ const CustomItem: React.FC<ItemProps> = ({ isSelected, label }) => {
   if (label.includes(' ── ')) {
     const [title, desc] = label.split(' ── ');
     return (
-      <Box flexDirection="row" flexWrap="wrap">
-        <Text color={isSelected ? 'yellow' : 'white'} bold={isSelected}>
-          {title}
-        </Text>
-        <Text dimColor color="gray">
-          {' '}─ {desc}
-        </Text>
+      <Box flexDirection="column">
+        <Box flexDirection="row" flexWrap="nowrap">
+          {isSelected && (
+            <Text color="#818CF8" bold>{'▌ '}</Text>
+          )}
+          <Text
+            color={isSelected ? 'white' : 'white'}
+            bold={isSelected}
+            dimColor={!isSelected}
+          >
+            {title}
+          </Text>
+        </Box>
+        {isSelected && desc ? (
+          <Box paddingLeft={4}>
+            <Text dimColor color="gray">
+              {desc}
+            </Text>
+          </Box>
+        ) : null}
       </Box>
     );
   }
 
   return (
-    <Text color={isSelected ? 'yellow' : 'white'} bold={isSelected}>
-      {label}
-    </Text>
+    <Box flexDirection="row" alignItems="center">
+      {isSelected && (
+        <Text color="#818CF8" bold>{'▌ '}</Text>
+      )}
+      <Text
+        color={isSelected ? 'white' : 'white'}
+        bold={isSelected}
+        dimColor={!isSelected}
+      >
+        {label}
+      </Text>
+    </Box>
   );
 };
 

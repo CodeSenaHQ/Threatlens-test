@@ -7,6 +7,7 @@ import { useTerminalSize } from '../hooks/useTerminalSize.js';
 import { AnimatedLogo } from '../components/AnimatedLogo.js';
 import { AnimatedTip } from '../components/AnimatedTip.js';
 import { Select } from '../components/Select.js';
+import { PulsingBox } from '../components/PulsingBox.js';
 
 type CommandAction =
   | 'agentChat'
@@ -94,6 +95,7 @@ export const MainMenu: React.FC = () => {
   const [inputQuery, setInputQuery] = useState('');
   const [focusMode, setFocusMode] = useState<'menu' | 'input'>('menu');
 
+  // NO animation hooks here — PulsingBox is isolated and handles its own ticks
   const width = Math.max(60, columns > 2 ? columns - 2 : 78);
 
   const handleSelect = (item: CommandItem) => {
@@ -207,25 +209,28 @@ export const MainMenu: React.FC = () => {
     >
       {/* Top Section with Animated Logo */}
       <Box flexDirection="column" alignItems="center">
-        <AnimatedLogo subtitle="OFFENSIVE SECURITY & VULNERABILITY ASSESSMENT" />
+        <AnimatedLogo />
       </Box>
 
-      {/* Center Interactive OpenCode-style Prompt & Menu */}
+      {/* Center Interactive Prompt & Menu */}
       <Box flexDirection="column" alignItems="center" marginY={1}>
-        {/* OpenCode Prompt Card Box */}
-        <Box
-          flexDirection="column"
+        {/* Command Input Card — PulsingBox is isolated: only IT re-renders on pulse ticks */}
+        <PulsingBox
+          isActive={focusMode === 'input'}
+          activeColorA="cyan"
+          activeColorB="#60A5FA"
+          inactiveColor="gray"
           borderStyle="round"
-          borderColor={focusMode === 'input' ? 'cyan' : 'gray'}
           paddingX={2}
           paddingY={1}
           width={Math.min(width - 4, 88)}
+          flexDirection="column"
         >
-          {/* Upper Search/Ask line */}
+          {/* Search/Ask line */}
           <Box flexDirection="row" alignItems="center">
             <Box width={3}>
               <Text color={focusMode === 'input' ? 'cyan' : 'gray'} bold>
-                ›
+                {focusMode === 'input' ? '›' : '·'}
               </Text>
             </Box>
             <Box flexGrow={1}>
@@ -237,56 +242,56 @@ export const MainMenu: React.FC = () => {
                 }}
                 onSubmit={handleInputSubmit}
                 focus={focusMode === 'input'}
-                placeholder={focusMode === 'input' ? "Type query & press enter (e.g. 'audit /api/search')..." : "Press Tab or / to type custom agent query, or press 0-9 to select"}
+                placeholder={
+                  focusMode === 'input'
+                    ? "Type query & press enter (e.g. 'audit /api/search')..."
+                    : "Press Tab or / to type custom agent query, or press 0-9 to select"
+                }
               />
             </Box>
           </Box>
 
-          {/* Lower Engine & Mode tags */}
+          {/* Engine tags */}
           <Box flexDirection="row" marginTop={1} paddingLeft={3}>
-            <Text color="cyan" bold>
-              Security
-            </Text>
+            <Text color="cyan" bold>Security</Text>
             <Text color="gray"> · </Text>
             <Text color="white">ThreatLensGo Engine</Text>
             <Text color="gray"> · </Text>
-            <Text color="cyan" bold>by CodeSena</Text>
-            <Text color="gray"> </Text>
+            <Text color="#818CF8" bold>by CodeSena</Text>
+            <Text color="gray"> · </Text>
             <Text dimColor color="gray">
-              {targetUrl ? `Target: ${targetUrl}` : 'OpenAudit Zen'}
+              {targetUrl ? `⬡ ${targetUrl}` : 'OpenAudit Zen'}
             </Text>
           </Box>
-        </Box>
+        </PulsingBox>
 
         {/* Hotkey Pills Bar */}
         <Box flexDirection="row" marginTop={1} justifyContent="center">
-          <Text bold color="yellow">
-            0-9
-          </Text>
+          <Text bold color="yellow">0-9</Text>
           <Text color="gray"> instant pick · </Text>
-          <Text bold color="white">
-            tab
-          </Text>
+          <Text bold color="white">tab</Text>
           <Text color="gray"> switch mode · </Text>
-          <Text bold color="white">
-            ↑↓/enter
-          </Text>
+          <Text bold color="white">↑↓/enter</Text>
           <Text color="gray"> select · </Text>
-          <Text bold color="white">
-            esc
-          </Text>
+          <Text bold color="white">esc</Text>
           <Text color="gray"> exit</Text>
         </Box>
 
-        {/* Select Menu Dropdown */}
+        {/* Select Menu */}
         <Box
           flexDirection="column"
           marginTop={1}
           width={Math.min(width - 4, 88)}
-          borderStyle="single"
-          borderColor={focusMode === 'menu' ? 'yellow' : 'gray'}
+          borderStyle="round"
+          borderColor={focusMode === 'menu' ? '#818CF8' : 'gray'}
           paddingX={1}
         >
+          {/* Menu header */}
+          <Box paddingX={1} paddingTop={0}>
+            <Text color={focusMode === 'menu' ? '#818CF8' : 'gray'} bold dimColor={focusMode !== 'menu'}>
+              {focusMode === 'menu' ? '◈ COMMANDS' : '○ COMMANDS'}
+            </Text>
+          </Box>
           <Select
             items={COMMANDS}
             onSelect={handleSelect}
@@ -309,7 +314,7 @@ export const MainMenu: React.FC = () => {
         </Box>
         <Box flexDirection="row">
           <Text dimColor color="gray">
-            0.1.0
+            v0.1.0
           </Text>
         </Box>
       </Box>
@@ -318,4 +323,3 @@ export const MainMenu: React.FC = () => {
 };
 
 export const MainMenuScreen = MainMenu;
-

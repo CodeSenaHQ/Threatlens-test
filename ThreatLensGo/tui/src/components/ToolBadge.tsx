@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Text } from 'ink';
+import { Spinner } from './Spinner.js';
 
 export interface ToolBadgeProps {
   toolName: string;
@@ -8,83 +9,77 @@ export interface ToolBadgeProps {
   result?: any;
 }
 
+const TOOL_META: Record<string, { icon: string; label: string; color: string }> = {
+  search_code:        { icon: '⬡', label: 'Search Code',    color: '#38BDF8' },
+  find_symbol:        { icon: '◈', label: 'Find Symbol',     color: '#A3E635' },
+  read_file:          { icon: '◻', label: 'Read File',       color: '#60A5FA' },
+  edit_file:          { icon: '◼', label: 'Edit File',       color: '#FBBF24' },
+  run_sectest:        { icon: '⬡', label: 'Security Test',   color: '#F472B6' },
+  verify_remediation: { icon: '◈', label: 'Verify Fix',      color: '#34D399' },
+};
+
 export const ToolBadge: React.FC<ToolBadgeProps> = ({
   toolName,
   args,
   status,
   result,
 }) => {
-  const getToolIcon = () => {
-    switch (toolName) {
-      case 'search_code':
-        return '🔍';
-      case 'find_symbol':
-        return '🌲';
-      case 'read_file':
-        return '📄';
-      case 'edit_file':
-        return '✏️';
-      case 'run_sectest':
-        return '🛡️';
-      case 'verify_remediation':
-        return '✅';
-      default:
-        return '⚡';
-    }
-  };
+  // NO animation hooks in this component — Spinner is an isolated leaf
+  const meta = TOOL_META[toolName];
+  const icon = meta?.icon ?? '⚡';
+  const displayLabel = meta?.label ?? toolName;
+  const accentColor = meta?.color ?? '#38BDF8';
 
   const getArgsSummary = () => {
     if (!args) return '';
-    if (args.query) return `"${args.query}"`;
-    if (args.path) return `${args.path}`;
+    if (args.query) return `"${String(args.query).slice(0, 40)}"`;
+    if (args.path) return String(args.path).slice(0, 40);
     if (args.suite) return `suite: ${args.suite}`;
     if (args.name) return `${args.name}()`;
-    return JSON.stringify(args).slice(0, 30);
+    return JSON.stringify(args).slice(0, 35) + '…';
   };
+
+  const borderColor = status === 'running' ? accentColor : status === 'error' ? 'red' : 'green';
 
   return (
     <Box
       flexDirection="column"
       marginY={0}
       paddingX={1}
-      borderStyle="single"
-      borderColor={status === 'running' ? 'yellow' : status === 'error' ? 'red' : 'green'}
+      borderStyle="round"
+      borderColor={borderColor}
     >
       <Box flexDirection="row" alignItems="center">
+        {/* Status indicator — Spinner isolated so only it re-renders */}
         {status === 'running' ? (
-          <Text color="yellow" bold>
-            ▶{' '}
-          </Text>
+          <Box marginRight={1}>
+            <Spinner type="dots" intervalMs={80} color={accentColor} bold />
+          </Box>
         ) : status === 'completed' ? (
-          <Text color="green" bold>
-            ✓{' '}
-          </Text>
+          <Text color="green" bold>✓ </Text>
         ) : (
-          <Text color="red" bold>
-            ✗{' '}
-          </Text>
+          <Text color="red" bold>✗ </Text>
         )}
-        <Text color="white" bold>
-          {getToolIcon()} {toolName}
-        </Text>
-        {args ? (
-          <Text color="gray" dimColor>
-            {' '}
-            {getArgsSummary()}
-          </Text>
+
+        <Text color={accentColor} bold>{icon}{' '}</Text>
+        <Text color="white" bold>{displayLabel}</Text>
+
+        {args && getArgsSummary() ? (
+          <Text color="gray" dimColor>{'  '}{getArgsSummary()}</Text>
         ) : null}
       </Box>
 
+      {/* Sub-line: running hint or result preview — static text */}
       {status === 'running' ? (
         <Box marginTop={0} paddingLeft={2}>
-          <Text color="yellow" dimColor>
-            Executing...
-          </Text>
+          <Text color={accentColor} dimColor>executing…</Text>
         </Box>
       ) : result ? (
         <Box marginTop={0} paddingLeft={2}>
           <Text color="gray" dimColor>
-            ↳ {typeof result === 'object' ? JSON.stringify(result).slice(0, 70) + '...' : String(result).slice(0, 70)}
+            {'↳ '}{typeof result === 'object'
+              ? JSON.stringify(result).slice(0, 65) + '…'
+              : String(result).slice(0, 65)}
           </Text>
         </Box>
       ) : null}

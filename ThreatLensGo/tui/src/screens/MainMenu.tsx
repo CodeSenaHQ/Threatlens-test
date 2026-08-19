@@ -24,52 +24,64 @@ type CommandAction =
 interface CommandItem {
   label: string;
   value: CommandAction;
+  shortcut?: string;
 }
 
 const COMMANDS: CommandItem[] = [
   {
     label: '0. 🤖 ThreatLens Agent (Interactive Codebase Intelligence & Auto-Patching)',
     value: 'agentChat',
+    shortcut: '0',
   },
   {
     label: '1. Git Repository Analysis (Audit public repos for leaked secrets & CVEs)',
     value: 'gitAnalysis',
+    shortcut: '1',
   },
   {
     label: '2. Security Testing Suite (DDoS, SQLi, XSS, Exfiltration, Rate Limiting)',
     value: 'securityMenu',
+    shortcut: '2',
   },
   {
     label: '3. DDoS Simulation (Flood, Slowloris, and Burst traffic load tests)',
     value: 'ddos',
+    shortcut: '3',
   },
   {
     label: '4. SQL Injection (Error-based, Union-based, and Blind delay probes)',
     value: 'sqli',
+    shortcut: '4',
   },
   {
     label: '5. Cross-Site Scripting (XSS) (Reflected, Stored, and DOM script audits)',
     value: 'xss',
+    shortcut: '5',
   },
   {
     label: '6. Data Exfiltration (API response & error message leakage scans)',
     value: 'exfil',
+    shortcut: '6',
   },
   {
     label: '7. Rate Limiting Assessment (Verify 429 threshold enforcement)',
     value: 'rateLimit',
+    shortcut: '7',
   },
   {
     label: '8. Proxy Interception & Tampering (Inspect and repeat HTTP requests)',
     value: 'proxy',
+    shortcut: '8',
   },
   {
     label: '9. Configure Target URL (Set active target endpoint for this session)',
     value: 'targetUrl',
+    shortcut: '9',
   },
   {
     label: '10. Exit ThreatLensGo (Quit terminal application)',
     value: 'exit',
+    shortcut: 'q',
   },
 ];
 
@@ -80,9 +92,8 @@ export const MainMenu: React.FC = () => {
   const { columns } = useTerminalSize();
 
   const [inputQuery, setInputQuery] = useState('');
-  const [showMenu, setShowMenu] = useState(true);
+  const [focusMode, setFocusMode] = useState<'menu' | 'input'>('menu');
 
-  const isInteractive = Boolean(process.stdin?.isTTY);
   const width = Math.max(60, columns > 2 ? columns - 2 : 78);
 
   const handleSelect = (item: CommandItem) => {
@@ -116,7 +127,7 @@ export const MainMenu: React.FC = () => {
   const handleInputSubmit = (value: string) => {
     const trimmed = value.trim().toLowerCase();
     if (!trimmed) {
-      setShowMenu(true);
+      setFocusMode('menu');
       return;
     }
 
@@ -148,14 +159,43 @@ export const MainMenu: React.FC = () => {
   useInput(
     (input, key) => {
       if (key.escape) {
-        exit();
+        if (focusMode === 'input') {
+          setFocusMode('menu');
+        } else {
+          exit();
+        }
       } else if (key.tab) {
-        setShowMenu((prev) => !prev);
-      } else if (input === '/') {
-        setShowMenu(true);
+        setFocusMode((prev) => (prev === 'menu' ? 'input' : 'menu'));
+      } else if (focusMode === 'menu') {
+        // Direct single-key shortcuts when menu is active
+        if (input === '0') {
+          handleSelect(COMMANDS[0]);
+        } else if (input === '1') {
+          handleSelect(COMMANDS[1]);
+        } else if (input === '2') {
+          handleSelect(COMMANDS[2]);
+        } else if (input === '3') {
+          handleSelect(COMMANDS[3]);
+        } else if (input === '4') {
+          handleSelect(COMMANDS[4]);
+        } else if (input === '5') {
+          handleSelect(COMMANDS[5]);
+        } else if (input === '6') {
+          handleSelect(COMMANDS[6]);
+        } else if (input === '7') {
+          handleSelect(COMMANDS[7]);
+        } else if (input === '8') {
+          handleSelect(COMMANDS[8]);
+        } else if (input === '9') {
+          handleSelect(COMMANDS[9]);
+        } else if (input === 'q') {
+          exit();
+        } else if (input === '/' || input === ':') {
+          setFocusMode('input');
+        }
       }
     },
-    { isActive: isInteractive }
+    { isActive: true }
   );
 
   return (
@@ -176,7 +216,7 @@ export const MainMenu: React.FC = () => {
         <Box
           flexDirection="column"
           borderStyle="round"
-          borderColor="gray"
+          borderColor={focusMode === 'input' ? 'cyan' : 'gray'}
           paddingX={2}
           paddingY={1}
           width={Math.min(width - 4, 88)}
@@ -184,7 +224,7 @@ export const MainMenu: React.FC = () => {
           {/* Upper Search/Ask line */}
           <Box flexDirection="row" alignItems="center">
             <Box width={3}>
-              <Text color="cyan" bold>
+              <Text color={focusMode === 'input' ? 'cyan' : 'gray'} bold>
                 ›
               </Text>
             </Box>
@@ -193,11 +233,11 @@ export const MainMenu: React.FC = () => {
                 value={inputQuery}
                 onChange={(val) => {
                   setInputQuery(val);
-                  if (val.startsWith('/')) setShowMenu(true);
+                  setFocusMode('input');
                 }}
                 onSubmit={handleInputSubmit}
-                focus={isInteractive}
-                placeholder="Ask anything or type / for commands... &quot;Scan repo or run DDoS attack&quot;"
+                focus={focusMode === 'input'}
+                placeholder={focusMode === 'input' ? "Type query & press enter (e.g. 'audit /api/search')..." : "Press Tab or / to type custom agent query, or press 0-9 to select"}
               />
             </Box>
           </Box>
@@ -220,37 +260,39 @@ export const MainMenu: React.FC = () => {
 
         {/* Hotkey Pills Bar */}
         <Box flexDirection="row" marginTop={1} justifyContent="center">
+          <Text bold color="yellow">
+            0-9
+          </Text>
+          <Text color="gray"> instant pick · </Text>
           <Text bold color="white">
             tab
           </Text>
-          <Text color="gray"> modules  </Text>
+          <Text color="gray"> switch mode · </Text>
           <Text bold color="white">
-            /
+            ↑↓/enter
           </Text>
-          <Text color="gray"> commands  </Text>
+          <Text color="gray"> select · </Text>
           <Text bold color="white">
             esc
           </Text>
           <Text color="gray"> exit</Text>
         </Box>
 
-        {/* Select Menu Dropdown (when menu is visible) */}
-        {showMenu ? (
-          <Box
-            flexDirection="column"
-            marginTop={1}
-            width={Math.min(width - 4, 88)}
-            borderStyle="single"
-            borderColor="gray"
-            paddingX={1}
-          >
-            <Select
-              items={COMMANDS}
-              onSelect={handleSelect}
-              isFocused={isInteractive}
-            />
-          </Box>
-        ) : null}
+        {/* Select Menu Dropdown */}
+        <Box
+          flexDirection="column"
+          marginTop={1}
+          width={Math.min(width - 4, 88)}
+          borderStyle="single"
+          borderColor={focusMode === 'menu' ? 'yellow' : 'gray'}
+          paddingX={1}
+        >
+          <Select
+            items={COMMANDS}
+            onSelect={handleSelect}
+            isFocused={focusMode === 'menu'}
+          />
+        </Box>
 
         {/* Animated Tip Carousel */}
         <Box marginTop={1}>
@@ -276,4 +318,4 @@ export const MainMenu: React.FC = () => {
 };
 
 export const MainMenuScreen = MainMenu;
-export default MainMenu;
+

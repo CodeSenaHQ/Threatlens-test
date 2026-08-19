@@ -12,6 +12,7 @@ import {
 import { runSectestTool, verifyRemediationTool } from './securityTools.js';
 import { DiffApprovalPayload } from '../types.js';
 import { DEFAULT_AGENT_CONFIG, AgentConfig } from '../config.js';
+import { CancellationTokenSource } from '../guardrails/cancellationToken.js';
 
 export class ToolRegistry {
   private tools: Map<string, ToolDefinition> = new Map();
@@ -71,22 +72,28 @@ export class ToolRegistry {
         ? this.config.securityProbeTimeoutMs
         : this.config.fastToolTimeoutMs;
 
+    const cts = new CancellationTokenSource(timeoutMs);
+    const contextWithSignal: ToolContext = {
+      ...this.context,
+      signal: cts.signal,
+    };
+
     return new Promise<ToolResult>((resolve) => {
-      const timer = setTimeout(() => {
+      cts.signal.addEventListener('abort', () => {
         resolve({
           success: false,
           error: `Tool '${name}' timed out after ${timeoutMs / 1000}s.`,
         });
-      }, timeoutMs);
+      });
 
       tool
-        .execute(args, this.context)
+        .execute(args, contextWithSignal)
         .then((res) => {
-          clearTimeout(timer);
+          cts.dispose();
           resolve(res);
         })
         .catch((err) => {
-          clearTimeout(timer);
+          cts.dispose();
           resolve({
             success: false,
             error: `Error executing tool '${name}': ${err?.message || String(err)}`,

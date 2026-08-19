@@ -336,7 +336,7 @@ export class SqliteIndexStore {
         let dependencies: ResolvedDependency[] = [];
         if (parser) {
           const tree = parser.parse(content);
-          const rawImports = resolver.extractRawImports(tree);
+          const rawImports = resolver.extractRawImports(tree, lang);
           dependencies = rawImports.map((raw) => resolver.resolve(file.relativePath, raw.rawSpecifier));
         }
 

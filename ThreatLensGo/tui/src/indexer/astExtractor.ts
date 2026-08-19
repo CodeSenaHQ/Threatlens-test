@@ -1,12 +1,13 @@
 import Parser from 'web-tree-sitter';
-import { CodeSymbol, FileExtractionResult } from './symbols.js';
+import { CodeSymbol, FileExtractionResult, SymbolKind } from './symbols.js';
 import { createParser } from './parserLoader.js';
 import { detectLanguage } from './languageDetector.js';
 
 export class AstExtractor {
-  /**
-   * Extracts function declarations from AST.
-   */
+  // =========================================================================
+  // TypeScript / JavaScript AST Visitors
+  // =========================================================================
+
   private extractFunctionDeclaration(
     node: Parser.SyntaxNode,
     filePath: string,
@@ -58,9 +59,6 @@ export class AstExtractor {
     };
   }
 
-  /**
-   * Extracts arrow functions and variable declarations (Step 4c).
-   */
   private extractVariableDeclarations(
     node: Parser.SyntaxNode,
     filePath: string,
@@ -99,7 +97,6 @@ export class AstExtractor {
 
       if (!name) continue;
 
-      // Check if this variable is an arrow function
       if (valueNode && (valueNode.type === 'arrow_function' || valueNode.type === 'function_expression')) {
         let isAsync = false;
         let parameters: string[] = [];
@@ -137,7 +134,6 @@ export class AstExtractor {
           isAsync,
         });
       } else {
-        // Plain constant or variable
         const typeStr = typeAnnotation ? `: ${typeAnnotation}` : '';
         const signature = `${isExported ? 'export ' : ''}const ${name}${typeStr}`;
 
@@ -158,9 +154,6 @@ export class AstExtractor {
     return symbols;
   }
 
-  /**
-   * Extracts class declarations and their methods.
-   */
   private extractClassDeclaration(
     node: Parser.SyntaxNode,
     filePath: string,
@@ -211,9 +204,6 @@ export class AstExtractor {
     return { classSymbol, methodSymbols };
   }
 
-  /**
-   * Extracts method definitions from a class body.
-   */
   private extractMethodDefinition(
     node: Parser.SyntaxNode,
     filePath: string,
@@ -269,9 +259,6 @@ export class AstExtractor {
     };
   }
 
-  /**
-   * Extracts interface declarations.
-   */
   private extractInterfaceDeclaration(
     node: Parser.SyntaxNode,
     filePath: string,
@@ -307,9 +294,6 @@ export class AstExtractor {
     };
   }
 
-  /**
-   * Extracts type alias declarations.
-   */
   private extractTypeAliasDeclaration(
     node: Parser.SyntaxNode,
     filePath: string,
@@ -342,9 +326,6 @@ export class AstExtractor {
     };
   }
 
-  /**
-   * Extracts enum declarations.
-   */
   private extractEnumDeclaration(
     node: Parser.SyntaxNode,
     filePath: string,
@@ -377,9 +358,292 @@ export class AstExtractor {
     };
   }
 
-  /**
-   * Parses parameter names from formal_parameters node.
-   */
+  // =========================================================================
+  // Python AST Visitors (Step 14)
+  // =========================================================================
+
+  private extractPythonFunction(
+    node: Parser.SyntaxNode,
+    filePath: string,
+    parentClass?: string,
+    isAsync = false
+  ): CodeSymbol | null {
+    let name = '';
+    let parameters: string[] = [];
+    let returnType: string | undefined;
+
+    for (let i = 0; i < node.childCount; i++) {
+      const child = node.child(i);
+      if (!child) continue;
+
+      if (child.type === 'async') {
+        isAsync = true;
+      } else if (child.type === 'identifier') {
+        name = child.text;
+      } else if (child.type === 'parameters') {
+        parameters = this.extractPythonParameters(child);
+      } else if (child.type === 'type') {
+        returnType = child.text;
+      }
+    }
+
+    if (!name) return null;
+
+    const isMethod = !!parentClass;
+    const kind = isMethod ? 'method' : 'function';
+    const paramStr = parameters.join(', ');
+    const retStr = returnType ? ` -> ${returnType}` : '';
+    const signature = `${isAsync ? 'async ' : ''}def ${name}(${paramStr})${retStr}:`;
+
+    return {
+      name,
+      kind,
+      filePath,
+      startLine: node.startPosition.row + 1,
+      endLine: node.endPosition.row + 1,
+      startColumn: node.startPosition.column + 1,
+      endColumn: node.endPosition.column + 1,
+      signature,
+      parameters,
+      returnType,
+      parentSymbol: parentClass,
+      isExported: !name.startsWith('_'),
+      isAsync,
+    };
+  }
+
+  private extractPythonClass(
+    node: Parser.SyntaxNode,
+    filePath: string
+  ): { classSymbol: CodeSymbol; methodSymbols: CodeSymbol[] } | null {
+    let name = '';
+    let heritage = '';
+    const methodSymbols: CodeSymbol[] = [];
+
+    for (let i = 0; i < node.childCount; i++) {
+      const child = node.child(i);
+      if (!child) continue;
+
+      if (child.type === 'identifier') {
+        name = child.text;
+      } else if (child.type === 'argument_list') {
+        heritage = child.text;
+      } else if (child.type === 'block') {
+        for (let j = 0; j < child.childCount; j++) {
+          const bodyChild = child.child(j);
+          if (!bodyChild) continue;
+
+          if (bodyChild.type === 'function_definition') {
+            const m = this.extractPythonFunction(bodyChild, filePath, name, false);
+            if (m) methodSymbols.push(m);
+          } else if (bodyChild.type === 'decorated_definition') {
+            const fnNode = bodyChild.children.find((c) => c.type === 'function_definition');
+            const isAsync = bodyChild.children.some((c) => c.type === 'async');
+            if (fnNode) {
+              const m = this.extractPythonFunction(fnNode, filePath, name, isAsync);
+              if (m) methodSymbols.push(m);
+            }
+          }
+        }
+      }
+    }
+
+    if (!name) return null;
+
+    const signature = `class ${name}${heritage ? heritage : ''}:`;
+    const classSymbol: CodeSymbol = {
+      name,
+      kind: 'class',
+      filePath,
+      startLine: node.startPosition.row + 1,
+      endLine: node.endPosition.row + 1,
+      startColumn: node.startPosition.column + 1,
+      endColumn: node.endPosition.column + 1,
+      signature,
+      isExported: !name.startsWith('_'),
+    };
+
+    return { classSymbol, methodSymbols };
+  }
+
+  private extractPythonParameters(paramsNode: Parser.SyntaxNode): string[] {
+    const params: string[] = [];
+    for (let i = 0; i < paramsNode.childCount; i++) {
+      const child = paramsNode.child(i);
+      if (!child) continue;
+
+      if (
+        child.type === 'identifier' ||
+        child.type === 'typed_parameter' ||
+        child.type === 'default_parameter' ||
+        child.type === 'typed_default_parameter' ||
+        child.type === 'list_splat_pattern' ||
+        child.type === 'dictionary_splat_pattern'
+      ) {
+        params.push(child.text.trim());
+      }
+    }
+    return params;
+  }
+
+  // =========================================================================
+  // Go AST Visitors (Step 14)
+  // =========================================================================
+
+  private extractGoFunction(node: Parser.SyntaxNode, filePath: string): CodeSymbol | null {
+    let name = '';
+    let parameters: string[] = [];
+    let returnType: string | undefined;
+
+    for (let i = 0; i < node.childCount; i++) {
+      const child = node.child(i);
+      if (!child) continue;
+
+      if (child.type === 'identifier') {
+        name = child.text;
+      } else if (child.type === 'parameter_list') {
+        parameters = this.extractGoParameters(child);
+      } else if (child.type === 'type_identifier' || child.type === 'pointer_type' || child.type === 'slice_type') {
+        returnType = child.text;
+      }
+    }
+
+    if (!name) return null;
+
+    const paramStr = parameters.join(', ');
+    const retStr = returnType ? ` ${returnType}` : '';
+    const isExported = name.charAt(0) === name.charAt(0).toUpperCase() && name.charAt(0) !== '_';
+    const signature = `func ${name}(${paramStr})${retStr}`;
+
+    return {
+      name,
+      kind: 'function',
+      filePath,
+      startLine: node.startPosition.row + 1,
+      endLine: node.endPosition.row + 1,
+      startColumn: node.startPosition.column + 1,
+      endColumn: node.endPosition.column + 1,
+      signature,
+      parameters,
+      returnType,
+      isExported,
+    };
+  }
+
+  private extractGoMethod(node: Parser.SyntaxNode, filePath: string): CodeSymbol | null {
+    let name = '';
+    let receiver = '';
+    let parentSymbol = '';
+    let parameters: string[] = [];
+    let returnType: string | undefined;
+
+    for (let i = 0; i < node.childCount; i++) {
+      const child = node.child(i);
+      if (!child) continue;
+
+      if (child.type === 'parameter_list') {
+        if (!receiver) {
+          receiver = child.text; // Receiver is the first parameter list in Go
+          for (let j = 0; j < child.childCount; j++) {
+            const p = child.child(j);
+            if (p && p.type === 'parameter_declaration') {
+              const typeChild = p.childForFieldName('type') || p.children.find((c) => c.type === 'pointer_type' || c.type === 'type_identifier');
+              if (typeChild) {
+                parentSymbol = typeChild.text.replace(/^[\*\s]+/, '').trim();
+              }
+            }
+          }
+        } else {
+          parameters = this.extractGoParameters(child);
+        }
+      } else if (child.type === 'field_identifier') {
+        name = child.text;
+      } else if (child.type === 'type_identifier' || child.type === 'pointer_type' || child.type === 'slice_type') {
+        returnType = child.text;
+      }
+    }
+
+    if (!name) return null;
+
+    const paramStr = parameters.join(', ');
+    const retStr = returnType ? ` ${returnType}` : '';
+    const isExported = name.charAt(0) === name.charAt(0).toUpperCase();
+    const signature = `func ${receiver} ${name}(${paramStr})${retStr}`;
+
+    return {
+      name,
+      kind: 'method',
+      filePath,
+      startLine: node.startPosition.row + 1,
+      endLine: node.endPosition.row + 1,
+      startColumn: node.startPosition.column + 1,
+      endColumn: node.endPosition.column + 1,
+      signature,
+      parameters,
+      returnType,
+      parentSymbol: parentSymbol || undefined,
+      isExported,
+    };
+  }
+
+  private extractGoTypeDeclaration(node: Parser.SyntaxNode, filePath: string): CodeSymbol[] {
+    const symbols: CodeSymbol[] = [];
+
+    for (let i = 0; i < node.childCount; i++) {
+      const child = node.child(i);
+      if (!child || child.type !== 'type_spec') continue;
+
+      const nameNode = child.childForFieldName('name') || child.children.find((c) => c.type === 'type_identifier');
+      const typeNode = child.childForFieldName('type') || child.children.filter((c) => c !== nameNode)[0];
+
+      const name = nameNode ? nameNode.text : '';
+      if (!name) continue;
+
+      let kind: SymbolKind = 'type';
+      let typeBody = typeNode ? typeNode.text : '';
+
+      if (typeNode) {
+        if (typeNode.type === 'struct_type') {
+          kind = 'class';
+          typeBody = 'struct';
+        } else if (typeNode.type === 'interface_type') {
+          kind = 'interface';
+          typeBody = 'interface';
+        }
+      }
+
+      const isExported = name.charAt(0) === name.charAt(0).toUpperCase();
+      const signature = `type ${name} ${typeBody}`.trim();
+
+      symbols.push({
+        name,
+        kind,
+        filePath,
+        startLine: node.startPosition.row + 1,
+        endLine: node.endPosition.row + 1,
+        startColumn: node.startPosition.column + 1,
+        endColumn: node.endPosition.column + 1,
+        signature,
+        isExported,
+      });
+    }
+
+    return symbols;
+  }
+
+  private extractGoParameters(paramsNode: Parser.SyntaxNode): string[] {
+    const params: string[] = [];
+    for (let i = 0; i < paramsNode.childCount; i++) {
+      const child = paramsNode.child(i);
+      if (!child) continue;
+
+      if (child.type === 'parameter_declaration' || child.type === 'variadic_parameter_declaration') {
+        params.push(child.text.trim());
+      }
+    }
+    return params;
+  }
+
   private extractParameters(paramsNode: Parser.SyntaxNode): string[] {
     const params: string[] = [];
     for (let i = 0; i < paramsNode.childCount; i++) {
@@ -402,7 +666,7 @@ export class AstExtractor {
   }
 
   /**
-   * Traverses the AST and extracts all symbols.
+   * Traverses the AST and extracts all symbols for TypeScript, JavaScript, Python, and Go.
    */
   public async extract(sourceCode: string, filePath: string): Promise<FileExtractionResult> {
     const startTime = performance.now();
@@ -421,8 +685,71 @@ export class AstExtractor {
     const tree = parser.parse(sourceCode);
     const symbols: CodeSymbol[] = [];
 
-    const visit = (node: Parser.SyntaxNode, isExportedContext = false) => {
-      // Handle Export Statements
+    // =========================================================================
+    // Python Traversal
+    // =========================================================================
+    if (lang === 'python') {
+      const visitPython = (node: Parser.SyntaxNode) => {
+        if (node.type === 'function_definition') {
+          const sym = this.extractPythonFunction(node, filePath, undefined, false);
+          if (sym) symbols.push(sym);
+        } else if (node.type === 'decorated_definition') {
+          const fnNode = node.children.find((c) => c.type === 'function_definition');
+          const isAsync = node.children.some((c) => c.type === 'async');
+          if (fnNode) {
+            const sym = this.extractPythonFunction(fnNode, filePath, undefined, isAsync);
+            if (sym) symbols.push(sym);
+          }
+        } else if (node.type === 'class_definition') {
+          const res = this.extractPythonClass(node, filePath);
+          if (res) {
+            symbols.push(res.classSymbol, ...res.methodSymbols);
+          }
+        }
+
+        // Recurse (skip class blocks as they're handled in extractPythonClass)
+        if (node.type !== 'class_definition') {
+          for (let i = 0; i < node.childCount; i++) {
+            const child = node.child(i);
+            if (child) visitPython(child);
+          }
+        }
+      };
+
+      visitPython(tree.rootNode);
+      return { filePath, symbols, durationMs: performance.now() - startTime };
+    }
+
+    // =========================================================================
+    // Go Traversal
+    // =========================================================================
+    if (lang === 'go') {
+      const visitGo = (node: Parser.SyntaxNode) => {
+        if (node.type === 'function_declaration') {
+          const sym = this.extractGoFunction(node, filePath);
+          if (sym) symbols.push(sym);
+        } else if (node.type === 'method_declaration') {
+          const sym = this.extractGoMethod(node, filePath);
+          if (sym) symbols.push(sym);
+        } else if (node.type === 'type_declaration') {
+          const syms = this.extractGoTypeDeclaration(node, filePath);
+          symbols.push(...syms);
+        }
+
+        for (let i = 0; i < node.childCount; i++) {
+          const child = node.child(i);
+          if (child) visitGo(child);
+        }
+      };
+
+      visitGo(tree.rootNode);
+      return { filePath, symbols, durationMs: performance.now() - startTime };
+    }
+
+    // =========================================================================
+    // TypeScript / JavaScript Traversal
+    // =========================================================================
+    const visitTs = (node: Parser.SyntaxNode, isExportedContext = false) => {
       if (node.type === 'export_statement') {
         const isDefault = node.children.some((c) => c.type === 'default');
 
@@ -455,7 +782,6 @@ export class AstExtractor {
         return;
       }
 
-      // Handle Non-Exported Constructs
       if (node.type === 'function_declaration') {
         const sym = this.extractFunctionDeclaration(node, filePath, isExportedContext);
         if (sym) symbols.push(sym);
@@ -478,16 +804,15 @@ export class AstExtractor {
         symbols.push(...varSyms);
       }
 
-      // Recurse children (except class bodies which were already processed in extractClassDeclaration)
       if (node.type !== 'class_declaration') {
         for (let i = 0; i < node.childCount; i++) {
           const child = node.child(i);
-          if (child) visit(child, isExportedContext);
+          if (child) visitTs(child, isExportedContext);
         }
       }
     };
 
-    visit(tree.rootNode);
+    visitTs(tree.rootNode);
 
     return {
       filePath,

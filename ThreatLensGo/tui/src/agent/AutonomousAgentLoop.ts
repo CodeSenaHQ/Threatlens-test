@@ -3,6 +3,7 @@ import { ToolRegistry } from './tools/toolRegistry.js';
 import { LLMClient, LLMMessage } from './llm/llmClient.js';
 import { AGENT_SYSTEM_PROMPT } from './prompt.js';
 import { AgentConfig, DEFAULT_AGENT_CONFIG } from './config.js';
+import { pruneMessageHistory, truncateToolData } from './guardrails/resourceGuard.js';
 
 export class AutonomousAgentLoop implements AgentController {
   private llmClient: LLMClient;
@@ -71,6 +72,8 @@ export class AutonomousAgentLoop implements AgentController {
       iteration++;
 
       try {
+        this.messages = pruneMessageHistory(this.messages);
+
         const responseMessage = await this.llmClient.chat(this.messages, tools, {
           onToken: (token) => this.emit({ type: 'token', delta: token }),
           onToolCallStart: (name, callId) => this.emit({ type: 'tool_start', toolName: name, args: {}, callId }),
@@ -134,10 +137,11 @@ export class AutonomousAgentLoop implements AgentController {
             isError: !result.success,
           });
 
+          const safeData = truncateToolData(result.success ? result.data : { error: result.error });
           this.messages.push({
             role: 'tool',
             tool_call_id: tc.id,
-            content: JSON.stringify(result.success ? result.data : { error: result.error }),
+            content: JSON.stringify(safeData),
           });
         }
       } catch (err: any) {

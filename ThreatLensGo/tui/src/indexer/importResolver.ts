@@ -30,78 +30,162 @@ export class ImportResolver {
   }
 
   /**
-   * Extracts all raw import and export declarations from a Tree-sitter AST.
+   * Extracts raw import/export declarations across TypeScript, JavaScript, Python, and Go.
    */
-  public extractRawImports(tree: Parser.Tree): RawImport[] {
+  public extractRawImports(tree: Parser.Tree, language: string = 'typescript'): RawImport[] {
     const rawImports: RawImport[] = [];
 
     const visit = (node: Parser.SyntaxNode) => {
-      // 1. Static Import statements
-      if (node.type === 'import_statement') {
-        const sourceNode = node.childForFieldName('source') || node.children.find((c) => c.type === 'string');
-        if (sourceNode) {
-          const rawSpecifier = sourceNode.text.replace(/^['"`]|['"`]$/g, '');
-          const importedSymbols: string[] = [];
-
-          // Extract imported identifiers
+      // =====================================================================
+      // Python Imports
+      // =====================================================================
+      if (language === 'python') {
+        if (node.type === 'import_statement') {
           for (let i = 0; i < node.childCount; i++) {
             const child = node.child(i);
-            if (child && child.type === 'import_clause') {
+            if (child && child.type === 'dotted_name') {
+              rawImports.push({
+                rawSpecifier: child.text,
+                isExport: false,
+                isDynamic: false,
+                importedSymbols: [child.text],
+              });
+            }
+          }
+        } else if (node.type === 'import_from_statement') {
+          const moduleNode = node.childForFieldName('module_name') || node.children.find((c) => c.type === 'dotted_name');
+          if (moduleNode) {
+            const rawSpecifier = moduleNode.text;
+            const importedSymbols: string[] = [];
+
+            for (let i = 0; i < node.childCount; i++) {
+              const child = node.child(i);
+              if (child && child.type === 'dotted_name' && child !== moduleNode) {
+                importedSymbols.push(child.text);
+              }
+            }
+
+            rawImports.push({
+              rawSpecifier,
+              isExport: false,
+              isDynamic: false,
+              importedSymbols,
+            });
+          }
+        }
+      }
+
+      // =====================================================================
+      // Go Imports
+      // =====================================================================
+      if (language === 'go') {
+        if (node.type === 'import_declaration') {
+          for (let i = 0; i < node.childCount; i++) {
+            const child = node.child(i);
+            if (!child) continue;
+
+            if (child.type === 'import_spec' || child.type === 'interpreted_string_literal') {
+              const strNode = child.type === 'import_spec' ? child.childForFieldName('path') || child.child(0) : child;
+              if (strNode) {
+                const specifier = strNode.text.replace(/^"|"$/g, '');
+                rawImports.push({
+                  rawSpecifier: specifier,
+                  isExport: false,
+                  isDynamic: false,
+                  importedSymbols: [],
+                });
+              }
+            } else if (child.type === 'import_spec_list') {
               for (let j = 0; j < child.childCount; j++) {
-                const clauseChild = child.child(j);
-                if (clauseChild && clauseChild.type === 'named_imports') {
-                  for (let k = 0; k < clauseChild.childCount; k++) {
-                    const spec = clauseChild.child(k);
-                    if (spec && spec.type === 'import_specifier') {
-                      const name = spec.childForFieldName('name') || spec;
-                      importedSymbols.push(name.text);
-                    }
+                const specChild = child.child(j);
+                if (specChild && specChild.type === 'import_spec') {
+                  const strNode = specChild.childForFieldName('path') || specChild.children.find((c) => c.type === 'interpreted_string_literal');
+                  if (strNode) {
+                    const specifier = strNode.text.replace(/^"|"$/g, '');
+                    rawImports.push({
+                      rawSpecifier: specifier,
+                      isExport: false,
+                      isDynamic: false,
+                      importedSymbols: [],
+                    });
                   }
-                } else if (clauseChild && clauseChild.type === 'identifier') {
-                  importedSymbols.push(clauseChild.text); // Default import
                 }
               }
             }
           }
-
-          rawImports.push({
-            rawSpecifier,
-            isExport: false,
-            isDynamic: false,
-            importedSymbols,
-          });
         }
       }
 
-      // 2. Export ... from '...' statements
-      if (node.type === 'export_statement') {
-        const sourceNode = node.childForFieldName('source') || node.children.find((c) => c.type === 'string');
-        if (sourceNode) {
-          const rawSpecifier = sourceNode.text.replace(/^['"`]|['"`]$/g, '');
-          rawImports.push({
-            rawSpecifier,
-            isExport: true,
-            isDynamic: false,
-            importedSymbols: [],
-          });
-        }
-      }
+      // =====================================================================
+      // TypeScript / JavaScript Imports
+      // =====================================================================
+      if (language === 'typescript' || language === 'javascript') {
+        // Static Import statements
+        if (node.type === 'import_statement') {
+          const sourceNode = node.childForFieldName('source') || node.children.find((c) => c.type === 'string');
+          if (sourceNode) {
+            const rawSpecifier = sourceNode.text.replace(/^['"`]|['"`]$/g, '');
+            const importedSymbols: string[] = [];
 
-      // 3. Dynamic require('...') / import('...') calls
-      if (node.type === 'call_expression') {
-        const funcNode = node.childForFieldName('function') || node.child(0);
-        if (funcNode && (funcNode.text === 'require' || funcNode.text === 'import')) {
-          const argsNode = node.childForFieldName('arguments') || node.child(1);
-          if (argsNode && argsNode.childCount > 0) {
-            const arg = argsNode.children.find((c) => c.type === 'string');
-            if (arg) {
-              const rawSpecifier = arg.text.replace(/^['"`]|['"`]$/g, '');
-              rawImports.push({
-                rawSpecifier,
-                isExport: false,
-                isDynamic: true,
-                importedSymbols: [],
-              });
+            for (let i = 0; i < node.childCount; i++) {
+              const child = node.child(i);
+              if (child && child.type === 'import_clause') {
+                for (let j = 0; j < child.childCount; j++) {
+                  const clauseChild = child.child(j);
+                  if (clauseChild && clauseChild.type === 'named_imports') {
+                    for (let k = 0; k < clauseChild.childCount; k++) {
+                      const spec = clauseChild.child(k);
+                      if (spec && spec.type === 'import_specifier') {
+                        const name = spec.childForFieldName('name') || spec;
+                        importedSymbols.push(name.text);
+                      }
+                    }
+                  } else if (clauseChild && clauseChild.type === 'identifier') {
+                    importedSymbols.push(clauseChild.text);
+                  }
+                }
+              }
+            }
+
+            rawImports.push({
+              rawSpecifier,
+              isExport: false,
+              isDynamic: false,
+              importedSymbols,
+            });
+          }
+        }
+
+        // Export ... from '...' statements
+        if (node.type === 'export_statement') {
+          const sourceNode = node.childForFieldName('source') || node.children.find((c) => c.type === 'string');
+          if (sourceNode) {
+            const rawSpecifier = sourceNode.text.replace(/^['"`]|['"`]$/g, '');
+            rawImports.push({
+              rawSpecifier,
+              isExport: true,
+              isDynamic: false,
+              importedSymbols: [],
+            });
+          }
+        }
+
+        // Dynamic require('...') / import('...') calls
+        if (node.type === 'call_expression') {
+          const funcNode = node.childForFieldName('function') || node.child(0);
+          if (funcNode && (funcNode.text === 'require' || funcNode.text === 'import')) {
+            const argsNode = node.childForFieldName('arguments') || node.child(1);
+            if (argsNode && argsNode.childCount > 0) {
+              const arg = argsNode.children.find((c) => c.type === 'string');
+              if (arg) {
+                const rawSpecifier = arg.text.replace(/^['"`]|['"`]$/g, '');
+                rawImports.push({
+                  rawSpecifier,
+                  isExport: false,
+                  isDynamic: true,
+                  importedSymbols: [],
+                });
+              }
             }
           }
         }
@@ -120,15 +204,16 @@ export class ImportResolver {
 
   /**
    * Resolves a raw import specifier relative to a source file.
-   * Handles:
-   *  - Step 8a: Basic relative resolution (./foo, ../bar/baz)
-   *  - Step 8b: Extensionless (./utils -> ./utils.ts), ESM .js-to-.ts mapping (./auth.js -> ./auth.ts), and directory index fallbacks (./services -> ./services/index.ts)
    */
   public resolve(sourceRelativePath: string, rawSpecifier: string): ResolvedDependency {
-    const isRelative = rawSpecifier.startsWith('./') || rawSpecifier.startsWith('../') || rawSpecifier === '.' || rawSpecifier === '..';
+    const isRelative =
+      rawSpecifier.startsWith('./') ||
+      rawSpecifier.startsWith('../') ||
+      rawSpecifier.startsWith('.') ||
+      rawSpecifier === '.' ||
+      rawSpecifier === '..';
 
     if (!isRelative) {
-      // External package (e.g. 'react', 'ink', 'node:path')
       return {
         sourceFile: sourceRelativePath.replace(/\\/g, '/'),
         targetFile: rawSpecifier,
@@ -141,27 +226,23 @@ export class ImportResolver {
     const targetAbsoluteBase = path.resolve(sourceDir, rawSpecifier);
     const candidatePaths: string[] = [];
 
-    // 1. If specifier ends with .js / .mjs / .cjs, generate .ts / .tsx candidates (ESM TS standard)
+    // ESM .js -> .ts / .tsx mapping
     if (rawSpecifier.endsWith('.js') || rawSpecifier.endsWith('.mjs') || rawSpecifier.endsWith('.cjs')) {
       const baseWithoutExt = targetAbsoluteBase.replace(/\.[mc]?js$/, '');
       candidatePaths.push(`${baseWithoutExt}.ts`, `${baseWithoutExt}.tsx`, `${baseWithoutExt}.js`, `${baseWithoutExt}.jsx`);
     }
 
-    // 2. Exact match
     candidatePaths.push(targetAbsoluteBase);
 
-    // 3. Extensionless additions
-    const extensions = ['.ts', '.tsx', '.js', '.jsx', '.json', '.py'];
+    const extensions = ['.ts', '.tsx', '.js', '.jsx', '.json', '.py', '.go'];
     for (const ext of extensions) {
       candidatePaths.push(`${targetAbsoluteBase}${ext}`);
     }
 
-    // 4. Directory index fallbacks
     for (const ext of extensions) {
       candidatePaths.push(path.join(targetAbsoluteBase, `index${ext}`));
     }
 
-    // Check against known files or filesystem
     for (const candAbs of candidatePaths) {
       const candRel = path.relative(this.workspaceRoot, candAbs).replace(/\\/g, '/');
 
@@ -188,7 +269,6 @@ export class ImportResolver {
       }
     }
 
-    // Fallback: Best-effort relative path normalized
     const fallbackRel = path.relative(this.workspaceRoot, targetAbsoluteBase).replace(/\\/g, '/');
     return {
       sourceFile: sourceRelativePath.replace(/\\/g, '/'),

@@ -13,6 +13,7 @@ export interface ToolContext {
   workspaceRoot: string;
   searchEngine: UnifiedSearchEngine;
   store: SqliteIndexStore;
+  signal?: AbortSignal;
 }
 
 export interface ToolDefinition {

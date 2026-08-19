@@ -5,4 +5,5 @@ export * from './llm/llmClient.js';
 export * from './MockAgentController.js';
 export * from './AutonomousAgentLoop.js';
 export * from './agentManager.js';
+export * from './guardrails/index.js';
 export * from './tools/index.js';

@@ -4,6 +4,7 @@ import crypto from 'node:crypto';
 import { ToolDefinition, ToolResult } from './types.js';
 import { generateUnifiedDiff } from './diffUtils.js';
 import { DiffApprovalPayload } from '../types.js';
+import { truncateFileContent } from '../guardrails/resourceGuard.js';
 
 export const searchCodeTool: ToolDefinition = {
   name: 'search_code',
@@ -130,6 +131,7 @@ export const readFileTool: ToolDefinition = {
 
       const slicedLines = lines.slice(start - 1, end);
       const text = slicedLines.join('\n');
+      const truncated = truncateFileContent(text, { maxBytes: 32 * 1024 });
 
       return {
         success: true,
@@ -138,7 +140,8 @@ export const readFileTool: ToolDefinition = {
           startLine: start,
           endLine: end,
           totalLines: lines.length,
-          content: text,
+          content: truncated.text,
+          isTruncated: truncated.isTruncated,
         },
       };
     } catch (err: any) {

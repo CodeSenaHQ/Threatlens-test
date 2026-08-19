@@ -11,7 +11,8 @@ export type Screen =
   | { type: 'xss' }
   | { type: 'exfil' }
   | { type: 'rateLimit' }
-  | { type: 'proxy' };
+  | { type: 'proxy' }
+  | { type: 'agentChat'; initialPrompt?: string };
 
 export type ScreenType = Screen['type'];
 

@@ -9,6 +9,7 @@ import { AnimatedTip } from '../components/AnimatedTip.js';
 import { Select } from '../components/Select.js';
 
 type CommandAction =
+  | 'agentChat'
   | 'gitAnalysis'
   | 'securityMenu'
   | 'ddos'
@@ -26,6 +27,10 @@ interface CommandItem {
 }
 
 const COMMANDS: CommandItem[] = [
+  {
+    label: '0. 🤖 ThreatLens Agent (Interactive Codebase Intelligence & Auto-Patching)',
+    value: 'agentChat',
+  },
   {
     label: '1. Git Repository Analysis (Audit public repos for leaked secrets & CVEs)',
     value: 'gitAnalysis',
@@ -85,7 +90,9 @@ export const MainMenu: React.FC = () => {
       exit();
       return;
     }
-    if (item.value === 'gitAnalysis') {
+    if (item.value === 'agentChat') {
+      push({ type: 'agentChat' });
+    } else if (item.value === 'gitAnalysis') {
       push({ type: 'gitAnalysis' });
     } else if (item.value === 'securityMenu') {
       push({ type: 'securityMenu' });
@@ -113,7 +120,9 @@ export const MainMenu: React.FC = () => {
       return;
     }
 
-    if (trimmed.includes('git') || trimmed === '/git') {
+    if (trimmed.includes('agent') || trimmed === '/agent' || trimmed.startsWith('fix') || trimmed.startsWith('audit') || trimmed.startsWith('search')) {
+      push({ type: 'agentChat', initialPrompt: value.trim() });
+    } else if (trimmed.includes('git') || trimmed === '/git') {
       push({ type: 'gitAnalysis' });
     } else if (trimmed.includes('ddos') || trimmed === '/ddos') {
       push({ type: 'ddos' });
@@ -132,7 +141,7 @@ export const MainMenu: React.FC = () => {
     } else if (trimmed.includes('exit') || trimmed === '/exit' || trimmed === 'quit' || trimmed === ':q') {
       exit();
     } else {
-      push({ type: 'securityMenu' });
+      push({ type: 'agentChat', initialPrompt: value.trim() });
     }
   };
 

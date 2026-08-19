@@ -14,6 +14,7 @@ import {
   ExfilScreen,
   RateLimitScreen,
   ProxyScreen,
+  AgentChatScreen,
 } from './screens/index.js';
 
 export const ScreenRenderer: React.FC = () => {
@@ -42,6 +43,8 @@ export const ScreenRenderer: React.FC = () => {
       return <RateLimitScreen />;
     case 'proxy':
       return <ProxyScreen />;
+    case 'agentChat':
+      return <AgentChatScreen initialPrompt={current.initialPrompt} />;
     default: {
       const _exhaustiveCheck: never = current;
       return <LoginScreen />;

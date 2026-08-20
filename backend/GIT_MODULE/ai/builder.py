@@ -1,5 +1,6 @@
 import json
 from google import genai
+from config import config
 
 from GIT_MODULE.ai.context import build_commit_ai_prompt
 from GIT_MODULE.ai.prompt import SYSTEM_PROMPT
@@ -9,7 +10,7 @@ async def gemini_call(
     message: str,
 ) -> dict:
     client = genai.Client(
-        api_key="AQ.Ab8RN6IQAbY-2ZWt5HD4cKoFVwaa-frs5K4ONUy6z84pBCTy3w"
+        api_key=""
     )
 
     response = client.models.generate_content(

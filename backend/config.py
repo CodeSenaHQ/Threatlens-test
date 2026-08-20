@@ -44,4 +44,10 @@ class Config:
     GITHUB_REDIRECT_URI = os.getenv("GITHUB_REDIRECT_URI")
 
 
+    # ==========================================================
+    # AI / LLM
+    # ==========================================================
+    
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
 config = Config()

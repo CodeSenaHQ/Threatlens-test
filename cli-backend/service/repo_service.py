@@ -11,7 +11,7 @@ from config import config
 jwt = get_jwt()
 
 
-def fetch_repo(repo: Repository, jwt: str):
+def build_repo(repo: Repository, jwt: str):
 
     if not jwt:
         raise RuntimeError("JWT token not found")
@@ -44,7 +44,8 @@ def fetch_latest_commit(repo_id: int, jwt: str):
         timeout=30.0,
     )
     response.raise_for_status()
-    return response.json()
+    res = response.json()
+    return res["data"][0]["commit"]["sha"]
 
 
 

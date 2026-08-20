@@ -1,20 +1,19 @@
 import json
 import httpx
+from config import config 
 
 from fastapi import HTTPException
 from fastapi.responses import StreamingResponse
 
-
-LLM_PROVIDER_BASE_URL = "https://openrouter.ai/api/v1"
-LLM_PROVIDER_API_KEY = "YOUR_OPENROUTER_API_KEY"
-DEFAULT_MODEL = "anthropic/claude-3.5-sonnet"
+def update_usage(prompt_tokens, completion_tokens, total_tokens):
+    pass
 
 
 async def chat_completion(
     body,
 ):
     upstream_payload = {
-        "model": body.model or DEFAULT_MODEL,
+        "model": body.model or config.DEFAULT_MODEL,
         "messages": body.messages,
         "temperature": body.temperature,
         "max_tokens": body.max_tokens,
@@ -25,10 +24,8 @@ async def chat_completion(
         upstream_payload["tools"] = body.tools
 
     headers = {
-        "Authorization": f"Bearer {LLM_PROVIDER_API_KEY}",
+        "Authorization": f"Bearer {config.LLM_PROVIDER_API_KEY}",
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://threatlens.io",
-        "X-Title": "ThreatLensGo Security Gateway",
     }
 
     if body.stream:
@@ -43,6 +40,7 @@ async def chat_completion(
     )
 
 
+
 async def _normal_completion(
     upstream_payload: dict,
     headers: dict,
@@ -50,7 +48,7 @@ async def _normal_completion(
     try:
         async with httpx.AsyncClient(timeout=120.0) as client:
             response = await client.post(
-                f"{LLM_PROVIDER_BASE_URL}/chat/completions",
+                f"{config.LLM_PROVIDER_BASE_URL}/chat/completions",
                 headers=headers,
                 json=upstream_payload,
             )
@@ -61,7 +59,18 @@ async def _normal_completion(
                 detail=response.text,
             )
 
-        return response.json()
+        data = response.json()
+
+        usage = data.get("usage")
+
+        if usage:
+            update_usage(
+                prompt_tokens=usage.get("prompt_tokens", 0),
+                completion_tokens=usage.get("completion_tokens", 0),
+                total_tokens=usage.get("total_tokens", 0),
+            )
+
+        return data
 
     except HTTPException:
         raise
@@ -82,7 +91,7 @@ async def _stream_completion(
             async with httpx.AsyncClient(timeout=120.0) as client:
                 async with client.stream(
                     "POST",
-                    f"{LLM_PROVIDER_API_KEY}/chat/completions",
+                    f"{config.LLM_PROVIDER_BASE_URL}/chat/completions",
                     headers=headers,
                     json=upstream_payload,
                 ) as response:
@@ -101,8 +110,41 @@ async def _stream_completion(
                         yield "data: [DONE]\n\n"
                         return
 
-                    async for chunk in response.aiter_raw():
-                        yield chunk
+                    async for line in response.aiter_lines():
+
+                        if not line:
+                            yield "\n"
+                            continue
+
+                        # Forward SSE exactly as received
+                        yield f"{line}\n"
+
+                        # Check usage without interfering with the stream
+                        if line.startswith("data: "):
+                            data = line[6:]
+
+                            if data == "[DONE]":
+                                continue
+
+                            try:
+                                chunk = json.loads(data)
+                            except json.JSONDecodeError:
+                                continue
+
+                            usage = chunk.get("usage")
+
+                            if usage:
+                                update_usage(
+                                    prompt_tokens=usage.get(
+                                        "prompt_tokens", 0
+                                    ),
+                                    completion_tokens=usage.get(
+                                        "completion_tokens", 0
+                                    ),
+                                    total_tokens=usage.get(
+                                        "total_tokens", 0
+                                    ),
+                                )
 
         except httpx.RequestError as exc:
             error = {

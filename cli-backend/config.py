@@ -10,5 +10,8 @@ class Config :
     LLM_PROVIDER_API_KEY = "YOUR_OPENROUTER_API_KEY"
     DEFAULT_MODEL = "anthropic/claude-3.5-sonnet"
 
+    TOTAL_CREDITS = 20
+    
+
 
 config = Config()

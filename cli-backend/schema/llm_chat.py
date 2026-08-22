@@ -10,10 +10,9 @@ class ChatMessage(BaseModel):
 
 
 class ChatRequest(BaseModel):
-
     model: str | None = None
     messages: list[ChatMessage]
     tools: list[dict] | None = None
     temperature: float | None = 0.2
-    max_tokens: int | None = 4096
+    max_tokens: int | None 
     stream: bool = True

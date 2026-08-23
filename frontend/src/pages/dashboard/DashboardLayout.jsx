@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { authApi, repoApi, secTestApi, severityColor, formatBytes, timeAgo } from "@/lib/api";
 import { toast } from "sonner";
@@ -322,20 +322,33 @@ export default function DashboardLayout() {
                 className="px-2 py-0.5 rounded-md bg-[#18181b] hover:bg-[#27272a] border border-[#27272a] text-[#f4f4f5] font-medium capitalize flex items-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
                 title="Switch Module"
               >
-                <span>{activeNav === "chatbot" ? "ThreatLensGO" : activeNav === "dashboard" ? "Dashboard" : activeNav}</span>
+                <span>
+                  {activeTopTab === "tokens"
+                    ? "Token Usage"
+                    : activeTopTab === "plans"
+                    ? "Premium Plans"
+                    : activeNav === "chatbot"
+                    ? "ThreatLensGO"
+                    : activeNav === "dashboard"
+                    ? "Introduction"
+                    : activeNav === "cli"
+                    ? "CLI & Local Agent"
+                    : activeNav}
+                </span>
                 <ChevronDown className={`w-3 h-3 text-[#71717a] transition-transform duration-200 ${isDocNavOpen ? "rotate-180" : ""}`} />
               </button>
 
               {/* Quick Navigation Menu */}
               {isDocNavOpen && (
-                <div className="absolute left-0 top-full mt-2 w-60 rounded-xl bg-[#09090b] border border-[#27272a] shadow-2xl p-1.5 backdrop-blur-xl z-[9999] select-none animate-in fade-in slide-in-from-top-2 duration-150">
+                <div className="absolute left-0 top-full mt-2 w-64 rounded-xl bg-[#09090b] border border-[#27272a] shadow-2xl p-1.5 backdrop-blur-xl z-[9999] select-none animate-in fade-in slide-in-from-top-2 duration-150 max-h-80 overflow-y-auto">
                   <div className="px-2.5 py-1 text-[10.5px] font-semibold text-[#71717a] uppercase tracking-wider">
                     Quick Navigation
                   </div>
 
                   <div className="space-y-0.5 mt-1">
                     {[
-                      { id: "dashboard", icon: Sparkles, label: "Introduction / Overview" },
+                      { id: "dashboard", icon: Sparkles, label: "Introduction" },
+                      { id: "cli", icon: Terminal, label: "CLI & Local Agent" },
                       { id: "chatbot", icon: Zap, label: "ThreatLensGO Assistant" },
                       { id: "repositories", icon: FolderGit2, label: "Repositories" },
                       { id: "commits", icon: GitCommit, label: "Commit Analysis" },
@@ -345,7 +358,7 @@ export default function DashboardLayout() {
                       { id: "compliance", icon: CheckCircle, label: "Compliance & Posture" },
                     ].map((item) => {
                       const Icon = item.icon;
-                      const isItemActive = activeNav === item.id;
+                      const isItemActive = activeTopTab === "dashboard" && activeNav === item.id;
                       return (
                         <button
                           key={item.id}
@@ -365,6 +378,40 @@ export default function DashboardLayout() {
                         </button>
                       );
                     })}
+
+                    <div className="border-t border-[#1c1c1f] my-1" />
+                    
+                    <button
+                      onClick={() => {
+                        setActiveTopTab("tokens");
+                        setIsDocNavOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-left transition-colors cursor-pointer ${
+                        activeTopTab === "tokens"
+                          ? "bg-[#18181b] text-white font-semibold"
+                          : "text-[#a1a1aa] hover:text-white hover:bg-[#18181b]/50"
+                      }`}
+                    >
+                      <BarChart3 className={`w-3.5 h-3.5 ${activeTopTab === "tokens" ? "text-[#38bdf8]" : "text-[#71717a]"}`} />
+                      <span className="truncate flex-1">Token Usage & Telemetry</span>
+                      {activeTopTab === "tokens" && <span className="w-1.5 h-1.5 rounded-full bg-[#38bdf8]" />}
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setActiveTopTab("plans");
+                        setIsDocNavOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-left transition-colors cursor-pointer ${
+                        activeTopTab === "plans"
+                          ? "bg-[#18181b] text-white font-semibold"
+                          : "text-[#a1a1aa] hover:text-white hover:bg-[#18181b]/50"
+                      }`}
+                    >
+                      <Zap className={`w-3.5 h-3.5 ${activeTopTab === "plans" ? "text-[#f59e0b]" : "text-[#71717a]"}`} />
+                      <span className="truncate flex-1">Premium Plans & Pricing</span>
+                      {activeTopTab === "plans" && <span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]" />}
+                    </button>
                   </div>
                 </div>
               )}
@@ -439,7 +486,10 @@ export default function DashboardLayout() {
 
                 {/* Option 2: Premium plans */}
                 <button
-                  onClick={() => setIsTokensOpen(false)}
+                  onClick={() => {
+                    setActiveTopTab("plans");
+                    setIsTokensOpen(false);
+                  }}
                   className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left hover:bg-[#18181b] text-[#d4d4d8] hover:text-white transition-colors cursor-pointer group"
                 >
                   <div className="w-7 h-7 rounded-md bg-[#27272a] border border-[#3f3f46] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
@@ -479,8 +529,12 @@ export default function DashboardLayout() {
 
       {/* ---------- MAIN CONTENT / BILLING VIEW ---------- */}
       <div className="flex-1 flex flex-col min-w-0">
-        {activeTopTab === "tokens" ? (
-          <TokenUsageTab user={user} />
+        {activeTopTab === "tokens" || activeTopTab === "plans" ? (
+          <TokenUsageTab
+            user={user}
+            initialSection={activeTopTab === "plans" ? "plans" : "usage"}
+            onBack={() => setActiveTopTab("dashboard")}
+          />
         ) : (
           <div className="flex-1 flex min-w-0">
             {/* ---------- SIDEBAR (Untitled UI Hierarchical Collapsible Style) ---------- */}

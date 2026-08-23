@@ -12,11 +12,24 @@ CREATE TABLE IF NOT EXISTS auth (
 """
 
 
+USAGE_TABLE = """
+CREATE TABLE usage (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    prompt_tokens INTEGER NOT NULL DEFAULT 0,
+    completion_tokens INTEGER NOT NULL DEFAULT 0,
+    total_tokens INTEGER NOT NULL DEFAULT 0,
+    synced_at INTEGER NULL DEFAULT (unixepoch()),
+    updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+"""
+
+
 def init_tables():
     conn = get_db()
 
     try:
         conn.execute(AUTH_TABLE)
+        conn.execute(USAGE_TABLE)
         conn.commit()
     finally:
         conn.close()

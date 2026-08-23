@@ -1,4 +1,5 @@
 from typing import Any
+
 from pydantic import BaseModel
 
 
@@ -9,13 +10,15 @@ class ChatMessage(BaseModel):
     tool_call_id: str | None = None
 
 
-class ChatRequest(BaseModel):
-    model: str | None = None
+class SaveChatHistoryRequest(BaseModel):
+    chat_id: int
     messages: list[ChatMessage]
-    tools: list[dict] | None = None
-    temperature: float | None = 0.2
-    max_tokens: int | None 
-    stream: bool = True
+
+
+class SaveChatHistoryResponse(BaseModel):
+    chat_id: int
+    saved: int
+
 
 
 class CreateChatRequest(BaseModel):
@@ -23,7 +26,5 @@ class CreateChatRequest(BaseModel):
     model: str | None = None
 
 
-class ChatHistoryRequest(BaseModel):
-    chat_id: int
-    messages: list[dict]
-
+class DeleteChatResponse(BaseModel):
+    success: bool

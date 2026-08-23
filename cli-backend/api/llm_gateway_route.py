@@ -4,7 +4,7 @@ from fastapi import APIRouter
 
 
 router = APIRouter(
-    prefix="/api/v1/llm",
+    prefix="/llm",
     tags=["LLM Gateway"],
 )
 
@@ -14,4 +14,5 @@ async def chat_completion_gateway(
     body: ChatRequest,
 ):
     return await chat_completion(body)
+
 

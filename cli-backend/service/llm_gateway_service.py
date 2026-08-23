@@ -163,3 +163,4 @@ async def _stream_completion(
             "X-Accel-Buffering": "no",
         },
     )
+

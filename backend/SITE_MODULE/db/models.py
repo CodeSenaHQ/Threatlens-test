@@ -25,7 +25,6 @@ class ChatHistory(Base):
         index=True,
     )
 
-
     created_at = Column(
         DateTime(timezone=True),
         nullable=False,
@@ -41,13 +40,6 @@ class Chat(Base):
         Integer,
         primary_key=True,
         autoincrement=True,
-    )
-
-    chat_id = Column(
-        Integer,
-        nullable=False,
-        unique=True,
-        index=True,
     )
 
     account_id = Column(

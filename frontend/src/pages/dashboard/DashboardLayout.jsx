@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { authApi, repoApi, secTestApi, severityColor, formatBytes, timeAgo } from "@/lib/api";
 import { toast } from "sonner";
@@ -13,8 +13,10 @@ import {
   WifiOff,
   LogOut,
   User,
-  PanelLeftClose,
-  PanelLeftOpen,
+  Bell,
+  ChevronDown,
+  BarChart3,
+  Zap,
 } from "lucide-react";
 
 // Domain-Based Tab Views
@@ -26,6 +28,7 @@ import CicdDockerTab from "./tabs/security/CicdDockerTab";
 import AccountsTab from "./tabs/admin/AccountsTab";
 import SystemConfigTab from "./tabs/admin/SystemConfigTab";
 import SessionsTab from "./tabs/admin/SessionsTab";
+import ChatBotTab from "./tabs/chatbot/ChatBotTab";
 
 // Drawers & Modals
 import ProfileModal from "@/components/drawers/ProfileModal";
@@ -39,6 +42,7 @@ export default function DashboardLayout() {
   const { user, token, logout } = useAuth();
   const [, setLocation] = useLocation();
   const [activeNav, setActiveNav] = useState("dashboard");
+  const [activeTopTab, setActiveTopTab] = useState("dashboard");
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
     if (typeof window !== "undefined") {
       return window.innerWidth >= 1024;
@@ -49,7 +53,20 @@ export default function DashboardLayout() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isTokensOpen, setIsTokensOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const tokensRef = useRef(null);
+
+  // Close tokens dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (tokensRef.current && !tokensRef.current.contains(e.target)) {
+        setIsTokensOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Responsive Media Query Listener for Screen Resize
   useEffect(() => {
@@ -68,6 +85,7 @@ export default function DashboardLayout() {
 
   const handleNavClick = (id) => {
     setActiveNav(id);
+    setActiveTopTab("dashboard");
     if (typeof window !== "undefined" && window.innerWidth < 1024) {
       setIsSidebarOpen(false);
     }
@@ -235,7 +253,7 @@ export default function DashboardLayout() {
 
   return (
     <div
-      className="min-h-screen text-[#d8e2e8] flex select-none"
+      className="min-h-screen text-[#d8e2e8] flex flex-col select-none"
       style={{
         backgroundColor: "#000000",
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
@@ -245,69 +263,201 @@ export default function DashboardLayout() {
         backgroundAttachment: "fixed",
       }}
     >
-      {/* ---------- SIDEBAR (Responsive & Collapsible) ---------- */}
-      {isSidebarOpen && (
-        <>
-          {/* Mobile backdrop overlay */}
-          <div
-            onClick={() => setIsSidebarOpen(false)}
-            className="fixed inset-0 bg-black/75 backdrop-blur-xs z-40 lg:hidden cursor-pointer"
-            aria-hidden="true"
-          />
+      {/* ---------- TOP NAVBAR (Natural Page Flow - Scrolls up with page like LeetCode) ---------- */}
+      <header className="w-full h-14 bg-[#080d1a]/95 backdrop-blur-md border-b border-[#18181b] px-4 lg:px-6 flex items-center justify-between shrink-0 shadow-md">
+        {/* Left Side: Brand & Tabs */}
+        <div className="flex items-center gap-8 lg:gap-14">
+          <Link href="/" className="hover:opacity-90 transition-opacity flex items-center">
+            <ThreatLensLogo className="h-6.5 w-auto" />
+          </Link>
 
-          <aside className="w-[260px] shrink-0 h-screen fixed lg:sticky top-0 left-0 flex flex-col border-r border-[#18181b] bg-[#000000] z-50 lg:z-30 transition-all duration-300 shadow-2xl lg:shadow-none">
-            {/* Top Brand */}
-            <div className="flex items-center px-5 py-4.5 border-b border-[#18181b]">
-              <Link href="/" className="hover:opacity-90 transition-opacity flex items-center">
-                <ThreatLensLogo className="h-7 w-auto" />
-              </Link>
-            </div>
+          {/* Top Navigation Tabs */}
+          <nav className="flex items-center gap-6 sm:gap-8 ml-2 lg:ml-4">
+            <button
+              onClick={() => {
+                setActiveTopTab("dashboard");
+                setActiveNav("dashboard");
+              }}
+              className={`transition-all cursor-pointer text-sm sm:text-[15px] font-medium hover:underline underline-offset-8 decoration-[#6EA8DA] ${
+                activeTopTab === "dashboard" || !activeTopTab
+                  ? "text-white font-semibold"
+                  : "text-[#8a99ad] hover:text-white"
+              }`}
+            >
+              Dashboard
+            </button>
+            <button
+              onClick={() => setActiveTopTab("chatbot")}
+              className={`transition-all cursor-pointer text-sm sm:text-[15px] font-medium hover:underline underline-offset-8 decoration-[#6EA8DA] ${
+                activeTopTab === "chatbot"
+                  ? "text-white font-semibold"
+                  : "text-[#8a99ad] hover:text-white"
+              }`}
+            >
+              Chat Bot
+            </button>
+            <button
+              onClick={() => setActiveTopTab("terminal")}
+              className={`transition-all cursor-pointer text-sm sm:text-[15px] font-medium hover:underline underline-offset-8 decoration-[#6EA8DA] ${
+                activeTopTab === "terminal"
+                  ? "text-white font-semibold"
+                  : "text-[#8a99ad] hover:text-white"
+              }`}
+            >
+              Terminal History
+            </button>
+          </nav>
+        </div>
 
-            {/* Navigation Links */}
-            <nav className="flex-1 overflow-y-auto p-2 space-y-0.5">
-              <div className="text-[7.5px] text-[#6EA8DA] font-bold uppercase tracking-[2px] mb-1 px-2 flex items-center gap-1.5">
-                <span className="w-1 h-1 rounded-full bg-[#6EA8DA] animate-pulse" />
-                <span>Overview</span>
+        {/* Right Side: Notifications, Avatar, Tokens Button */}
+        <div className="flex items-center gap-3 sm:gap-4">
+          <button
+            onClick={() => toast.info("No unread alerts")}
+            className="p-1.5 text-[#8a99ad] hover:text-white hover:bg-[#18181b] rounded-lg transition-colors relative cursor-pointer"
+            title="Notifications"
+          >
+            <Bell className="w-4 h-4" />
+          </button>
+
+          {/* User Profile Avatar */}
+          <button
+            onClick={() => setIsProfileOpen(true)}
+            className="flex items-center rounded-full ring-1 ring-white/10 hover:ring-[#6EA8DA]/60 transition-all cursor-pointer overflow-hidden p-0.5"
+            title="Account Settings"
+          >
+            {user?.avatar_url ? (
+              <img
+                src={user.avatar_url}
+                alt=""
+                className="w-7 h-7 rounded-full object-cover"
+              />
+            ) : (
+              <div
+                className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm"
+                style={{
+                  background: "linear-gradient(135deg, #2C6CB0, #6EA8DA)",
+                }}
+              >
+                {user?.name ? user.name.slice(0, 2).toUpperCase() : "TL"}
               </div>
-              {[
-                { id: "dashboard", icon: "▣", label: "Dashboard", color: "#6EA8DA" },
-                { id: "repositories", icon: "◧", label: "Repositories", color: "#6EA8DA" },
-                { id: "commits", icon: "↯", label: "Commits", color: "#6EA8DA" },
-              ].map((item) => {
-                const isActive = activeNav === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => handleNavClick(item.id)}
-                    className={`w-full group flex items-center gap-2 px-2 py-1 rounded-lg text-[9px] font-medium border transition-all duration-200 text-left cursor-pointer ${
-                      isActive
-                        ? "bg-[#1D3557]/80 text-white border-[#2C6CB0] translate-x-0.5 shadow-sm"
-                        : "border-transparent hover:bg-[#18181b] text-[#9caec2] hover:text-white hover:translate-x-0.5"
-                    }`}
-                  >
-                    <span
-                      className={`w-0.5 h-2 rounded-full transition-all duration-200 ${
-                        isActive ? "bg-[#6EA8DA] opacity-100" : "bg-transparent opacity-0 group-hover:bg-[#6EA8DA]/50 group-hover:opacity-100"
+            )}
+          </button>
+
+          {/* Tokens Dropdown */}
+          <div className="relative" ref={tokensRef}>
+            <button
+              onClick={() => setIsTokensOpen(!isTokensOpen)}
+              className="px-3.5 py-1.5 rounded-lg bg-[#2962FF] hover:bg-[#1e4ed8] text-white text-xs font-semibold shadow-[0_0_15px_rgba(41,98,255,0.25)] transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 font-sans"
+              title="Tokens & Subscriptions"
+            >
+              <span>Tokens</span>
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isTokensOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {/* Dropdown Menu */}
+            {isTokensOpen && (
+              <div className="absolute right-0 mt-2 w-56 rounded-xl bg-[#0b0f19] border border-[#222f46] shadow-2xl p-1.5 backdrop-blur-xl z-50 animate-in fade-in zoom-in-95 duration-150 select-none">
+                <div className="px-3 py-1.5 border-b border-[#1c2638] mb-1">
+                  <div className="text-[10px] uppercase font-bold text-[#6EA8DA] tracking-wider">
+                    API & Credits
+                  </div>
+                </div>
+
+                {/* Option 1: Token usage */}
+                <button
+                  onClick={() => setIsTokensOpen(false)}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left hover:bg-[#162032] text-[#d8e2e8] hover:text-white transition-colors cursor-pointer group"
+                >
+                  <div className="w-7 h-7 rounded-md bg-[#1D3557]/60 border border-[#2C6CB0]/40 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                    <BarChart3 className="w-3.5 h-3.5 text-[#6EA8DA]" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-medium text-white">Token usage</div>
+                    <div className="text-[10px] text-[#8a99ad]">Quotas & usage metrics</div>
+                  </div>
+                </button>
+
+                {/* Option 2: Premium plans */}
+                <button
+                  onClick={() => setIsTokensOpen(false)}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left hover:bg-[#162032] text-[#d8e2e8] hover:text-white transition-colors cursor-pointer group"
+                >
+                  <div className="w-7 h-7 rounded-md bg-[#3b2d18]/60 border border-[#C8A27A]/40 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                    <Zap className="w-3.5 h-3.5 text-[#C8A27A]" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-medium text-white">Premium plans</div>
+                    <div className="text-[10px] text-[#8a99ad]">Upgrade tier & limit</div>
+                  </div>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* ---------- MAIN CONTENT / CHATBOT VIEW ---------- */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {activeTopTab === "chatbot" ? (
+          <ChatBotTab user={user} />
+        ) : (
+          <div className="flex-1 flex min-w-0">
+            {/* ---------- SIDEBAR (Responsive & Collapsible) ---------- */}
+            {isSidebarOpen && (
+            <>
+              {/* Mobile backdrop overlay */}
+              <div
+                onClick={() => setIsSidebarOpen(false)}
+                className="fixed inset-0 top-14 bg-black/75 backdrop-blur-xs z-40 lg:hidden cursor-pointer"
+                aria-hidden="true"
+              />
+
+              <aside className="w-[240px] shrink-0 sticky top-0 h-screen flex flex-col border-r border-[#18181b] bg-[#000000] z-30 shadow-2xl lg:shadow-none">
+              {/* Navigation Links */}
+              <nav className="flex-1 overflow-y-auto p-2 space-y-0.5">
+                <div className="text-[7.5px] text-[#6EA8DA] font-bold uppercase tracking-[2px] mb-1 px-2 flex items-center gap-1.5">
+                  <span className="w-1 h-1 rounded-full bg-[#6EA8DA] animate-pulse" />
+                  <span>Overview</span>
+                </div>
+                {[
+                  { id: "dashboard", icon: "▣", label: "Dashboard", color: "#6EA8DA" },
+                  { id: "repositories", icon: "◧", label: "Repositories", color: "#6EA8DA" },
+                  { id: "commits", icon: "↯", label: "Commits", color: "#6EA8DA" },
+                ].map((item) => {
+                  const isActive = activeNav === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleNavClick(item.id)}
+                      className={`w-full group flex items-center gap-2 px-2 py-1 rounded-lg text-[9px] font-medium border transition-all duration-200 text-left cursor-pointer ${
+                        isActive
+                          ? "bg-[#1D3557]/80 text-white border-[#2C6CB0] translate-x-0.5 shadow-sm"
+                          : "border-transparent hover:bg-[#18181b] text-[#9caec2] hover:text-white hover:translate-x-0.5"
                       }`}
-                    />
-                    <span
-                      className={`w-3 text-center text-[8.5px] font-bold shrink-0 transition-all duration-200 group-hover:scale-110 ${
-                        isActive ? "text-white" : "text-[#9caec2] group-hover:text-white"
-                      }`}
-                      style={{ color: isActive ? item.color : undefined }}
                     >
-                      {item.icon}
-                    </span>
-                    <span
-                      className={`truncate flex-1 transition-colors duration-200 ${
-                        isActive ? "text-white font-semibold" : "text-[#9caec2] group-hover:text-white"
-                      }`}
-                    >
-                      {item.label}
-                    </span>
-                  </button>
-                );
-              })}
+                      <span
+                        className={`w-0.5 h-2 rounded-full transition-all duration-200 ${
+                          isActive ? "bg-[#6EA8DA] opacity-100" : "bg-transparent opacity-0 group-hover:bg-[#6EA8DA]/50 group-hover:opacity-100"
+                        }`}
+                      />
+                      <span
+                        className={`w-3 text-center text-[8.5px] font-bold shrink-0 transition-all duration-200 group-hover:scale-110 ${
+                          isActive ? "text-white" : "text-[#9caec2] group-hover:text-white"
+                        }`}
+                        style={{ color: isActive ? item.color : undefined }}
+                      >
+                        {item.icon}
+                      </span>
+                      <span
+                        className={`truncate flex-1 transition-colors duration-200 ${
+                          isActive ? "text-white font-semibold" : "text-[#9caec2] group-hover:text-white"
+                        }`}
+                      >
+                        {item.label}
+                      </span>
+                    </button>
+                  );
+                })}
 
               <div className="text-[7.5px] text-[#C8A27A] font-bold uppercase tracking-[2px] mt-3 mb-1 px-2 flex items-center gap-1.5">
                 <span className="w-1 h-1 rounded-full bg-[#C8A27A] animate-pulse" />
@@ -446,19 +596,6 @@ export default function DashboardLayout() {
 
       {/* ---------- MAIN CONTENT AREA ---------- */}
       <div className="flex-1 min-w-0 flex flex-col min-h-screen">
-        {/* Toggle Button when Sidebar is Hidden */}
-        {!isSidebarOpen && (
-          <div className="sticky top-0 z-20 flex items-center gap-3 px-4 lg:px-6 py-3.5 bg-[#000000]/90 backdrop-blur-md border-b border-[#18181b]">
-            <button
-              onClick={() => setIsSidebarOpen(true)}
-              title="Open sidebar"
-              className="p-2 lg:p-2.5 rounded-xl text-white hover:text-white bg-[#0c0c0e] hover:bg-[#18181b] border border-[#27272a] hover:border-white/20 transition-all cursor-pointer flex items-center gap-2.5 shadow-sm group"
-            >
-              <PanelLeftOpen className="w-5 h-5 text-white group-hover:scale-105 transition-transform" />
-              <ThreatLensLogo className="h-6 w-auto" />
-            </button>
-          </div>
-        )}
 
         {/* Main Content */}
         <main className="p-8 lg:p-10 pb-20 space-y-7 max-w-[1600px] w-full">
@@ -841,8 +978,11 @@ export default function DashboardLayout() {
           {activeNav === "config" && <SystemConfigTab />}
 
           {activeNav === "sessions" && <SessionsTab />}
-        </main>
+          </main>
+        </div>
       </div>
+      )}
+    </div>
 
 
 

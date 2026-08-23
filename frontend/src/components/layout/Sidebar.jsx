@@ -4,7 +4,6 @@ import {
   ShieldAlert,
   FolderGit2,
   Zap,
-  CheckCircle2,
   FileCheck,
   Plus,
   HelpCircle,

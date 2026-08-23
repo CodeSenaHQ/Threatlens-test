@@ -71,13 +71,13 @@ export default function LiveFindingsTab({ onInspectFinding }) {
       {/* Top Page Header */}
       <div className="flex flex-wrap items-end justify-between gap-4 pb-2 border-b border-[#253240]/60">
         <div>
-          <h1 className="font-mono text-lg font-bold tracking-tight text-white">Live SecTest Findings</h1>
-          <p className="text-xs text-[#8a99ad] mt-1 font-mono">
+          <h1 className="text-xl font-bold tracking-tight text-white">Live SecTest Findings</h1>
+          <p className="text-xs text-[#8a99ad] mt-1">
             GET :8765/report.json · live DAST penetration prober
             {report?.scanned_at ? ` · scanned ${timeAgo(report.scanned_at)}` : ""}
           </p>
         </div>
-        <div className="flex items-center gap-3 font-mono text-xs">
+        <div className="flex items-center gap-3 text-xs">
           <button
             onClick={() => {
               if (report) {
@@ -91,7 +91,7 @@ export default function LiveFindingsTab({ onInspectFinding }) {
                 toast.success("Exported SecTest report (JSON)");
               }
             }}
-            className="px-4 py-2 rounded-lg border border-[#2b3947] bg-[#10151a] text-[#d8e2e8] hover:border-white/[0.2] hover:bg-[#141b21] shadow-sm transition-all cursor-pointer flex items-center gap-2"
+            className="px-4 py-2 rounded-lg border border-[#2b3947] bg-[#10151a] text-[#d8e2e8] hover:border-white/[0.2] hover:bg-[#141b21] shadow-sm transition-all cursor-pointer flex items-center gap-2 font-medium"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export DAST Report</span>
@@ -100,7 +100,7 @@ export default function LiveFindingsTab({ onInspectFinding }) {
             href="http://localhost:8765/"
             target="_blank"
             rel="noreferrer"
-            className="px-4 py-2 rounded-lg border border-[#2b3947] bg-[#10151a] text-[#d8e2e8] hover:border-white/[0.2] hover:bg-[#141b21] shadow-sm transition-all flex items-center gap-2"
+            className="px-4 py-2 rounded-lg border border-[#2b3947] bg-[#10151a] text-[#d8e2e8] hover:border-white/[0.2] hover:bg-[#141b21] shadow-sm transition-all flex items-center gap-2 font-medium"
           >
             <ExternalLink className="w-3.5 h-3.5" />
             <span>HTML Report</span>
@@ -111,8 +111,8 @@ export default function LiveFindingsTab({ onInspectFinding }) {
       {/* Target URL Prober Control Bar */}
       <div className="p-4 rounded-xl bg-[#10151a] border border-[#263544] shadow-[0_4px_20px_rgba(0,0,0,0.3)] flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3 flex-1 min-w-[280px]">
-          <span className="font-mono text-xs font-bold text-white uppercase tracking-wider shrink-0 flex items-center gap-1.5">
-            <Zap className="w-4 h-4 text-[#38bdf8]" />
+          <span className="text-xs font-bold text-white uppercase tracking-wider shrink-0 flex items-center gap-1.5">
+            <Zap className="w-4 h-4 text-[#6EA8DA]" />
             <span>Target Endpoint:</span>
           </span>
           <input
@@ -120,14 +120,14 @@ export default function LiveFindingsTab({ onInspectFinding }) {
             value={targetUrl}
             onChange={(e) => setTargetUrl(e.target.value)}
             placeholder="e.g. http://localhost:8000"
-            className="flex-1 px-3.5 py-2 bg-[#0a0d10] border border-[#283747] rounded-lg text-xs font-mono text-[#38bdf8] focus:border-[#38bdf8] focus:outline-none"
+            className="flex-1 px-3.5 py-2 bg-[#0a0d10] border border-[#283747] rounded-lg text-xs font-mono text-[#6EA8DA] focus:border-[#6EA8DA] focus:outline-none"
           />
         </div>
 
         <button
           onClick={handleTriggerProbe}
           disabled={isScanning}
-          className="px-5 py-2 rounded-lg border border-[#38bdf8] bg-[#38bdf8] text-[#04140c] font-bold text-xs font-mono hover:brightness-110 shadow-[0_0_16px_rgba(56,189,248,0.4)] flex items-center gap-2 transition-all disabled:opacity-50"
+          className="px-5 py-2 rounded-lg border border-[#6EA8DA]/30 bg-[#2C6CB0] text-[#EAF2F8] font-semibold text-xs hover:bg-[#1D3557] flex items-center gap-2 transition-all disabled:opacity-50 cursor-pointer"
         >
           <Play className="w-3.5 h-3.5 fill-current" />
           <span>{isScanning ? "Probing Target..." : "Launch Live Probe"}</span>
@@ -137,33 +137,33 @@ export default function LiveFindingsTab({ onInspectFinding }) {
       {/* KPI Ribbon */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4.5">
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#ff4d4f] shadow-[0_0_10px_#ff4d4f]" />
-          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Critical Vulnerabilities</div>
-          <div className="font-mono text-xl font-bold mt-1.5 text-[#ff4d4f]">{loading ? "…" : `${summary.critical || 0} Detected`}</div>
-          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">highest severity</div>
+          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#C8A27A]" />
+          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-semibold">Critical Vulnerabilities</div>
+          <div className="text-xl font-bold mt-1.5 text-[#C8A27A]">{loading ? "…" : `${summary.critical || 0} Detected`}</div>
+          <div className="text-[11px] text-[#8a99ad] mt-1">highest severity</div>
         </div>
 
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#ff9a3c] shadow-[0_0_10px_#ff9a3c]" />
-          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">High Severity</div>
-          <div className="font-mono text-xl font-bold mt-1.5 text-[#ff9a3c]">{loading ? "…" : `${summary.high || 0} Flagged`}</div>
-          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">requires attention</div>
+          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#6EA8DA]" />
+          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-semibold">High Severity</div>
+          <div className="text-xl font-bold mt-1.5 text-[#6EA8DA]">{loading ? "…" : `${summary.high || 0} Flagged`}</div>
+          <div className="text-[11px] text-[#8a99ad] mt-1">requires attention</div>
         </div>
 
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#f2c94c] shadow-[0_0_10px_#f2c94c]" />
-          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Medium + Low</div>
-          <div className="font-mono text-xl font-bold mt-1.5 text-[#f2c94c]">{loading ? "…" : `${(summary.medium || 0) + (summary.low || 0)} Flagged`}</div>
-          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">lower priority</div>
+          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#2C6CB0]" />
+          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-semibold">Medium + Low</div>
+          <div className="text-xl font-bold mt-1.5 text-[#2C6CB0]">{loading ? "…" : `${(summary.medium || 0) + (summary.low || 0)} Flagged`}</div>
+          <div className="text-[11px] text-[#8a99ad] mt-1">lower priority</div>
         </div>
 
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] shadow-[0_0_10px_#38bdf8]" style={{ backgroundColor: scannerOnline ? "#38bdf8" : "#ff4d4f" }} />
-          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Daemon Status</div>
-          <div className={`font-mono text-xl font-bold mt-1.5 ${scannerOnline ? "text-[#38bdf8]" : "text-[#ff4d4f]"}`}>
+          <div className="absolute left-0 top-0 bottom-0 w-[3.5px]" style={{ backgroundColor: scannerOnline ? "#6EA8DA" : "#C8A27A" }} />
+          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-semibold">Daemon Status</div>
+          <div className={`text-xl font-bold mt-1.5 ${scannerOnline ? "text-[#6EA8DA]" : "text-[#C8A27A]"}`}>
             {scannerOnline ? "ONLINE :8765" : "OFFLINE"}
           </div>
-          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">
+          <div className="text-[11px] text-[#8a99ad] mt-1">
             {scannerOnline ? `${report?.summary?.total || 0} findings total` : "scanner unreachable"}
           </div>
         </div>
@@ -175,9 +175,9 @@ export default function LiveFindingsTab({ onInspectFinding }) {
           <button
             key={mod}
             onClick={() => setSelectedModule(mod)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-mono uppercase font-semibold transition-all shrink-0 ${
+            className={`px-3 py-1.5 rounded-lg text-xs uppercase font-semibold transition-all shrink-0 cursor-pointer ${
               selectedModule === mod
-                ? "bg-[#38bdf8] text-[#04140c] font-bold shadow-[0_0_10px_rgba(56,189,248,0.3)]"
+                ? "bg-[#2C6CB0] text-white border border-[#6EA8DA]/40 font-bold"
                 : "bg-[#10151a] border border-[#283747] text-[#8a99ad] hover:text-white"
             }`}
           >

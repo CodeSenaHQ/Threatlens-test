@@ -105,18 +105,17 @@ function Navbar() {
       <div className="nav-shell">
         <Brand />
         <nav className="desktop-nav" aria-label="Main navigation">
-          <Link href="/dashboard" className="text-white font-medium hover:text-white flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#2546ff]/15 border border-[#2546ff]/30 text-[#93c5fd]">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#4d8eff] shadow-[0_0_6px_#4d8eff]" />
+          <Link href="/dashboard" className="text-white font-semibold text-[15px] hover:text-white/80 transition-colors flex items-center gap-1.5">
             Dashboard
           </Link>
-          <Link href="/commit-analysis" className="text-white/80 font-medium hover:text-white flex items-center gap-1.5">
+          <Link href="/commit-analysis" className="text-white font-semibold text-[15px] hover:text-white/80 transition-colors flex items-center gap-1.5">
             Commit Analysis
           </Link>
         </nav>
         <div className="nav-actions">
-          <a className="github-link" href="https://github.com" target="_blank" rel="noreferrer" aria-label="Open GitHub">
-            <Github size={18} />
-            <span>GitHub</span>
+          <a className="github-link text-white font-semibold text-[15px] hover:text-white/80 transition-colors flex items-center gap-2" href="https://github.com" target="_blank" rel="noreferrer" aria-label="Open GitHub">
+            <Github size={18} className="text-white" />
+            <span className="text-white font-semibold text-[15px]">GitHub</span>
           </a>
 
           {user ? (
@@ -139,9 +138,6 @@ function Navbar() {
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <Link className="button button-ghost text-xs px-3 py-1.5 rounded-lg text-[#93c5fd] hover:text-white" href="/signin">
-                Sign In
-              </Link>
               <Link className="button button-primary nav-cta" href="/signup">
                 Sign Up <ArrowRight size={15} />
               </Link>
@@ -154,7 +150,7 @@ function Navbar() {
         </div>
       </div>
       <div className={`mobile-nav ${open ? "open" : ""}`}>
-        <Link onClick={closeMenu} href="/dashboard" className="text-[#93c5fd] font-semibold">Dashboard</Link>
+        <Link onClick={closeMenu} href="/dashboard">Dashboard</Link>
         <Link onClick={closeMenu} href="/commit-analysis">Commit Analysis</Link>
         {user ? (
           <button onClick={() => { logout(); closeMenu(); }} className="button button-ghost text-red-400">
@@ -337,15 +333,15 @@ function Hero() {
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8, delay: 0.2 }}
       >
-        <div className="relative w-16 xl:w-20 h-px bg-gradient-to-r from-transparent via-[#2546ff]/60 to-[#4d8eff]">
-          <span className="absolute -top-1 right-0 w-2 h-2 rounded-full bg-[#4d8eff] shadow-[0_0_8px_#4d8eff] animate-pulse" />
+        <div className="relative w-16 xl:w-20 h-px bg-gradient-to-r from-transparent via-[#2C6CB0] to-[#6EA8DA]">
+          <span className="absolute -top-1 right-0 w-2 h-2 rounded-full bg-[#6EA8DA]" />
         </div>
         <motion.div
           animate={{ y: [0, -7, 0], x: [0, 3, 0] }}
           transition={{ repeat: Infinity, duration: 4.8, ease: "easeInOut" }}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#090d16]/90 border border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.5),0_0_15px_rgba(37,70,255,0.2)] backdrop-blur-xl pointer-events-auto"
+          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#0c0c0e]/95 border border-[#27272a] shadow-lg backdrop-blur-xl pointer-events-auto"
         >
-          <div className="p-1 rounded-md bg-[#2546ff]/20 text-[#93c5fd]">
+          <div className="p-1 rounded-md bg-[#1D3557] text-[#6EA8DA]">
             <Monitor size={14} />
           </div>
           <span className="text-xs font-semibold text-white tracking-wide">Monitor</span>
@@ -359,15 +355,15 @@ function Hero() {
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8, delay: 0.4 }}
       >
-        <div className="relative w-24 xl:w-32 h-px bg-gradient-to-r from-transparent via-[#22c55e]/50 to-[#4ade80]">
-          <span className="absolute -top-1 right-0 w-2 h-2 rounded-full bg-[#4ade80] shadow-[0_0_8px_#4ade80] animate-pulse" />
+        <div className="relative w-24 xl:w-32 h-px bg-gradient-to-r from-transparent via-[#C8A27A]/60 to-[#C8A27A]">
+          <span className="absolute -top-1 right-0 w-2 h-2 rounded-full bg-[#C8A27A]" />
         </div>
         <motion.div
           animate={{ y: [0, 8, 0], x: [0, -3, 0] }}
           transition={{ repeat: Infinity, duration: 5.4, ease: "easeInOut", delay: 0.5 }}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#090d16]/90 border border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.5),0_0_15px_rgba(34,197,94,0.15)] backdrop-blur-xl pointer-events-auto"
+          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#0c0c0e]/95 border border-[#27272a] shadow-lg backdrop-blur-xl pointer-events-auto"
         >
-          <div className="p-1 rounded-md bg-[#22c55e]/20 text-[#86efac]">
+          <div className="p-1 rounded-md bg-[#1D3557] text-[#C8A27A]">
             <Gauge size={14} />
           </div>
           <span className="text-xs font-semibold text-white tracking-wide">Performance</span>
@@ -381,16 +377,16 @@ function Hero() {
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8, delay: 0.3 }}
       >
-        <div className="relative w-20 xl:w-28 h-px bg-gradient-to-l from-transparent via-[#4d8eff]/60 to-[#60a5fa]">
-          <span className="absolute -top-1 left-0 w-2 h-2 rounded-full bg-[#60a5fa] shadow-[0_0_8px_#60a5fa] animate-pulse" />
+        <div className="relative w-20 xl:w-28 h-px bg-gradient-to-l from-transparent via-[#2C6CB0] to-[#6EA8DA]">
+          <span className="absolute -top-1 left-0 w-2 h-2 rounded-full bg-[#6EA8DA]" />
         </div>
         <motion.div
           animate={{ y: [0, -8, 0], x: [0, -4, 0] }}
           transition={{ repeat: Infinity, duration: 5.0, ease: "easeInOut", delay: 0.3 }}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#090d16]/90 border border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.5),0_0_15px_rgba(77,142,255,0.2)] backdrop-blur-xl pointer-events-auto"
+          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#0c0c0e]/95 border border-[#27272a] shadow-lg backdrop-blur-xl pointer-events-auto"
         >
           <span className="text-xs font-semibold text-white tracking-wide">Security</span>
-          <div className="p-1 rounded-md bg-[#4d8eff]/20 text-[#93c5fd]">
+          <div className="p-1 rounded-md bg-[#1D3557] text-[#6EA8DA]">
             <ShieldCheck size={14} />
           </div>
         </motion.div>
@@ -403,16 +399,16 @@ function Hero() {
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8, delay: 0.5 }}
       >
-        <div className="relative w-16 xl:w-24 h-px bg-gradient-to-l from-transparent via-[#a855f7]/50 to-[#c084fc]">
-          <span className="absolute -top-1 left-0 w-2 h-2 rounded-full bg-[#c084fc] shadow-[0_0_8px_#c084fc] animate-pulse" />
+        <div className="relative w-16 xl:w-24 h-px bg-gradient-to-l from-transparent via-[#2C6CB0] to-[#C8A27A]">
+          <span className="absolute -top-1 left-0 w-2 h-2 rounded-full bg-[#C8A27A]" />
         </div>
         <motion.div
           animate={{ y: [0, 7, 0], x: [0, 4, 0] }}
           transition={{ repeat: Infinity, duration: 5.8, ease: "easeInOut", delay: 0.8 }}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#090d16]/90 border border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.5),0_0_15px_rgba(168,85,247,0.15)] backdrop-blur-xl pointer-events-auto"
+          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#0c0c0e]/95 border border-[#27272a] shadow-lg backdrop-blur-xl pointer-events-auto"
         >
           <span className="text-xs font-semibold text-white tracking-wide">Attestation</span>
-          <div className="p-1 rounded-md bg-[#a855f7]/20 text-[#d8b4fe]">
+          <div className="p-1 rounded-md bg-[#1D3557] text-[#EAF2F8]">
             <Link2 size={14} />
           </div>
         </motion.div>

@@ -6,7 +6,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: "DM Sans", sans-serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-display: "Sora", sans-serif;
   --font-brand: "Plus Jakarta Sans", "Inter", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
@@ -20,32 +20,61 @@
 }
 
 :root {
-  --background: #06080d;
-  --foreground: #edf2f7;
-  --card: #0a0d15;
-  --card-foreground: #edf2f7;
-  --border: rgba(255, 255, 255, 0.08);
-  --primary: #2546ff;
-  --primary-hover: #0d27c7;
+  --background: #000000;
+  --foreground: #EAF2F8;
+  --card: #0c0c0e;
+  --card-foreground: #EAF2F8;
+  --border: rgba(234, 242, 248, 0.1);
+  --primary: #2C6CB0;
+  --primary-hover: #1D3557;
   --primary-foreground: #ffffff;
   --muted: #8a99ad;
-  --ink: #06080d;
-  --ink-deep: #030408;
-  --panel: #0a0d15;
-  --panel-soft: #0e1320;
-  --proof: #b8caff;
-  --cyan: #4d8eff;
-  --violet: #2546ff;
-  --coral: #e07a78;
+  --ink: #000000;
+  --ink-deep: #000000;
+  --panel: #0c0c0e;
+  --panel-soft: #12151c;
+  --proof: #EAF2F8;
+  --cyan: #6EA8DA;
+  --violet: #2C6CB0;
+  --coral: #C8A27A;
   --line: rgba(255, 255, 255, 0.07);
   --line-strong: rgba(255, 255, 255, 0.12);
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --radius: 14px;
 }
 
-* { border-color: var(--border); }
-html { scroll-behavior: smooth; background: var(--ink-deep); }
-body { margin: 0; background: var(--background); color: var(--foreground); font-family: "DM Sans", sans-serif; overflow-x: hidden; }
+* {
+  border-color: var(--border);
+  scrollbar-width: thin;
+  scrollbar-color: #27272a #000000;
+}
+
+/* Custom Sleek Dark Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 9999px;
+  border: 1px solid #000000;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+::-webkit-scrollbar-corner {
+  background: #000000;
+}
+
+html { scroll-behavior: smooth; background: var(--ink-deep); color-scheme: dark; }
+body { margin: 0; background: var(--background); color: var(--foreground); font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; overflow-x: hidden; }
 button, a { -webkit-tap-highlight-color: transparent; }
 a { color: inherit; text-decoration: none; }
 button { font: inherit; }
@@ -54,18 +83,18 @@ button { font: inherit; }
 
 /* reusable detail language */
 .section { position: relative; padding: 136px 0; }
-.section-eyebrow { display: inline-flex; align-items: center; gap: 9px; font: 600 10px/1 "IBM Plex Mono", monospace; letter-spacing: .13em; text-transform: uppercase; color: #b8caff; }
-.eyebrow-pulse { display: inline-block; width: 6px; height: 6px; background: #4d8eff; transform: rotate(45deg); }
+.section-eyebrow { display: inline-flex; align-items: center; gap: 9px; font: 600 10px/1 "IBM Plex Mono", monospace; letter-spacing: .13em; text-transform: uppercase; color: #6EA8DA; }
+.eyebrow-pulse { display: inline-block; width: 6px; height: 6px; background: #6EA8DA; transform: rotate(45deg); }
 .site-shell h1, .site-shell h2, .site-shell h3, .site-shell p { margin-top: 0; }
 .site-shell h1, .site-shell h2, .site-shell h3 { font-family: "Sora", sans-serif; letter-spacing: -.045em; }
 .site-shell h2 { margin-bottom: 0; font-size: clamp(2.25rem, 4vw, 4rem); line-height: 1.08; font-weight: 600; }
-.site-shell h1 span { font-style: normal; color: #4d8eff; background: transparent; }
-.site-shell h2 em { font-style: normal; color: #4d8eff; background: transparent; }
+.site-shell h1 span { font-style: normal; color: #6EA8DA; background: transparent; }
+.site-shell h2 em { font-style: normal; color: #6EA8DA; background: transparent; }
 .mono-label { font: 500 10px/1 "IBM Plex Mono", monospace; letter-spacing: .14em; color: #7d8b99; text-transform: uppercase; }
 .button { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 42px; padding: 0 17px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.08); font-size: 13px; font-weight: 600; transition: transform 160ms var(--ease-out), background 180ms var(--ease-out), border-color 180ms var(--ease-out); }
 .button:active { transform: scale(.98); }
-.button-primary { background: #2546ff; color: #ffffff; border-color: rgba(255, 255, 255, 0.12); box-shadow: 0 0 20px rgba(37, 70, 255, 0.25); }
-.button-primary:hover { background: #0d27c7; border-color: rgba(255, 255, 255, 0.18); box-shadow: 0 0 25px rgba(37, 70, 255, 0.35); }
+.button-primary { background: #2C6CB0; color: #ffffff; border-color: rgba(110, 168, 218, 0.2); }
+.button-primary:hover { background: #1D3557; border-color: rgba(110, 168, 218, 0.4); }
 .button-ghost { border-color: rgba(255, 255, 255, 0.09); color: #cbd5e1; background: rgba(255, 255, 255, 0.03); }
 .button-ghost:hover { border-color: rgba(255, 255, 255, 0.16); background: rgba(255, 255, 255, 0.06); color: #f1f5f9; }
 .button-large { min-height: 52px; padding: 0 21px; font-size: 14px; border-radius: 10px; }
@@ -90,12 +119,12 @@ button { font: inherit; }
 }
 .brand-name em {
   font-family: inherit;
-  color: #4d8eff;
+  color: #6EA8DA;
   font-style: normal;
   font-weight: 700;
 }
 .brand-name.compact { font-size: 16px; }
-.desktop-nav { display: flex; gap: 31px; margin-left: auto; margin-right: 31px; }.desktop-nav a, .github-link { color: #94a3b8; font-size: 13px; transition: color 160ms var(--ease-out); }.desktop-nav a:hover, .github-link:hover { color: #f1f5f9; }
+.desktop-nav { display: flex; gap: 31px; margin-left: auto; margin-right: 31px; }.desktop-nav a, .github-link { color: #ffffff; font-size: 15px; font-weight: 600; transition: opacity 160ms var(--ease-out); }.desktop-nav a:hover, .github-link:hover { color: #ffffff; opacity: 0.85; }
 .nav-actions { display: flex; align-items: center; gap: 19px; }.github-link { display: flex; gap: 7px; align-items: center; }.nav-cta { min-height: 39px; }.mobile-menu-button { display: none; color: var(--foreground); border: 0; background: transparent; padding: 5px; }
 .mobile-nav { display: none; }
 

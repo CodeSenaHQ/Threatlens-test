@@ -338,11 +338,11 @@ export function timeAgo(dateStr) {
 
 export function severityColor(severity) {
   switch (severity?.toLowerCase()) {
-    case "critical": return "#ff4d4f";
-    case "high": return "#ff9a3c";
-    case "medium": return "#f2c94c";
-    case "low": return "#38bdf8";
-    case "info": return "#4d9cff";
+    case "critical": return "#C8A27A";
+    case "high": return "#6EA8DA";
+    case "medium": return "#2C6CB0";
+    case "low": return "#1D3557";
+    case "info": return "#EAF2F8";
     default: return "#8a99ad";
   }
 }

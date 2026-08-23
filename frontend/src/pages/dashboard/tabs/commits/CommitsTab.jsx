@@ -137,19 +137,19 @@ export default function CommitsTab({ onInspectCommit }) {
       <div className="flex flex-wrap items-end justify-between gap-4 pb-2 border-b border-[#253240]/60">
         <div>
           <h1 className="font-mono text-lg font-bold tracking-tight text-white">Analyzed Git Commits</h1>
-          <p className="text-xs text-[#8a99ad] mt-1 font-mono">
+          <p className="text-xs text-[#8a99ad] mt-1">
             {selectedRepo
               ? `GET /repo/${selectedRepo.id}/commits · ${selectedRepo.username}/${selectedRepo.name}`
               : "Select a repository to view commits"}
           </p>
         </div>
-        <div className="flex items-center gap-3 font-mono text-xs">
+        <div className="flex items-center gap-3 text-xs">
           {/* Repo Selector */}
           {repos.length > 0 && (
             <select
               value={selectedRepoId || ""}
               onChange={(e) => { setSelectedRepoId(Number(e.target.value)); setPage(1); }}
-              className="px-3 py-2 bg-[#10151a] border border-[#283747] rounded-lg text-xs font-mono text-white focus:border-[#38bdf8] focus:outline-none"
+              className="px-3 py-2 bg-[#10151a] border border-[#283747] rounded-lg text-xs text-white focus:border-[#6EA8DA] focus:outline-none font-medium"
             >
               {repos.map((r) => (
                 <option key={r.id} value={r.id}>
@@ -160,7 +160,7 @@ export default function CommitsTab({ onInspectCommit }) {
           )}
           <button
             onClick={() => toast.success("Exported commit risk audit trail (CSV)")}
-            className="px-4 py-2 rounded-lg border border-[#2b3947] bg-[#10151a] text-[#d8e2e8] hover:border-white/[0.2] hover:bg-[#141b21] shadow-sm transition-all cursor-pointer flex items-center gap-2"
+            className="px-4 py-2 rounded-lg border border-[#2b3947] bg-[#10151a] text-[#d8e2e8] hover:border-white/[0.2] hover:bg-[#141b21] shadow-sm transition-all cursor-pointer flex items-center gap-2 font-medium"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export Audit Log</span>
@@ -171,31 +171,31 @@ export default function CommitsTab({ onInspectCommit }) {
       {/* KPI Ribbon */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4.5">
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#38bdf8] shadow-[0_0_10px_#38bdf8]" />
-          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Analyzed Commits</div>
-          <div className="font-mono text-xl font-bold mt-1.5 text-white">{loadingCommits ? "…" : commits.length}</div>
-          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">page {page} · {limit}/page</div>
+          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#6EA8DA]" />
+          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-semibold">Analyzed Commits</div>
+          <div className="text-xl font-bold mt-1.5 text-white">{loadingCommits ? "…" : commits.length}</div>
+          <div className="text-[11px] text-[#8a99ad] mt-1">page {page} · {limit}/page</div>
         </div>
 
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#ff4d4f] shadow-[0_0_10px_#ff4d4f]" />
-          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Critical Findings</div>
-          <div className="font-mono text-xl font-bold mt-1.5 text-[#ff4d4f]">{loadingCommits ? "…" : `${criticalCount} Detected`}</div>
-          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">{totalFindings} total findings</div>
+          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#C8A27A]" />
+          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-semibold">Critical Findings</div>
+          <div className="text-xl font-bold mt-1.5 text-[#C8A27A]">{loadingCommits ? "…" : `${criticalCount} Detected`}</div>
+          <div className="text-[11px] text-[#8a99ad] mt-1">{totalFindings} total findings</div>
         </div>
 
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#38bdf8] shadow-[0_0_10px_#38bdf8]" />
-          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Clean Rate</div>
-          <div className="font-mono text-xl font-bold mt-1.5 text-white">{loadingCommits ? "…" : `${cleanRate}%`}</div>
-          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">Commits with 0 findings</div>
+          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#2C6CB0]" />
+          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-semibold">Clean Rate</div>
+          <div className="text-xl font-bold mt-1.5 text-white">{loadingCommits ? "…" : `${cleanRate}%`}</div>
+          <div className="text-[11px] text-[#8a99ad] mt-1">Commits with 0 findings</div>
         </div>
 
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#38bdf8] shadow-[0_0_10px_#38bdf8]" />
-          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Avg Risk Score</div>
-          <div className="font-mono text-xl font-bold mt-1.5 text-white">{loadingCommits ? "…" : `${avgRisk} / 100`}</div>
-          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">Weighted formula</div>
+          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#1D3557] border-r border-[#6EA8DA]/40" />
+          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-semibold">Avg Risk Score</div>
+          <div className="text-xl font-bold mt-1.5 text-white">{loadingCommits ? "…" : `${avgRisk} / 100`}</div>
+          <div className="text-[11px] text-[#8a99ad] mt-1">Weighted formula</div>
         </div>
       </div>
 

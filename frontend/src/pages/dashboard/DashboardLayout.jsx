@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { authApi, repoApi, secTestApi, severityColor, formatBytes, timeAgo } from "@/lib/api";
 import { toast } from "sonner";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
+import { ThreatLensLogo } from "@/components/common/ThreatLensLogo";
 import {
   Copy,
   Check,
@@ -11,6 +12,9 @@ import {
   AlertTriangle,
   WifiOff,
   LogOut,
+  User,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 
 // Domain-Based Tab Views
@@ -35,6 +39,7 @@ export default function DashboardLayout() {
   const { user, token, logout } = useAuth();
   const [, setLocation] = useLocation();
   const [activeNav, setActiveNav] = useState("dashboard");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [clockStr, setClockStr] = useState("--:--:--");
   const [selectedItem, setSelectedItem] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -183,7 +188,7 @@ export default function DashboardLayout() {
     ? Math.round(latestCommits.reduce((s, c) => s + (c.summary?.risk_score || 0), 0) / latestCommits.length)
     : 0;
   const gaugeOffset = 314 - (314 * avgRiskScore) / 100;
-  const gaugeColor = avgRiskScore >= 80 ? "#ff4d4f" : avgRiskScore >= 50 ? "#ff9a3c" : avgRiskScore >= 20 ? "#f2c94c" : "#38bdf8";
+  const gaugeColor = avgRiskScore >= 80 ? "#C8A27A" : avgRiskScore >= 50 ? "#6EA8DA" : avgRiskScore >= 20 ? "#2C6CB0" : "#1D3557";
 
   const handleOpenDetail = (item) => {
     setSelectedItem(item);
@@ -203,210 +208,174 @@ export default function DashboardLayout() {
 
   return (
     <div
-      className="min-h-screen text-[#d8e2e8] flex flex-col select-none"
+      className="min-h-screen text-[#d8e2e8] flex select-none"
       style={{
-        backgroundColor: "#0a0d10",
-        fontFamily: "'IBM Plex Sans', 'Segoe UI', sans-serif",
+        backgroundColor: "#000000",
+        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
         backgroundImage:
-          "linear-gradient(#222d38 1px, transparent 1px), linear-gradient(90deg, #222d38 1px, transparent 1px)",
-        backgroundSize: "34px 34px",
+          "linear-gradient(#141416 1px, transparent 1px), linear-gradient(90deg, #141416 1px, transparent 1px)",
+        backgroundSize: "36px 36px",
         backgroundAttachment: "fixed",
       }}
     >
-      {/* ---------- TOPBAR ---------- */}
-      <header
-        className="flex items-center justify-between px-8 py-4 border-b border-[#253240] sticky top-0 z-30 shadow-md"
-        style={{
-          background: "linear-gradient(180deg, rgba(16,21,26,.97), rgba(16,21,26,.90))",
-          backdropFilter: "blur(8px)",
-        }}
-      >
-        {/* Brand */}
-        <div className="flex items-center gap-3">
-          <div
-            className="w-6.5 h-6.5 rounded-sm"
-            style={{
-              width: "26px",
-              height: "26px",
-              background: "conic-gradient(from 220deg, #38bdf8, #0284c7 40%, transparent 41%)",
-              boxShadow: "0 0 16px rgba(56,189,248,.65)",
-            }}
-          />
-          <div className="font-mono font-bold tracking-wide text-base text-white">
-            Threat<span className="text-[#38bdf8]">Lens</span>
+      {/* ---------- SIDEBAR (Pure matte black full-height) ---------- */}
+      {isSidebarOpen && (
+        <aside className="w-[260px] shrink-0 h-screen sticky top-0 flex flex-col border-r border-[#18181b] bg-[#000000] z-30 transition-all duration-300">
+          {/* Top Brand & Hide Sidebar Button */}
+          <div className="flex items-center justify-between px-5 py-4.5 border-b border-[#18181b]">
+            <Link href="/" className="hover:opacity-90 transition-opacity flex items-center">
+              <ThreatLensLogo className="h-7 w-auto" />
+            </Link>
+            <button
+              onClick={() => setIsSidebarOpen(false)}
+              title="Hide sidebar"
+              className="p-2 rounded-xl text-white hover:bg-[#18181b] border border-[#27272a] hover:border-white/20 transition-all cursor-pointer shadow-sm flex items-center justify-center"
+            >
+              <PanelLeftClose className="w-5 h-5 text-white" />
+            </button>
           </div>
-          <div className="font-mono text-[10px] text-[#8a99ad] tracking-[1.5px] uppercase ml-2 px-2 py-0.5 border border-[#2b3947] bg-[#12181f] rounded">
-            {pulse ? pulse.state?.toUpperCase() || "ACTIVE" : "LOADING"}
-          </div>
-        </div>
 
-        {/* Pulse Strip */}
-        <div className="hidden md:flex items-center gap-5 font-mono text-[11px] text-[#8a99ad]">
-          <div className="flex items-center">
-            <span
-              className="w-2 h-2 rounded-full inline-block mr-2 animate-pulse"
-              style={{
-                backgroundColor: pulseHealthy ? "#38bdf8" : "#ff4d4f",
-                boxShadow: pulseHealthy ? "0 0 10px #38bdf8" : "0 0 10px #ff4d4f",
-              }}
-            />
-            API pulse:{" "}
-            <span className={`ml-1 font-semibold ${pulseHealthy ? "text-[#38bdf8]" : "text-[#ff4d4f]"}`}>
-              {pulseHealthy ? "nominal" : pulse ? "degraded" : "connecting…"}
-            </span>
-          </div>
-          <div>
-            Scanner :8765 ·{" "}
-            <span className={`font-semibold ${scannerOnline ? "text-[#38bdf8]" : "text-[#ff4d4f]"}`}>
-              {scannerOnline ? "online" : "offline"}
-            </span>
-          </div>
-          <div className="text-[#d8e2e8] font-bold">{clockStr}</div>
-        </div>
-
-        {/* Profile Chip & Logout */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setIsProfileOpen(true)}
-            title="Edit Profile & Account Details"
-            className="flex items-center gap-2.5 px-3 py-1.5 border border-[#2b3947] hover:border-[#38bdf8]/60 rounded-full bg-[#10151a] hover:bg-[#141b21] shadow-sm transition-all cursor-pointer select-none group text-left"
-          >
-            {user?.avatar_url ? (
-              <img
-                src={user.avatar_url}
-                alt=""
-                className="w-6 h-6 rounded-full object-cover border border-[#38bdf8]/40"
-              />
-            ) : (
-              <div
-                className="w-6 h-6 rounded-full flex items-center justify-center font-mono text-[10px] font-bold text-[#03110c] shadow-sm group-hover:scale-105 transition-transform"
-                style={{
-                  background: "linear-gradient(135deg, #4d9cff, #38bdf8)",
-                }}
-              >
-                {user?.name ? user.name.slice(0, 2).toUpperCase() : "TL"}
-              </div>
-            )}
-            <div>
-              <div className="font-mono text-[11px] text-white font-medium leading-none group-hover:text-[#38bdf8] transition-colors">
-                {user?.name || "User"}
-              </div>
-              <div className="text-[#8a99ad] text-[9px] uppercase tracking-wider leading-none mt-0.5">
-                {user?.role || "analyst"} · edit
-              </div>
+          {/* Navigation Links */}
+          <nav className="flex-1 overflow-y-auto p-4 space-y-1">
+            <div className="text-[11px] text-[#6EA8DA] font-bold uppercase tracking-[1.5px] mb-2 px-2">
+              Overview
             </div>
-          </button>
-
-          <button
-            onClick={handleLogout}
-            title="Sign out of ThreatLens"
-            className="flex items-center gap-1.5 px-3 py-1.5 border border-[#2b3947] hover:border-rose-500/40 rounded-full bg-[#10151a] hover:bg-rose-500/10 text-[#8a99ad] hover:text-rose-400 font-mono text-[11px] transition-all cursor-pointer shadow-sm"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Sign Out</span>
-          </button>
-        </div>
-      </header>
-
-      {/* ---------- SHELL LAYOUT ---------- */}
-      <div className="grid grid-cols-1 md:grid-cols-[230px_1fr] flex-1 min-h-[calc(100vh-62px)]">
-        {/* Navigation Sidebar */}
-        <nav className="hidden md:flex flex-col gap-1 border-r border-[#253240] p-5.5 bg-[#0a0d10]/95">
-          <div className="font-mono text-[10px] text-[#8a99ad] uppercase tracking-[1.5px] my-3 mx-2">
-            Overview
-          </div>
-          {[
-            { id: "dashboard", icon: "▣", label: "Dashboard" },
-            { id: "repositories", icon: "◧", label: "Repositories" },
-            { id: "commits", icon: "↯", label: "Commits" },
-          ].map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveNav(item.id)}
-              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs border transition-all text-left ${
-                activeNav === item.id
-                  ? "bg-[#141b21] text-white border-[#38bdf8]/40 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
-                  : "text-[#8a99ad] border-transparent hover:bg-white/[0.04] hover:text-white"
-              }`}
-            >
-              <span className={`w-4 text-center font-mono text-xs ${activeNav === item.id ? "text-[#38bdf8]" : ""}`}>
-                {item.icon}
-              </span>
-              <span>{item.label}</span>
-            </button>
-          ))}
-
-          <div className="font-mono text-[10px] text-[#8a99ad] uppercase tracking-[1.5px] mt-4 mb-2 mx-2">
-            Security
-          </div>
-          {[
-            { id: "findings", icon: "⌁", label: "Live Findings" },
-            { id: "secrets", icon: "⚑", label: "Secret Detection" },
-            { id: "cicd", icon: "◫", label: "CI/CD & Docker" },
-          ].map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveNav(item.id)}
-              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs border transition-all text-left ${
-                activeNav === item.id
-                  ? "bg-[#141b21] text-white border-[#38bdf8]/40 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
-                  : "text-[#8a99ad] border-transparent hover:bg-white/[0.04] hover:text-white"
-              }`}
-            >
-              <span className={`w-4 text-center font-mono text-xs ${activeNav === item.id ? "text-[#38bdf8]" : ""}`}>
-                {item.icon}
-              </span>
-              <span>{item.label}</span>
-            </button>
-          ))}
-
-          {isAdmin && (
-            <>
-              <div className="font-mono text-[10px] text-[#8a99ad] uppercase tracking-[1.5px] mt-4 mb-2 mx-2">
-                Admin
-              </div>
-              {[
-                { id: "accounts", icon: "☰", label: "Accounts" },
-                { id: "config", icon: "⚙", label: "System Config" },
-                { id: "sessions", icon: "◔", label: "Sessions" },
-              ].map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveNav(item.id)}
-                  className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs border transition-all text-left ${
-                    activeNav === item.id
-                      ? "bg-[#141b21] text-white border-[#38bdf8]/40 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
-                      : "text-[#8a99ad] border-transparent hover:bg-white/[0.04] hover:text-white"
-                  }`}
+            {[
+              { id: "dashboard", icon: "▣", label: "Dashboard", color: "#6EA8DA" },
+              { id: "repositories", icon: "◧", label: "Repositories", color: "#6EA8DA" },
+              { id: "commits", icon: "↯", label: "Commits", color: "#6EA8DA" },
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveNav(item.id)}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-semibold border transition-all text-left cursor-pointer text-white ${
+                  activeNav === item.id
+                    ? "bg-[#1D3557]/80 text-white border-[#2C6CB0]"
+                    : "border-transparent hover:bg-[#18181b] text-white/90 hover:text-white"
+                }`}
+              >
+                <span
+                  className="w-4 text-center text-sm font-bold text-white"
+                  style={{ color: activeNav === item.id ? item.color : "#ffffff" }}
                 >
-                  <span className={`w-4 text-center font-mono text-xs ${activeNav === item.id ? "text-[#38bdf8]" : ""}`}>
-                    {item.icon}
-                  </span>
-                  <span>{item.label}</span>
-                </button>
-              ))}
-            </>
-          )}
-          <div className="mt-auto pt-4 border-t border-[#253240] space-y-1">
+                  {item.icon}
+                </span>
+                <span className="text-white">{item.label}</span>
+              </button>
+            ))}
+
+            <div className="text-[11px] text-[#C8A27A] font-bold uppercase tracking-[1.5px] mt-5 mb-2 px-2">
+              Security
+            </div>
+            {[
+              { id: "findings", icon: "⌁", label: "Live Findings", color: "#C8A27A" },
+              { id: "secrets", icon: "⚑", label: "Secret Detection", color: "#C8A27A" },
+              { id: "cicd", icon: "◫", label: "CI/CD & Docker", color: "#C8A27A" },
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveNav(item.id)}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-semibold border transition-all text-left cursor-pointer text-white ${
+                  activeNav === item.id
+                    ? "bg-[#1D3557]/80 text-white border-[#2C6CB0]"
+                    : "border-transparent hover:bg-[#18181b] text-white/90 hover:text-white"
+                }`}
+              >
+                <span
+                  className="w-4 text-center text-sm font-bold text-white"
+                  style={{ color: activeNav === item.id ? item.color : "#ffffff" }}
+                >
+                  {item.icon}
+                </span>
+                <span className="text-white">{item.label}</span>
+              </button>
+            ))}
+
+            {isAdmin && (
+              <>
+                <div className="text-[11px] text-[#6EA8DA] font-bold uppercase tracking-[1.5px] mt-5 mb-2 px-2">
+                  Admin
+                </div>
+                {[
+                  { id: "accounts", icon: "☰", label: "Accounts", color: "#6EA8DA" },
+                  { id: "config", icon: "⚙", label: "System Config", color: "#6EA8DA" },
+                  { id: "sessions", icon: "◔", label: "Sessions", color: "#6EA8DA" },
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveNav(item.id)}
+                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-semibold border transition-all text-left cursor-pointer text-white ${
+                      activeNav === item.id
+                        ? "bg-[#1D3557]/80 text-white border-[#2C6CB0]"
+                        : "border-transparent hover:bg-[#18181b] text-white/90 hover:text-white"
+                    }`}
+                  >
+                    <span
+                      className="w-4 text-center text-sm font-bold text-white"
+                      style={{ color: activeNav === item.id ? item.color : "#ffffff" }}
+                    >
+                      {item.icon}
+                    </span>
+                    <span className="text-white">{item.label}</span>
+                  </button>
+                ))}
+              </>
+            )}
+          </nav>
+
+          {/* Bottom User Card / Profile */}
+          <div className="p-3 border-t border-[#18181b] space-y-1 bg-[#000000]">
             <button
               onClick={() => setIsProfileOpen(true)}
-              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-[#8a99ad] hover:text-[#38bdf8] hover:bg-white/[0.04] border border-transparent hover:border-[#38bdf8]/20 transition-all text-left font-mono cursor-pointer"
+              title="Edit Profile & Account Details"
+              className="w-full flex items-center gap-3 p-2.5 rounded-xl bg-[#0c0c0e] hover:bg-[#1D3557]/40 border border-[#222225] hover:border-[#2C6CB0]/60 transition-all text-left group cursor-pointer"
             >
-              <User className="w-3.5 h-3.5 text-[#38bdf8]" />
-              <span>Edit Profile</span>
-            </button>
-
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-[#8a99ad] hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all text-left font-mono cursor-pointer"
-            >
-              <LogOut className="w-3.5 h-3.5 text-rose-400" />
-              <span>Sign Out</span>
+              {user?.avatar_url ? (
+                <img
+                  src={user.avatar_url}
+                  alt=""
+                  className="w-8 h-8 rounded-full object-cover border border-[#6EA8DA]/50"
+                />
+              ) : (
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-sm group-hover:scale-105 transition-transform shrink-0"
+                  style={{
+                    background: "linear-gradient(135deg, #2C6CB0, #6EA8DA)",
+                  }}
+                >
+                  {user?.name ? user.name.slice(0, 2).toUpperCase() : "TL"}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="text-xs text-[#EAF2F8] font-semibold truncate group-hover:text-[#6EA8DA] transition-colors">
+                  {user?.name || "User"}
+                </div>
+                <div className="text-[#8a99ad] text-[10px] uppercase font-medium tracking-wider truncate mt-0.5">
+                  {user?.role || "analyst"} · edit
+                </div>
+              </div>
             </button>
           </div>
-        </nav>
+        </aside>
+      )}
 
-        {/* Main Content Area */}
+      {/* ---------- MAIN CONTENT AREA ---------- */}
+      <div className="flex-1 min-w-0 flex flex-col min-h-screen">
+        {/* Toggle Button when Sidebar is Hidden */}
+        {!isSidebarOpen && (
+          <div className="sticky top-0 z-20 flex items-center gap-3 px-6 py-4 bg-[#000000]/90 backdrop-blur-md border-b border-[#18181b]">
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              title="Open sidebar"
+              className="p-2.5 rounded-xl text-white hover:text-white bg-[#0c0c0e] hover:bg-[#18181b] border border-[#27272a] hover:border-white/20 transition-all cursor-pointer flex items-center gap-3 shadow-sm group"
+            >
+              <PanelLeftOpen className="w-5 h-5 text-white group-hover:scale-105 transition-transform" />
+              <ThreatLensLogo className="h-6 w-auto" />
+            </button>
+          </div>
+        )}
+
+        {/* Main Content */}
         <main className="p-8 lg:p-10 pb-20 space-y-7 max-w-[1600px] w-full">
           {activeNav === "dashboard" && (
             <>
@@ -429,7 +398,7 @@ export default function DashboardLayout() {
                   </button>
                   <button
                     onClick={() => setActiveNav("findings")}
-                    className="px-4 py-2 rounded-lg border border-[#38bdf8] bg-[#38bdf8] text-[#04140c] font-bold hover:brightness-110 shadow-[0_0_16px_rgba(56,189,248,0.4)] transition-all cursor-pointer"
+                    className="px-4 py-2 rounded-lg border border-[#6EA8DA]/30 bg-[#2C6CB0] text-[#EAF2F8] font-bold hover:bg-[#1D3557] transition-all cursor-pointer"
                   >
                     Run new scan
                   </button>
@@ -451,17 +420,16 @@ export default function DashboardLayout() {
                           className="absolute left-0 top-0 bottom-0 w-[3.5px]"
                           style={{
                             backgroundColor: severityColor(k.type),
-                            boxShadow: `0 0 10px ${severityColor(k.type)}`,
                           }}
                         />
-                        <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">{k.label}</div>
+                        <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-semibold">{k.label}</div>
                         <div
-                          className="font-mono text-xl font-bold mt-1.5"
+                          className="text-xl font-bold mt-1.5"
                           style={{ color: severityColor(k.type) }}
                         >
                           {k.value}
                         </div>
-                        <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">{k.sub}</div>
+                        <div className="text-[11px] text-[#8a99ad] mt-1">{k.sub}</div>
                       </div>
                     ))}
               </div>
@@ -472,10 +440,10 @@ export default function DashboardLayout() {
                 <div className="bg-[#10151a] border border-[#263544] hover:border-[#2f4255] rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)] flex flex-col justify-between transition-all">
                   <div>
                     <div className="flex items-center justify-between p-3 px-4 border-b border-[#253240] bg-[#12181f]/60">
-                      <h2 className="font-mono text-xs font-bold text-white uppercase tracking-wider">
+                      <h2 className="text-xs font-bold text-white uppercase tracking-wider">
                         Latest analyzed commits
                       </h2>
-                      <div className="font-mono text-[10px] text-[#8a99ad]">
+                      <div className="text-[10px] text-[#8a99ad]">
                         {repos.length > 0 ? `GET /repo/${repos[0]?.id}/commits` : "no repo"}
                       </div>
                     </div>
@@ -513,17 +481,17 @@ export default function DashboardLayout() {
                               })}
                               className="grid grid-cols-[auto_1fr_auto] gap-3.5 items-center p-3 px-4.5 hover:bg-white/[0.03] cursor-pointer transition-colors"
                             >
-                              <span className="font-mono text-[#38bdf8] bg-[#38bdf8]/10 px-2 py-0.5 rounded text-[11px] border border-[#38bdf8]/30 font-semibold shadow-sm">
+                              <span className="font-mono text-[#6EA8DA] bg-[#1D3557]/40 px-2 py-0.5 rounded text-[11px] border border-[#2C6CB0]/40 font-semibold shadow-sm">
                                 {c.commit?.short_sha}
                               </span>
                               <div className="min-w-0 pr-2">
                                 <div className="text-[#d8e2e8] text-xs font-semibold truncate">{c.commit?.message}</div>
-                                <div className="text-[#8a99ad] text-[10.5px] font-mono truncate mt-0.5">
+                                <div className="text-[#8a99ad] text-[10.5px] truncate mt-0.5">
                                   {c.commit?.author_name} · {timeAgo(c.commit?.authored_at)} · {c.summary?.files_changed || 0} files
                                 </div>
                               </div>
                               <span
-                                className="font-mono text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full border whitespace-nowrap"
+                                className="text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full border whitespace-nowrap font-semibold"
                                 style={{
                                   color,
                                   borderColor: color,
@@ -544,10 +512,10 @@ export default function DashboardLayout() {
                 <div className="bg-[#10151a] border border-[#263544] hover:border-[#2f4255] rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)] flex flex-col justify-between transition-all">
                   <div>
                     <div className="flex items-center justify-between p-3 px-4 border-b border-[#253240] bg-[#12181f]/60">
-                      <h2 className="font-mono text-xs font-bold text-white uppercase tracking-wider">
+                      <h2 className="text-xs font-bold text-white uppercase tracking-wider">
                         Repo risk score
                       </h2>
-                      <div className="font-mono text-[10px] text-[#8a99ad]">weighted average</div>
+                      <div className="text-[10px] text-[#8a99ad]">weighted average</div>
                     </div>
 
                     <div className="flex items-center gap-6 p-5 px-6">
@@ -566,28 +534,28 @@ export default function DashboardLayout() {
                             strokeLinecap="round"
                           />
                         </svg>
-                        <div className="absolute inset-0 flex flex-col items-center justify-center font-mono">
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
                           <b className="text-lg text-white font-bold">{avgRiskScore}</b>
-                          <span className="text-[8.5px] text-[#8a99ad] uppercase tracking-wider">/ 100</span>
+                          <span className="text-[8.5px] text-[#8a99ad] uppercase tracking-wider font-semibold">/ 100</span>
                         </div>
                       </div>
 
-                      <div className="flex flex-col gap-2 text-xs font-mono">
+                      <div className="flex flex-col gap-2 text-xs">
                         <div className="flex items-center gap-2.5">
-                          <span className="w-2.5 h-2.5 rounded-sm bg-[#ff4d4f] shadow-[0_0_6px_#ff4d4f]" />
-                          <span>Critical × 40</span>
+                          <span className="w-2.5 h-2.5 rounded-sm bg-[#C8A27A]" />
+                          <span className="font-medium text-white">Critical × 40</span>
                         </div>
                         <div className="flex items-center gap-2.5">
-                          <span className="w-2.5 h-2.5 rounded-sm bg-[#ff9a3c] shadow-[0_0_6px_#ff9a3c]" />
-                          <span>High × 20</span>
+                          <span className="w-2.5 h-2.5 rounded-sm bg-[#6EA8DA]" />
+                          <span className="font-medium text-white">High × 20</span>
                         </div>
                         <div className="flex items-center gap-2.5">
-                          <span className="w-2.5 h-2.5 rounded-sm bg-[#f2c94c] shadow-[0_0_6px_#f2c94c]" />
-                          <span>Medium × 8</span>
+                          <span className="w-2.5 h-2.5 rounded-sm bg-[#2C6CB0]" />
+                          <span className="font-medium text-white">Medium × 8</span>
                         </div>
                         <div className="flex items-center gap-2.5">
-                          <span className="w-2.5 h-2.5 rounded-sm bg-[#38bdf8] shadow-[0_0_6px_#38bdf8]" />
-                          <span>Low × 2</span>
+                          <span className="w-2.5 h-2.5 rounded-sm bg-[#1D3557] border border-[#6EA8DA]/40" />
+                          <span className="font-medium text-white">Low × 2</span>
                         </div>
                       </div>
                     </div>
@@ -617,10 +585,10 @@ export default function DashboardLayout() {
               {/* LIVE SECTEST FINDINGS TABLE */}
               <div className="bg-[#10151a] border border-[#263544] hover:border-[#2f4255] rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-all">
                 <div className="flex items-center justify-between p-3 px-4 border-b border-[#253240] bg-[#12181f]/60">
-                  <h2 className="font-mono text-xs font-bold text-white uppercase tracking-wider">
+                  <h2 className="text-xs font-bold text-white uppercase tracking-wider">
                     Live SecTest findings
                   </h2>
-                  <div className="font-mono text-[10px] text-[#8a99ad]">
+                  <div className="text-[10px] text-[#8a99ad]">
                     GET :8765/report.json{secTestReport?.scanned_at ? ` · scanned ${timeAgo(secTestReport.scanned_at)}` : ""}
                   </div>
                 </div>
@@ -691,10 +659,10 @@ export default function DashboardLayout() {
               {/* SCANNED REPOSITORIES GRID */}
               <div className="bg-[#10151a] border border-[#263544] hover:border-[#2f4255] rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-all">
                 <div className="flex items-center justify-between p-3 px-4 border-b border-[#253240] bg-[#12181f]/60">
-                  <h2 className="font-mono text-xs font-bold text-white uppercase tracking-wider">
+                  <h2 className="text-xs font-bold text-white uppercase tracking-wider">
                     Scanned repositories
                   </h2>
-                  <div className="font-mono text-[10px] text-[#8a99ad]">GET /repo</div>
+                  <div className="text-[10px] text-[#8a99ad]">GET /repo</div>
                 </div>
 
                 <div className="p-4.5 grid grid-cols-1 md:grid-cols-3 gap-4.5">
@@ -791,11 +759,7 @@ export default function DashboardLayout() {
         </main>
       </div>
 
-      {/* ---------- FOOTER ---------- */}
-      <footer className="px-8 py-4 border-t border-[#253240] text-[#8a99ad] font-mono text-[10.5px] flex items-center justify-between bg-[#0a0d10]">
-        <div>ThreatLens dashboard · live security telemetry</div>
-        <div>local time {clockStr}</div>
-      </footer>
+
 
       {/* ---------- SLIDE-OVER DETAIL DRAWER ---------- */}
       {isDrawerOpen && selectedItem && (

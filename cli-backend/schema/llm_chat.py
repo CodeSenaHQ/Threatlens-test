@@ -16,3 +16,14 @@ class ChatRequest(BaseModel):
     temperature: float | None = 0.2
     max_tokens: int | None 
     stream: bool = True
+
+
+class CreateChatRequest(BaseModel):
+    title: str | None = None
+    model: str | None = None
+
+
+class ChatHistoryRequest(BaseModel):
+    chat_id: int
+    messages: list[dict]
+

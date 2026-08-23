@@ -298,21 +298,8 @@ export default function DashboardLayout() {
                   : "text-[#8e8e93] hover:text-white"
               }`}
             >
-              <span>Chat Bot</span>
+              <span>ThreatLensGO history</span>
               {activeTopTab === "chatbot" && (
-                <span className="absolute bottom-0 inset-x-0 h-[2px] bg-white rounded-t-sm" />
-              )}
-            </button>
-            <button
-              onClick={() => setActiveTopTab("terminal")}
-              className={`h-full flex items-center relative transition-colors cursor-pointer text-sm sm:text-[15px] ${
-                activeTopTab === "terminal"
-                  ? "text-white font-medium"
-                  : "text-[#8e8e93] hover:text-white"
-              }`}
-            >
-              <span>Terminal History</span>
-              {activeTopTab === "terminal" && (
                 <span className="absolute bottom-0 inset-x-0 h-[2px] bg-white rounded-t-sm" />
               )}
             </button>

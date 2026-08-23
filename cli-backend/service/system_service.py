@@ -13,3 +13,12 @@ def chk_state():
     )
     return response.json()
 
+
+def get_global_limit():
+    M = 1_000_000
+
+    return {
+        "prompt_tokens": M,
+        "completion_tokens": M * 4,
+        "total_tokens": M * 4,
+    }

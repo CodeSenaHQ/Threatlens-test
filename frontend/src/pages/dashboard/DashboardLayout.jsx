@@ -39,12 +39,39 @@ export default function DashboardLayout() {
   const { user, token, logout } = useAuth();
   const [, setLocation] = useLocation();
   const [activeNav, setActiveNav] = useState("dashboard");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    if (typeof window !== "undefined") {
+      return window.innerWidth >= 1024;
+    }
+    return true;
+  });
   const [clockStr, setClockStr] = useState("--:--:--");
   const [selectedItem, setSelectedItem] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Responsive Media Query Listener for Screen Resize
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mql = window.matchMedia("(max-width: 1023px)");
+    const handleMediaChange = (e) => {
+      if (e.matches) {
+        setIsSidebarOpen(false);
+      } else {
+        setIsSidebarOpen(true);
+      }
+    };
+    mql.addEventListener("change", handleMediaChange);
+    return () => mql.removeEventListener("change", handleMediaChange);
+  }, []);
+
+  const handleNavClick = (id) => {
+    setActiveNav(id);
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      setIsSidebarOpen(false);
+    }
+  };
 
   const userRole = (user?.role || "analyst").toLowerCase();
   const isAdmin = userRole !== "user";
@@ -218,156 +245,170 @@ export default function DashboardLayout() {
         backgroundAttachment: "fixed",
       }}
     >
-      {/* ---------- SIDEBAR (Pure matte black full-height) ---------- */}
+      {/* ---------- SIDEBAR (Responsive & Collapsible) ---------- */}
       {isSidebarOpen && (
-        <aside className="w-[260px] shrink-0 h-screen sticky top-0 flex flex-col border-r border-[#18181b] bg-[#000000] z-30 transition-all duration-300">
-          {/* Top Brand & Hide Sidebar Button */}
-          <div className="flex items-center justify-between px-5 py-4.5 border-b border-[#18181b]">
-            <Link href="/" className="hover:opacity-90 transition-opacity flex items-center">
-              <ThreatLensLogo className="h-7 w-auto" />
-            </Link>
-            <button
-              onClick={() => setIsSidebarOpen(false)}
-              title="Hide sidebar"
-              className="p-2 rounded-xl text-white hover:bg-[#18181b] border border-[#27272a] hover:border-white/20 transition-all cursor-pointer shadow-sm flex items-center justify-center"
-            >
-              <PanelLeftClose className="w-5 h-5 text-white" />
-            </button>
-          </div>
+        <>
+          {/* Mobile backdrop overlay */}
+          <div
+            onClick={() => setIsSidebarOpen(false)}
+            className="fixed inset-0 bg-black/75 backdrop-blur-xs z-40 lg:hidden cursor-pointer"
+            aria-hidden="true"
+          />
 
-          {/* Navigation Links */}
-          <nav className="flex-1 overflow-y-auto p-4 space-y-1">
-            <div className="text-[11px] text-[#6EA8DA] font-bold uppercase tracking-[1.5px] mb-2 px-2">
-              Overview
-            </div>
-            {[
-              { id: "dashboard", icon: "▣", label: "Dashboard", color: "#6EA8DA" },
-              { id: "repositories", icon: "◧", label: "Repositories", color: "#6EA8DA" },
-              { id: "commits", icon: "↯", label: "Commits", color: "#6EA8DA" },
-            ].map((item) => (
+          <aside className="w-[260px] shrink-0 h-screen fixed lg:sticky top-0 left-0 flex flex-col border-r border-[#18181b] bg-[#000000] z-50 lg:z-30 transition-all duration-300 shadow-2xl lg:shadow-none">
+            {/* Top Brand & Hide Sidebar Button */}
+            <div className="flex items-center justify-between px-5 py-4.5 border-b border-[#18181b]">
+              <Link href="/" className="hover:opacity-90 transition-opacity flex items-center">
+                <ThreatLensLogo className="h-7 w-auto" />
+              </Link>
               <button
-                key={item.id}
-                onClick={() => setActiveNav(item.id)}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-semibold border transition-all text-left cursor-pointer text-white ${
-                  activeNav === item.id
-                    ? "bg-[#1D3557]/80 text-white border-[#2C6CB0]"
-                    : "border-transparent hover:bg-[#18181b] text-white/90 hover:text-white"
-                }`}
+                onClick={() => setIsSidebarOpen(false)}
+                title="Hide sidebar"
+                className="p-2 rounded-xl text-white hover:bg-[#18181b] border border-[#27272a] hover:border-white/20 transition-all cursor-pointer shadow-sm flex items-center justify-center"
               >
-                <span
-                  className="w-4 text-center text-sm font-bold text-white"
-                  style={{ color: activeNav === item.id ? item.color : "#ffffff" }}
-                >
-                  {item.icon}
-                </span>
-                <span className="text-white">{item.label}</span>
+                <PanelLeftClose className="w-5 h-5 text-white" />
               </button>
-            ))}
-
-            <div className="text-[11px] text-[#C8A27A] font-bold uppercase tracking-[1.5px] mt-5 mb-2 px-2">
-              Security
             </div>
-            {[
-              { id: "findings", icon: "⌁", label: "Live Findings", color: "#C8A27A" },
-              { id: "secrets", icon: "⚑", label: "Secret Detection", color: "#C8A27A" },
-              { id: "cicd", icon: "◫", label: "CI/CD & Docker", color: "#C8A27A" },
-            ].map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setActiveNav(item.id)}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-semibold border transition-all text-left cursor-pointer text-white ${
-                  activeNav === item.id
-                    ? "bg-[#1D3557]/80 text-white border-[#2C6CB0]"
-                    : "border-transparent hover:bg-[#18181b] text-white/90 hover:text-white"
-                }`}
-              >
-                <span
-                  className="w-4 text-center text-sm font-bold text-white"
-                  style={{ color: activeNav === item.id ? item.color : "#ffffff" }}
-                >
-                  {item.icon}
-                </span>
-                <span className="text-white">{item.label}</span>
-              </button>
-            ))}
 
-            {isAdmin && (
-              <>
-                <div className="text-[11px] text-[#6EA8DA] font-bold uppercase tracking-[1.5px] mt-5 mb-2 px-2">
-                  Admin
-                </div>
-                {[
-                  { id: "accounts", icon: "☰", label: "Accounts", color: "#6EA8DA" },
-                  { id: "config", icon: "⚙", label: "System Config", color: "#6EA8DA" },
-                  { id: "sessions", icon: "◔", label: "Sessions", color: "#6EA8DA" },
-                ].map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveNav(item.id)}
-                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-semibold border transition-all text-left cursor-pointer text-white ${
-                      activeNav === item.id
-                        ? "bg-[#1D3557]/80 text-white border-[#2C6CB0]"
-                        : "border-transparent hover:bg-[#18181b] text-white/90 hover:text-white"
-                    }`}
-                  >
-                    <span
-                      className="w-4 text-center text-sm font-bold text-white"
-                      style={{ color: activeNav === item.id ? item.color : "#ffffff" }}
-                    >
-                      {item.icon}
-                    </span>
-                    <span className="text-white">{item.label}</span>
-                  </button>
-                ))}
-              </>
-            )}
-          </nav>
-
-          {/* Bottom User Card / Profile */}
-          <div className="p-3 border-t border-[#18181b] space-y-1 bg-[#000000]">
-            <button
-              onClick={() => setIsProfileOpen(true)}
-              title="Edit Profile & Account Details"
-              className="w-full flex items-center gap-3 p-2.5 rounded-xl bg-[#0c0c0e] hover:bg-[#1D3557]/40 border border-[#222225] hover:border-[#2C6CB0]/60 transition-all text-left group cursor-pointer"
-            >
-              {user?.avatar_url ? (
-                <img
-                  src={user.avatar_url}
-                  alt=""
-                  className="w-8 h-8 rounded-full object-cover border border-[#6EA8DA]/50"
-                />
-              ) : (
-                <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-sm group-hover:scale-105 transition-transform shrink-0"
-                  style={{
-                    background: "linear-gradient(135deg, #2C6CB0, #6EA8DA)",
-                  }}
-                >
-                  {user?.name ? user.name.slice(0, 2).toUpperCase() : "TL"}
-                </div>
-              )}
-              <div className="min-w-0 flex-1">
-                <div className="text-xs text-[#EAF2F8] font-semibold truncate group-hover:text-[#6EA8DA] transition-colors">
-                  {user?.name || "User"}
-                </div>
-                <div className="text-[#8a99ad] text-[10px] uppercase font-medium tracking-wider truncate mt-0.5">
-                  {user?.role || "analyst"} · edit
-                </div>
+            {/* Navigation Links */}
+            <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+              <div className="text-[9px] text-[#6EA8DA] font-bold uppercase tracking-[1.6px] mb-1.5 px-2">
+                Overview
               </div>
-            </button>
-          </div>
-        </aside>
+              {[
+                { id: "dashboard", icon: "▣", label: "Dashboard", color: "#6EA8DA" },
+                { id: "repositories", icon: "◧", label: "Repositories", color: "#6EA8DA" },
+                { id: "commits", icon: "↯", label: "Commits", color: "#6EA8DA" },
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => handleNavClick(item.id)}
+                  className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold border transition-all text-left cursor-pointer text-white ${
+                    activeNav === item.id
+                      ? "bg-[#1D3557]/80 text-white border-[#2C6CB0]"
+                      : "border-transparent hover:bg-[#18181b] text-white/90 hover:text-white"
+                  }`}
+                >
+                  <span
+                    className="w-3.5 text-center text-[10.5px] font-bold text-white shrink-0"
+                    style={{ color: activeNav === item.id ? item.color : "#ffffff" }}
+                  >
+                    {item.icon}
+                  </span>
+                  <span className="text-white truncate">{item.label}</span>
+                </button>
+              ))}
+
+              <div className="text-[9px] text-[#C8A27A] font-bold uppercase tracking-[1.6px] mt-4 mb-1.5 px-2">
+                Security
+              </div>
+              {[
+                { id: "findings", icon: "⌁", label: "Live Findings", color: "#C8A27A" },
+                { id: "secrets", icon: "⚑", label: "Secret Detection", color: "#C8A27A" },
+                { id: "cicd", icon: "◫", label: "CI/CD & Docker", color: "#C8A27A" },
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => handleNavClick(item.id)}
+                  className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold border transition-all text-left cursor-pointer text-white ${
+                    activeNav === item.id
+                      ? "bg-[#1D3557]/80 text-white border-[#2C6CB0]"
+                      : "border-transparent hover:bg-[#18181b] text-white/90 hover:text-white"
+                  }`}
+                >
+                  <span
+                    className="w-3.5 text-center text-[10.5px] font-bold text-white shrink-0"
+                    style={{ color: activeNav === item.id ? item.color : "#ffffff" }}
+                  >
+                    {item.icon}
+                  </span>
+                  <span className="text-white truncate">{item.label}</span>
+                </button>
+              ))}
+
+              {isAdmin && (
+                <>
+                  <div className="text-[9px] text-[#6EA8DA] font-bold uppercase tracking-[1.6px] mt-4 mb-1.5 px-2">
+                    Admin
+                  </div>
+                  {[
+                    { id: "accounts", icon: "☰", label: "Accounts", color: "#6EA8DA" },
+                    { id: "config", icon: "⚙", label: "System Config", color: "#6EA8DA" },
+                    { id: "sessions", icon: "◔", label: "Sessions", color: "#6EA8DA" },
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => handleNavClick(item.id)}
+                      className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold border transition-all text-left cursor-pointer text-white ${
+                        activeNav === item.id
+                          ? "bg-[#1D3557]/80 text-white border-[#2C6CB0]"
+                          : "border-transparent hover:bg-[#18181b] text-white/90 hover:text-white"
+                      }`}
+                    >
+                      <span
+                        className="w-3.5 text-center text-[10.5px] font-bold text-white shrink-0"
+                        style={{ color: activeNav === item.id ? item.color : "#ffffff" }}
+                      >
+                        {item.icon}
+                      </span>
+                      <span className="text-white truncate">{item.label}</span>
+                    </button>
+                  ))}
+                </>
+              )}
+            </nav>
+
+            {/* Bottom User Card / Profile */}
+            <div className="p-3 border-t border-[#18181b] space-y-1 bg-[#000000]">
+              <button
+                onClick={() => {
+                  setIsProfileOpen(true);
+                  if (typeof window !== "undefined" && window.innerWidth < 1024) {
+                    setIsSidebarOpen(false);
+                  }
+                }}
+                title="Edit Profile & Account Details"
+                className="w-full flex items-center gap-2.5 p-2 rounded-xl bg-[#0c0c0e] hover:bg-[#1D3557]/40 border border-[#222225] hover:border-[#2C6CB0]/60 transition-all text-left group cursor-pointer"
+              >
+                {user?.avatar_url ? (
+                  <img
+                    src={user.avatar_url}
+                    alt=""
+                    className="w-7 h-7 rounded-full object-cover border border-[#6EA8DA]/50"
+                  />
+                ) : (
+                  <div
+                    className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white shadow-sm group-hover:scale-105 transition-transform shrink-0"
+                    style={{
+                      background: "linear-gradient(135deg, #2C6CB0, #6EA8DA)",
+                    }}
+                  >
+                    {user?.name ? user.name.slice(0, 2).toUpperCase() : "TL"}
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="text-[11.5px] text-[#EAF2F8] font-semibold truncate group-hover:text-[#6EA8DA] transition-colors">
+                    {user?.name || "User"}
+                  </div>
+                  <div className="text-[#8a99ad] text-[9.5px] uppercase font-medium tracking-wider truncate">
+                    {user?.role || "analyst"} · edit
+                  </div>
+                </div>
+              </button>
+            </div>
+          </aside>
+        </>
       )}
 
       {/* ---------- MAIN CONTENT AREA ---------- */}
       <div className="flex-1 min-w-0 flex flex-col min-h-screen">
         {/* Toggle Button when Sidebar is Hidden */}
         {!isSidebarOpen && (
-          <div className="sticky top-0 z-20 flex items-center gap-3 px-6 py-4 bg-[#000000]/90 backdrop-blur-md border-b border-[#18181b]">
+          <div className="sticky top-0 z-20 flex items-center gap-3 px-4 lg:px-6 py-3.5 bg-[#000000]/90 backdrop-blur-md border-b border-[#18181b]">
             <button
               onClick={() => setIsSidebarOpen(true)}
               title="Open sidebar"
-              className="p-2.5 rounded-xl text-white hover:text-white bg-[#0c0c0e] hover:bg-[#18181b] border border-[#27272a] hover:border-white/20 transition-all cursor-pointer flex items-center gap-3 shadow-sm group"
+              className="p-2 lg:p-2.5 rounded-xl text-white hover:text-white bg-[#0c0c0e] hover:bg-[#18181b] border border-[#27272a] hover:border-white/20 transition-all cursor-pointer flex items-center gap-2.5 shadow-sm group"
             >
               <PanelLeftOpen className="w-5 h-5 text-white group-hover:scale-105 transition-transform" />
               <ThreatLensLogo className="h-6 w-auto" />

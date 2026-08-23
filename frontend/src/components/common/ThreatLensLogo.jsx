@@ -10,7 +10,6 @@ export function ThreatLensLogo({
   width,
 }) {
   const gradId = `${idPrefix}-emblem-grad`;
-  const glowId = `${idPrefix}-glow`;
   const accentGradId = `${idPrefix}-accent-grad`;
 
   const EmblemIcon = (
@@ -20,27 +19,20 @@ export function ThreatLensLogo({
       xmlns="http://www.w3.org/2000/svg"
       className="h-full w-auto aspect-square shrink-0"
       aria-hidden="true"
-      style={{ filter: "drop-shadow(0 0 10px rgba(0, 242, 254, 0.35))" }}
     >
       <defs>
-        {/* Main Neon Prism Gradient */}
+        {/* Main Palette Gradient */}
         <linearGradient id={gradId} x1="4" y1="4" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#00F2FE" />
-          <stop offset="45%" stopColor="#38BDF8" />
-          <stop offset="100%" stopColor="#2563EB" />
+          <stop offset="0%" stopColor="#6EA8DA" />
+          <stop offset="50%" stopColor="#2C6CB0" />
+          <stop offset="100%" stopColor="#1D3557" />
         </linearGradient>
 
-        {/* Secondary Deep Azure Gradient */}
+        {/* Secondary Palette Gradient */}
         <linearGradient id={accentGradId} x1="22" y1="8" x2="38" y2="38" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.9" />
-          <stop offset="100%" stopColor="#0284C7" stopOpacity="0.4" />
+          <stop offset="0%" stopColor="#6EA8DA" stopOpacity="0.9" />
+          <stop offset="100%" stopColor="#2C6CB0" stopOpacity="0.5" />
         </linearGradient>
-
-        {/* Outer Glow Filter */}
-        <filter id={glowId} x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur stdDeviation="3" result="blur" />
-          <feComposite in="SourceGraphic" in2="blur" operator="over" />
-        </filter>
       </defs>
 
       {/* Outer Hexagonal Shield Frame */}
@@ -75,7 +67,7 @@ export function ThreatLensLogo({
         opacity="0.9"
       />
 
-      {/* Central Cyber Diamond Lens Core */}
+      {/* Central Diamond Lens Core */}
       <polygon
         points="22,12 30,22 22,32 14,22"
         fill="#040814"
@@ -83,12 +75,12 @@ export function ThreatLensLogo({
         strokeWidth="1.5"
       />
 
-      {/* Focal Lens Aperture Star / Ray */}
-      <circle cx="22" cy="22" r="3" fill="#00F2FE" filter={`url(#${glowId})`} />
+      {/* Focal Lens Aperture */}
+      <circle cx="22" cy="22" r="3" fill="#6EA8DA" />
       <circle cx="22" cy="22" r="1.5" fill="#FFFFFF" />
 
-      {/* Precision Lens Scan Line */}
-      <line x1="8" y1="22" x2="36" y2="22" stroke="#00F2FE" strokeWidth="0.75" strokeDasharray="1.5 2" opacity="0.65" />
+      {/* Precision Scan Line */}
+      <line x1="8" y1="22" x2="36" y2="22" stroke="#6EA8DA" strokeWidth="0.75" strokeDasharray="1.5 2" opacity="0.65" />
     </svg>
   );
 
@@ -108,15 +100,15 @@ export function ThreatLensLogo({
       aria-label="ThreatLens"
     >
       {EmblemIcon}
-      <span className="flex items-center tracking-tight font-['Plus_Jakarta_Sans','Sora','Inter',sans-serif] leading-none">
-        <span className="font-extrabold text-[1.125rem] text-white tracking-[-0.03em] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
+      <span className="flex items-center tracking-tight font-sans leading-none">
+        <span className="font-extrabold text-[1.05rem] text-white tracking-[-0.02em]">
           Threat
         </span>
-        <span className="font-extrabold text-[1.125rem] bg-gradient-to-r from-[#00F2FE] via-[#38BDF8] to-[#60A5FA] bg-clip-text text-transparent tracking-[-0.03em] drop-shadow-[0_0_12px_rgba(0,242,254,0.3)]">
+        <span className="font-extrabold text-[1.05rem] text-[#6EA8DA] tracking-[-0.02em]">
           Lens
         </span>
         {showBadge && (
-          <span className="ml-1.5 px-1.5 py-0.5 rounded-[4px] text-[9px] font-mono font-bold tracking-wider uppercase bg-[#1e3cff]/20 text-[#38bdf8] border border-[#38bdf8]/35 shadow-[0_0_8px_rgba(56,189,248,0.25)]">
+          <span className="ml-1.5 px-1.5 py-0.5 rounded-[4px] text-[9px] font-sans font-bold tracking-wider uppercase bg-[#1D3557] text-[#6EA8DA] border border-[#2C6CB0]/40">
             AI
           </span>
         )}

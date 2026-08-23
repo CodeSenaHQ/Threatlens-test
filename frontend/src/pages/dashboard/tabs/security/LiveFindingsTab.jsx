@@ -189,14 +189,14 @@ export default function LiveFindingsTab({ onInspectFinding }) {
       {/* Findings Table */}
       {!scannerOnline && !loading ? (
         <div className="text-center py-16">
-          <WifiOff className="w-8 h-8 mx-auto text-[#ff9a3c] mb-3" />
-          <p className="font-mono text-sm text-[#8a99ad]">SecTest scanner is offline</p>
-          <p className="font-mono text-xs text-[#6f8390] mt-1">Start the scanner on port 8765 to see live vulnerability findings</p>
+          <WifiOff className="w-8 h-8 mx-auto text-[#C8A27A] mb-3" />
+          <p className="text-sm text-[#8a99ad]">SecTest scanner is offline</p>
+          <p className="text-xs text-[#6f8390] mt-1">Start the scanner on port 8765 to see live vulnerability findings</p>
         </div>
       ) : (
         <div className="bg-[#10151a] border border-[#263544] rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
           <div className="flex items-center justify-between p-3.5 px-4.5 border-b border-[#253240] bg-[#12181f]/60">
-            <h2 className="font-mono text-xs font-bold text-white uppercase tracking-wider">
+            <h2 className="text-xs font-bold text-white uppercase tracking-wider">
               Detected Vulnerabilities & Exploits
             </h2>
             <div className="font-mono text-[10px] text-[#8a99ad]">GET :8765/report.json</div>

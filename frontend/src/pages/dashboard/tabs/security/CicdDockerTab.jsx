@@ -74,15 +74,15 @@ export default function CicdDockerTab() {
       {/* Top Page Header */}
       <div className="flex flex-wrap items-end justify-between gap-4 pb-2 border-b border-[#253240]/60">
         <div>
-          <h1 className="font-mono text-lg font-bold tracking-tight text-white">CI/CD Pipeline & Docker Audit</h1>
-          <p className="text-xs text-[#8a99ad] mt-1 font-mono">
+          <h1 className="text-xl font-bold tracking-tight text-white">CI/CD Pipeline & Docker Audit</h1>
+          <p className="text-xs text-[#8a99ad] mt-1">
             Extracted from commit findings · categories: cicd_security, docker_security · {audits.length} audit entries
           </p>
         </div>
-        <div className="flex items-center gap-3 font-mono text-xs">
+        <div className="flex items-center gap-3 text-xs">
           <button
             onClick={() => toast.success("Exported CI/CD & Docker audit report")}
-            className="px-4 py-2 rounded-lg border border-[#2b3947] bg-[#10151a] text-[#d8e2e8] hover:border-white/[0.2] hover:bg-[#141b21] shadow-sm transition-all cursor-pointer flex items-center gap-2"
+            className="px-4 py-2 rounded-lg border border-[#2b3947] bg-[#10151a] text-[#d8e2e8] hover:border-white/[0.2] hover:bg-[#141b21] shadow-sm transition-all cursor-pointer flex items-center gap-2 font-medium"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export Audit</span>
@@ -93,28 +93,28 @@ export default function CicdDockerTab() {
       {/* KPI Ribbon */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4.5">
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#38bdf8] shadow-[0_0_10px_#38bdf8]" />
-          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Total Audits</div>
-          <div className="font-mono text-xl font-bold mt-1.5 text-white">{loading ? "…" : audits.length}</div>
-          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">CI/CD + Docker</div>
+          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#6EA8DA]" />
+          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-semibold">Total Audits</div>
+          <div className="text-xl font-bold mt-1.5 text-white">{loading ? "…" : audits.length}</div>
+          <div className="text-[11px] text-[#8a99ad] mt-1">CI/CD + Docker</div>
         </div>
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#ff9a3c] shadow-[0_0_10px_#ff9a3c]" />
-          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Open Issues</div>
-          <div className="font-mono text-xl font-bold mt-1.5 text-[#ff9a3c]">{loading ? "…" : open}</div>
-          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">require remediation</div>
+          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#C8A27A]" />
+          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-semibold">Open Issues</div>
+          <div className="text-xl font-bold mt-1.5 text-[#C8A27A]">{loading ? "…" : open}</div>
+          <div className="text-[11px] text-[#8a99ad] mt-1">require remediation</div>
         </div>
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-emerald-400 shadow-[0_0_10px_#34d399]" />
-          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Remediated</div>
-          <div className="font-mono text-xl font-bold mt-1.5 text-emerald-400">{loading ? "…" : remediated}</div>
-          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">issues fixed</div>
+          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#2C6CB0]" />
+          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-semibold">Remediated</div>
+          <div className="text-xl font-bold mt-1.5 text-[#6EA8DA]">{loading ? "…" : remediated}</div>
+          <div className="text-[11px] text-[#8a99ad] mt-1">issues fixed</div>
         </div>
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#38bdf8] shadow-[0_0_10px_#38bdf8]" />
-          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Scan Status</div>
-          <div className="font-mono text-xl font-bold mt-1.5 text-[#38bdf8]">{loading ? "Scanning…" : "Complete"}</div>
-          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">commit-level audit</div>
+          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#1D3557] border-r border-[#6EA8DA]/40" />
+          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-semibold">Scan Status</div>
+          <div className="text-xl font-bold mt-1.5 text-[#6EA8DA]">{loading ? "Scanning…" : "Complete"}</div>
+          <div className="text-[11px] text-[#8a99ad] mt-1">commit-level audit</div>
         </div>
       </div>
 
@@ -127,14 +127,14 @@ export default function CicdDockerTab() {
         </div>
       ) : audits.length === 0 ? (
         <div className="text-center py-16">
-          <ShieldCheck className="w-8 h-8 mx-auto text-emerald-400 mb-3" />
-          <p className="font-mono text-sm text-[#8a99ad]">No CI/CD or Docker security issues found</p>
-          <p className="font-mono text-xs text-[#6f8390] mt-1">Your pipelines and container configurations appear clean.</p>
+          <ShieldCheck className="w-8 h-8 mx-auto text-[#6EA8DA] mb-3" />
+          <p className="text-sm text-[#8a99ad]">No CI/CD or Docker security issues found</p>
+          <p className="text-xs text-[#6f8390] mt-1">Your pipelines and container configurations appear clean.</p>
         </div>
       ) : (
         <div className="bg-[#10151a] border border-[#263544] rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
           <div className="flex items-center justify-between p-3.5 px-4.5 border-b border-[#253240] bg-[#12181f]/60">
-            <h2 className="font-mono text-xs font-bold text-white uppercase tracking-wider">Pipeline & Container Audit Entries</h2>
+            <h2 className="text-xs font-bold text-white uppercase tracking-wider">Pipeline & Container Audit Entries</h2>
           </div>
           <div className="divide-y divide-[#222e3a]">
             {audits.map((audit, i) => {

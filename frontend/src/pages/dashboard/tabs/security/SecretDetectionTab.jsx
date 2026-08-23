@@ -161,14 +161,14 @@ export default function SecretDetectionTab() {
         </div>
       ) : secrets.length === 0 ? (
         <div className="text-center py-16">
-          <ShieldAlert className="w-8 h-8 mx-auto text-[#38bdf8] mb-3" />
-          <p className="font-mono text-sm text-[#8a99ad]">No secrets detected in commit history</p>
-          <p className="font-mono text-xs text-[#6f8390] mt-1">This is good! Your codebase appears clean of leaked credentials.</p>
+          <ShieldAlert className="w-8 h-8 mx-auto text-[#6EA8DA] mb-3" />
+          <p className="text-sm text-[#8a99ad]">No secrets detected in commit history</p>
+          <p className="text-xs text-[#6f8390] mt-1">This is good! Your codebase appears clean of leaked credentials.</p>
         </div>
       ) : (
         <div className="bg-[#10151a] border border-[#263544] rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
           <div className="flex items-center justify-between p-3.5 px-4.5 border-b border-[#253240] bg-[#12181f]/60">
-            <h2 className="font-mono text-xs font-bold text-white uppercase tracking-wider">Detected Secrets & Credentials</h2>
+            <h2 className="text-xs font-bold text-white uppercase tracking-wider">Detected Secrets & Credentials</h2>
           </div>
           <div className="divide-y divide-[#222e3a]">
             {filteredSecrets.map((s, i) => {

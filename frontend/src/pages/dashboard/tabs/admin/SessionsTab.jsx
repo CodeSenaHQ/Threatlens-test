@@ -82,15 +82,15 @@ export default function SessionsTab() {
       {/* Top Page Header */}
       <div className="flex flex-wrap items-end justify-between gap-4 pb-2 border-b border-[#253240]/60">
         <div>
-          <h1 className="font-mono text-lg font-bold tracking-tight text-white">Active Device Sessions</h1>
-          <p className="text-xs text-[#8a99ad] mt-1 font-mono">
+          <h1 className="text-xl font-bold tracking-tight text-white">Active Device Sessions</h1>
+          <p className="text-xs text-[#8a99ad] mt-1">
             GET /tc-auth/session · cryptographic session JWT tokens, client IPs & single-click token revocation
           </p>
         </div>
-        <div className="flex items-center gap-3 font-mono text-xs">
+        <div className="flex items-center gap-3 text-xs">
           <button
             onClick={handleRevokeAllOthers}
-            className="px-4 py-2 rounded-lg border border-rose-500/40 bg-rose-500/15 text-rose-400 font-bold hover:bg-rose-500/25 shadow-sm transition-all cursor-pointer flex items-center gap-2"
+            className="px-4 py-2 rounded-lg border border-[#C8A27A]/40 bg-[#C8A27A]/15 text-[#C8A27A] font-semibold hover:bg-[#C8A27A]/25 shadow-sm transition-all cursor-pointer flex items-center gap-2"
           >
             <Trash2 className="w-3.5 h-3.5" />
             <span>Revoke All Other Sessions</span>
@@ -101,10 +101,10 @@ export default function SessionsTab() {
       {/* KPI Ribbon */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4.5">
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#38bdf8] shadow-[0_0_10px_#38bdf8]" />
-          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Active Tokens</div>
-          <div className="font-mono text-xl font-bold mt-1.5 text-white">{loading ? "…" : `${sessions.length} Active`}</div>
-          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">JWT signed</div>
+          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#6EA8DA]" />
+          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-semibold">Active Tokens</div>
+          <div className="text-xl font-bold mt-1.5 text-white">{loading ? "…" : `${sessions.length} Active`}</div>
+          <div className="text-[11px] text-[#8a99ad] mt-1">JWT signed</div>
         </div>
 
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">

@@ -73,22 +73,22 @@ export default function RepositoriesTab({ onSelectRepo, onInspectCommit }) {
       {/* Top Page Header */}
       <div className="flex flex-wrap items-end justify-between gap-4 pb-2 border-b border-[#253240]/60">
         <div>
-          <h1 className="font-mono text-lg font-bold tracking-tight text-white">Monitored Repositories</h1>
-          <p className="text-xs text-[#8a99ad] mt-1 font-mono">
+          <h1 className="text-xl font-bold tracking-tight text-white">Monitored Repositories</h1>
+          <p className="text-xs text-[#8a99ad] mt-1">
             GET /repo · {repos.length} codebases monitored · automated AST static analysis & branch tracking
           </p>
         </div>
-        <div className="flex items-center gap-3 font-mono text-xs">
+        <div className="flex items-center gap-3 text-xs">
           <button
             onClick={handleExportRepoSummary}
-            className="px-4 py-2 rounded-lg border border-[#2b3947] bg-[#10151a] text-[#d8e2e8] hover:border-white/[0.2] hover:bg-[#141b21] shadow-sm transition-all cursor-pointer flex items-center gap-2"
+            className="px-4 py-2 rounded-lg border border-[#2b3947] bg-[#10151a] text-[#d8e2e8] hover:border-white/[0.2] hover:bg-[#141b21] shadow-sm transition-all cursor-pointer flex items-center gap-2 font-medium"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export Manifest</span>
           </button>
           <button
             onClick={() => toast.info("Importing repository from GitHub/GitLab...")}
-            className="px-4 py-2 rounded-lg border border-[#38bdf8] bg-[#38bdf8] text-[#04140c] font-bold hover:brightness-110 shadow-[0_0_16px_rgba(56,189,248,0.4)] transition-all cursor-pointer flex items-center gap-2"
+            className="px-4 py-2 rounded-lg bg-[#2962FF] hover:bg-[#1e4ed8] text-white font-semibold shadow-[0_0_15px_rgba(41,98,255,0.35)] transition-all cursor-pointer flex items-center gap-2"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add Repository</span>
@@ -99,31 +99,31 @@ export default function RepositoriesTab({ onSelectRepo, onInspectCommit }) {
       {/* KPI Ribbon */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4.5">
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#38bdf8] shadow-[0_0_10px_#38bdf8]" />
-          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Active Codebases</div>
-          <div className="font-mono text-xl font-bold mt-1.5 text-white">{loading ? "…" : `${repos.length} Monitored`}</div>
-          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">100% git remote synced</div>
+          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#6EA8DA]" />
+          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-semibold">Active Codebases</div>
+          <div className="text-xl font-bold mt-1.5 text-white">{loading ? "…" : `${repos.length} Monitored`}</div>
+          <div className="text-[11px] text-[#8a99ad] mt-1">100% git remote synced</div>
         </div>
 
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#38bdf8] shadow-[0_0_10px_#38bdf8]" />
-          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Indexed Commits</div>
-          <div className="font-mono text-xl font-bold mt-1.5 text-white">{loading ? "…" : `${totalCommits.toLocaleString()} Total`}</div>
-          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">across all repositories</div>
+          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#C8A27A]" />
+          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-semibold">Indexed Commits</div>
+          <div className="text-xl font-bold mt-1.5 text-white">{loading ? "…" : `${totalCommits.toLocaleString()} Total`}</div>
+          <div className="text-[11px] text-[#8a99ad] mt-1">across all repositories</div>
         </div>
 
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#38bdf8] shadow-[0_0_10px_#38bdf8]" />
-          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Total Files</div>
-          <div className="font-mono text-xl font-bold mt-1.5 text-white">{loading ? "…" : `${totalFiles.toLocaleString()} Tracked`}</div>
-          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">indexed for analysis</div>
+          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#2C6CB0]" />
+          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-semibold">Total Files</div>
+          <div className="text-xl font-bold mt-1.5 text-white">{loading ? "…" : `${totalFiles.toLocaleString()} Tracked`}</div>
+          <div className="text-[11px] text-[#8a99ad] mt-1">indexed for analysis</div>
         </div>
 
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#38bdf8] shadow-[0_0_10px_#38bdf8]" />
-          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Total Footprint</div>
-          <div className="font-mono text-xl font-bold mt-1.5 text-white">{loading ? "…" : formatBytes(totalSize)}</div>
-          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">{totalFiles.toLocaleString()} files indexed</div>
+          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#1D3557] border-r border-[#6EA8DA]/40" />
+          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-semibold">Total Footprint</div>
+          <div className="text-xl font-bold mt-1.5 text-[#6EA8DA]">{loading ? "…" : formatBytes(totalSize)}</div>
+          <div className="text-[11px] text-[#8a99ad] mt-1">{totalFiles.toLocaleString()} files indexed</div>
         </div>
       </div>
 

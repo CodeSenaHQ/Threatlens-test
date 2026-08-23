@@ -105,17 +105,17 @@ function Navbar() {
       <div className="nav-shell">
         <Brand />
         <nav className="desktop-nav" aria-label="Main navigation">
-          <Link href="/dashboard" className="text-white font-semibold text-[15px] hover:text-white/80 transition-colors flex items-center gap-1.5">
+          <Link href="/dashboard" className="text-[#8a99ad] hover:text-[#EAF2F8] font-medium text-[14px] transition-colors flex items-center gap-1.5">
             Dashboard
           </Link>
-          <Link href="/commit-analysis" className="text-white font-semibold text-[15px] hover:text-white/80 transition-colors flex items-center gap-1.5">
+          <Link href="/commit-analysis" className="text-[#8a99ad] hover:text-[#EAF2F8] font-medium text-[14px] transition-colors flex items-center gap-1.5">
             Commit Analysis
           </Link>
         </nav>
         <div className="nav-actions">
-          <a className="github-link text-white font-semibold text-[15px] hover:text-white/80 transition-colors flex items-center gap-2" href="https://github.com" target="_blank" rel="noreferrer" aria-label="Open GitHub">
-            <Github size={18} className="text-white" />
-            <span className="text-white font-semibold text-[15px]">GitHub</span>
+          <a className="github-link text-[#8a99ad] hover:text-[#EAF2F8] font-medium text-[14px] transition-colors flex items-center gap-2" href="https://github.com" target="_blank" rel="noreferrer" aria-label="Open GitHub">
+            <Github size={17} className="text-[#8a99ad]" />
+            <span className="text-[#8a99ad] hover:text-[#EAF2F8]">GitHub</span>
           </a>
 
           {user ? (

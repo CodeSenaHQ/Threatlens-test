@@ -61,15 +61,15 @@ export default function AccountsTab() {
       {/* Top Page Header */}
       <div className="flex flex-wrap items-end justify-between gap-4 pb-2 border-b border-[#253240]/60">
         <div>
-          <h1 className="font-mono text-lg font-bold tracking-tight text-white">Accounts & User Directory</h1>
-          <p className="text-xs text-[#8a99ad] mt-1 font-mono">
+          <h1 className="text-xl font-bold tracking-tight text-white">Accounts & User Directory</h1>
+          <p className="text-xs text-[#8a99ad] mt-1">
             GET /tc-auth/account · role-based access control (RBAC), analyst provisioning & permission directory
           </p>
         </div>
-        <div className="flex items-center gap-3 font-mono text-xs">
+        <div className="flex items-center gap-3 text-xs">
           <button
             onClick={() => toast.info("Creating new user account dialog...")}
-            className="px-4 py-2 rounded-lg border border-[#38bdf8] bg-[#38bdf8] text-[#04140c] font-bold hover:brightness-110 shadow-[0_0_16px_rgba(56,189,248,0.4)] transition-all cursor-pointer flex items-center gap-2"
+            className="px-4 py-2 rounded-lg bg-[#2962FF] hover:bg-[#1e4ed8] text-white font-semibold shadow-[0_0_15px_rgba(41,98,255,0.35)] transition-all cursor-pointer flex items-center gap-2"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>New User</span>
@@ -80,31 +80,31 @@ export default function AccountsTab() {
       {/* KPI Ribbon */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4.5">
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#38bdf8] shadow-[0_0_10px_#38bdf8]" />
-          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Total Accounts</div>
-          <div className="font-mono text-xl font-bold mt-1.5 text-white">{loading ? "…" : `${totalAccounts} Users`}</div>
-          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">page {page}</div>
+          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#6EA8DA]" />
+          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-semibold">Total Accounts</div>
+          <div className="text-xl font-bold mt-1.5 text-white">{loading ? "…" : `${totalAccounts} Users`}</div>
+          <div className="text-[11px] text-[#8a99ad] mt-1">page {page}</div>
         </div>
 
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#38bdf8] shadow-[0_0_10px_#38bdf8]" />
-          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Superadmins</div>
-          <div className="font-mono text-xl font-bold mt-1.5 text-white">{loading ? "…" : `${superadminCount} Roles`}</div>
-          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">elevated privileges</div>
+          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#C8A27A]" />
+          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-semibold">Superadmins</div>
+          <div className="text-xl font-bold mt-1.5 text-white">{loading ? "…" : `${superadminCount} Roles`}</div>
+          <div className="text-[11px] text-[#8a99ad] mt-1">elevated privileges</div>
         </div>
 
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#38bdf8] shadow-[0_0_10px_#38bdf8]" />
-          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Active Users</div>
-          <div className="font-mono text-xl font-bold mt-1.5 text-white">{loading ? "…" : `${activeCount} Active`}</div>
-          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">verified standing</div>
+          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#2C6CB0]" />
+          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-semibold">Active Users</div>
+          <div className="text-xl font-bold mt-1.5 text-white">{loading ? "…" : `${activeCount} Active`}</div>
+          <div className="text-[11px] text-[#8a99ad] mt-1">verified standing</div>
         </div>
 
         <div className="bg-[#10151a] border border-[#263544] rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#38bdf8] shadow-[0_0_10px_#38bdf8]" />
-          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-mono font-semibold">Non-Admin</div>
-          <div className="font-mono text-xl font-bold mt-1.5 text-[#38bdf8]">{loading ? "…" : `${totalAccounts - superadminCount} Users`}</div>
-          <div className="text-[11px] text-[#8a99ad] mt-1 font-mono">standard permissions</div>
+          <div className="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#1D3557] border-r border-[#6EA8DA]/40" />
+          <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-semibold">Non-Admin</div>
+          <div className="text-xl font-bold mt-1.5 text-[#6EA8DA]">{loading ? "…" : `${totalAccounts - superadminCount} Users`}</div>
+          <div className="text-[11px] text-[#8a99ad] mt-1">standard permissions</div>
         </div>
       </div>
 

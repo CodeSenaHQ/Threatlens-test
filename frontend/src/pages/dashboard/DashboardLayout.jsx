@@ -256,110 +256,154 @@ export default function DashboardLayout() {
           />
 
           <aside className="w-[260px] shrink-0 h-screen fixed lg:sticky top-0 left-0 flex flex-col border-r border-[#18181b] bg-[#000000] z-50 lg:z-30 transition-all duration-300 shadow-2xl lg:shadow-none">
-            {/* Top Brand & Hide Sidebar Button */}
-            <div className="flex items-center justify-between px-5 py-4.5 border-b border-[#18181b]">
+            {/* Top Brand */}
+            <div className="flex items-center px-5 py-4.5 border-b border-[#18181b]">
               <Link href="/" className="hover:opacity-90 transition-opacity flex items-center">
                 <ThreatLensLogo className="h-7 w-auto" />
               </Link>
-              <button
-                onClick={() => setIsSidebarOpen(false)}
-                title="Hide sidebar"
-                className="p-2 rounded-xl text-white hover:bg-[#18181b] border border-[#27272a] hover:border-white/20 transition-all cursor-pointer shadow-sm flex items-center justify-center"
-              >
-                <PanelLeftClose className="w-5 h-5 text-white" />
-              </button>
             </div>
 
             {/* Navigation Links */}
-            <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-              <div className="text-[9px] text-[#6EA8DA] font-bold uppercase tracking-[1.6px] mb-1.5 px-2">
-                Overview
+            <nav className="flex-1 overflow-y-auto p-2 space-y-0.5">
+              <div className="text-[7.5px] text-[#6EA8DA] font-bold uppercase tracking-[2px] mb-1 px-2 flex items-center gap-1.5">
+                <span className="w-1 h-1 rounded-full bg-[#6EA8DA] animate-pulse" />
+                <span>Overview</span>
               </div>
               {[
                 { id: "dashboard", icon: "▣", label: "Dashboard", color: "#6EA8DA" },
                 { id: "repositories", icon: "◧", label: "Repositories", color: "#6EA8DA" },
                 { id: "commits", icon: "↯", label: "Commits", color: "#6EA8DA" },
-              ].map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => handleNavClick(item.id)}
-                  className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold border transition-all text-left cursor-pointer text-white ${
-                    activeNav === item.id
-                      ? "bg-[#1D3557]/80 text-white border-[#2C6CB0]"
-                      : "border-transparent hover:bg-[#18181b] text-white/90 hover:text-white"
-                  }`}
-                >
-                  <span
-                    className="w-3.5 text-center text-[10.5px] font-bold text-white shrink-0"
-                    style={{ color: activeNav === item.id ? item.color : "#ffffff" }}
+              ].map((item) => {
+                const isActive = activeNav === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleNavClick(item.id)}
+                    className={`w-full group flex items-center gap-2 px-2 py-1 rounded-lg text-[9px] font-medium border transition-all duration-200 text-left cursor-pointer ${
+                      isActive
+                        ? "bg-[#1D3557]/80 text-white border-[#2C6CB0] translate-x-0.5 shadow-sm"
+                        : "border-transparent hover:bg-[#18181b] text-[#9caec2] hover:text-white hover:translate-x-0.5"
+                    }`}
                   >
-                    {item.icon}
-                  </span>
-                  <span className="text-white truncate">{item.label}</span>
-                </button>
-              ))}
+                    <span
+                      className={`w-0.5 h-2 rounded-full transition-all duration-200 ${
+                        isActive ? "bg-[#6EA8DA] opacity-100" : "bg-transparent opacity-0 group-hover:bg-[#6EA8DA]/50 group-hover:opacity-100"
+                      }`}
+                    />
+                    <span
+                      className={`w-3 text-center text-[8.5px] font-bold shrink-0 transition-all duration-200 group-hover:scale-110 ${
+                        isActive ? "text-white" : "text-[#9caec2] group-hover:text-white"
+                      }`}
+                      style={{ color: isActive ? item.color : undefined }}
+                    >
+                      {item.icon}
+                    </span>
+                    <span
+                      className={`truncate flex-1 transition-colors duration-200 ${
+                        isActive ? "text-white font-semibold" : "text-[#9caec2] group-hover:text-white"
+                      }`}
+                    >
+                      {item.label}
+                    </span>
+                  </button>
+                );
+              })}
 
-              <div className="text-[9px] text-[#C8A27A] font-bold uppercase tracking-[1.6px] mt-4 mb-1.5 px-2">
-                Security
+              <div className="text-[7.5px] text-[#C8A27A] font-bold uppercase tracking-[2px] mt-3 mb-1 px-2 flex items-center gap-1.5">
+                <span className="w-1 h-1 rounded-full bg-[#C8A27A] animate-pulse" />
+                <span>Security</span>
               </div>
               {[
                 { id: "findings", icon: "⌁", label: "Live Findings", color: "#C8A27A" },
                 { id: "secrets", icon: "⚑", label: "Secret Detection", color: "#C8A27A" },
                 { id: "cicd", icon: "◫", label: "CI/CD & Docker", color: "#C8A27A" },
-              ].map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => handleNavClick(item.id)}
-                  className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold border transition-all text-left cursor-pointer text-white ${
-                    activeNav === item.id
-                      ? "bg-[#1D3557]/80 text-white border-[#2C6CB0]"
-                      : "border-transparent hover:bg-[#18181b] text-white/90 hover:text-white"
-                  }`}
-                >
-                  <span
-                    className="w-3.5 text-center text-[10.5px] font-bold text-white shrink-0"
-                    style={{ color: activeNav === item.id ? item.color : "#ffffff" }}
+              ].map((item) => {
+                const isActive = activeNav === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleNavClick(item.id)}
+                    className={`w-full group flex items-center gap-2 px-2 py-1 rounded-lg text-[9px] font-medium border transition-all duration-200 text-left cursor-pointer ${
+                      isActive
+                        ? "bg-[#1D3557]/80 text-white border-[#2C6CB0] translate-x-0.5 shadow-sm"
+                        : "border-transparent hover:bg-[#18181b] text-[#9caec2] hover:text-white hover:translate-x-0.5"
+                    }`}
                   >
-                    {item.icon}
-                  </span>
-                  <span className="text-white truncate">{item.label}</span>
-                </button>
-              ))}
+                    <span
+                      className={`w-0.5 h-2 rounded-full transition-all duration-200 ${
+                        isActive ? "bg-[#C8A27A] opacity-100" : "bg-transparent opacity-0 group-hover:bg-[#C8A27A]/50 group-hover:opacity-100"
+                      }`}
+                    />
+                    <span
+                      className={`w-3 text-center text-[8.5px] font-bold shrink-0 transition-all duration-200 group-hover:scale-110 ${
+                        isActive ? "text-white" : "text-[#9caec2] group-hover:text-white"
+                      }`}
+                      style={{ color: isActive ? item.color : undefined }}
+                    >
+                      {item.icon}
+                    </span>
+                    <span
+                      className={`truncate flex-1 transition-colors duration-200 ${
+                        isActive ? "text-white font-semibold" : "text-[#9caec2] group-hover:text-white"
+                      }`}
+                    >
+                      {item.label}
+                    </span>
+                  </button>
+                );
+              })}
 
               {isAdmin && (
                 <>
-                  <div className="text-[9px] text-[#6EA8DA] font-bold uppercase tracking-[1.6px] mt-4 mb-1.5 px-2">
-                    Admin
+                  <div className="text-[7.5px] text-[#6EA8DA] font-bold uppercase tracking-[2px] mt-3 mb-1 px-2 flex items-center gap-1.5">
+                    <span className="w-1 h-1 rounded-full bg-[#6EA8DA] animate-pulse" />
+                    <span>Admin</span>
                   </div>
                   {[
                     { id: "accounts", icon: "☰", label: "Accounts", color: "#6EA8DA" },
                     { id: "config", icon: "⚙", label: "System Config", color: "#6EA8DA" },
                     { id: "sessions", icon: "◔", label: "Sessions", color: "#6EA8DA" },
-                  ].map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => handleNavClick(item.id)}
-                      className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold border transition-all text-left cursor-pointer text-white ${
-                        activeNav === item.id
-                          ? "bg-[#1D3557]/80 text-white border-[#2C6CB0]"
-                          : "border-transparent hover:bg-[#18181b] text-white/90 hover:text-white"
-                      }`}
-                    >
-                      <span
-                        className="w-3.5 text-center text-[10.5px] font-bold text-white shrink-0"
-                        style={{ color: activeNav === item.id ? item.color : "#ffffff" }}
+                  ].map((item) => {
+                    const isActive = activeNav === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => handleNavClick(item.id)}
+                        className={`w-full group flex items-center gap-2 px-2 py-1 rounded-lg text-[9px] font-medium border transition-all duration-200 text-left cursor-pointer ${
+                          isActive
+                            ? "bg-[#1D3557]/80 text-white border-[#2C6CB0] translate-x-0.5 shadow-sm"
+                            : "border-transparent hover:bg-[#18181b] text-[#9caec2] hover:text-white hover:translate-x-0.5"
+                        }`}
                       >
-                        {item.icon}
-                      </span>
-                      <span className="text-white truncate">{item.label}</span>
-                    </button>
-                  ))}
+                        <span
+                          className={`w-0.5 h-2 rounded-full transition-all duration-200 ${
+                            isActive ? "bg-[#6EA8DA] opacity-100" : "bg-transparent opacity-0 group-hover:bg-[#6EA8DA]/50 group-hover:opacity-100"
+                          }`}
+                        />
+                        <span
+                          className={`w-3 text-center text-[8.5px] font-bold shrink-0 transition-all duration-200 group-hover:scale-110 ${
+                            isActive ? "text-white" : "text-[#9caec2] group-hover:text-white"
+                          }`}
+                          style={{ color: isActive ? item.color : undefined }}
+                        >
+                          {item.icon}
+                        </span>
+                        <span
+                          className={`truncate flex-1 transition-colors duration-200 ${
+                            isActive ? "text-white font-semibold" : "text-[#9caec2] group-hover:text-white"
+                          }`}
+                        >
+                          {item.label}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </>
               )}
             </nav>
 
-            {/* Bottom User Card / Profile */}
-            <div className="p-3 border-t border-[#18181b] space-y-1 bg-[#000000]">
+            {/* Bottom User Card */}
+            <div className="p-2 border-t border-[#18181b] bg-[#000000]">
               <button
                 onClick={() => {
                   setIsProfileOpen(true);
@@ -368,17 +412,17 @@ export default function DashboardLayout() {
                   }
                 }}
                 title="Edit Profile & Account Details"
-                className="w-full flex items-center gap-2.5 p-2 rounded-xl bg-[#0c0c0e] hover:bg-[#1D3557]/40 border border-[#222225] hover:border-[#2C6CB0]/60 transition-all text-left group cursor-pointer"
+                className="w-full flex items-center gap-2 p-1.5 rounded-xl bg-[#0c0c0e] hover:bg-[#1D3557]/40 border border-[#222225] hover:border-[#2C6CB0]/60 transition-all duration-200 text-left group cursor-pointer"
               >
                 {user?.avatar_url ? (
                   <img
                     src={user.avatar_url}
                     alt=""
-                    className="w-7 h-7 rounded-full object-cover border border-[#6EA8DA]/50"
+                    className="w-6 h-6 rounded-full object-cover border border-[#6EA8DA]/50 group-hover:scale-105 transition-transform"
                   />
                 ) : (
                   <div
-                    className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white shadow-sm group-hover:scale-105 transition-transform shrink-0"
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm group-hover:scale-105 transition-transform shrink-0"
                     style={{
                       background: "linear-gradient(135deg, #2C6CB0, #6EA8DA)",
                     }}
@@ -387,10 +431,10 @@ export default function DashboardLayout() {
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
-                  <div className="text-[11.5px] text-[#EAF2F8] font-semibold truncate group-hover:text-[#6EA8DA] transition-colors">
+                  <div className="text-[10px] text-[#EAF2F8] font-semibold truncate group-hover:text-[#6EA8DA] transition-colors">
                     {user?.name || "User"}
                   </div>
-                  <div className="text-[#8a99ad] text-[9.5px] uppercase font-medium tracking-wider truncate">
+                  <div className="text-[#8a99ad] text-[8px] uppercase font-medium tracking-wider truncate">
                     {user?.role || "analyst"} · edit
                   </div>
                 </div>
@@ -423,23 +467,23 @@ export default function DashboardLayout() {
               {/* Page Head */}
               <div className="flex flex-wrap items-end justify-between gap-4 pb-2 border-b border-[#253240]/60">
                 <div>
-                  <h1 className="font-mono text-lg font-bold tracking-tight text-white">Security Overview</h1>
-                  <p className="text-xs text-[#8a99ad] mt-1 font-mono">
+                  <h1 className="text-xl font-bold tracking-tight text-white">Security Overview</h1>
+                  <p className="text-xs text-[#8a99ad] mt-1">
                     {repos.length > 0
                       ? `scanning ${repos.length} repositories · ${scannerOnline ? "live DAST daemon on :8765" : "scanner offline"}`
                       : "no repositories scanned yet · connect backend to get started"}
                   </p>
                 </div>
-                <div className="flex items-center gap-3 font-mono text-xs">
+                <div className="flex items-center gap-3 text-xs">
                   <button
                     onClick={() => toast.success("Exported full security summary (CSV / JSON)")}
-                    className="px-4 py-2 rounded-lg border border-[#2b3947] bg-[#10151a] text-[#d8e2e8] hover:border-white/[0.2] hover:bg-[#141b21] shadow-sm transition-all cursor-pointer"
+                    className="px-4 py-2 rounded-lg border border-[#2b3947] bg-[#10151a] text-[#d8e2e8] hover:border-white/[0.2] hover:bg-[#141b21] shadow-sm transition-all cursor-pointer font-medium"
                   >
                     Export report
                   </button>
                   <button
                     onClick={() => setActiveNav("findings")}
-                    className="px-4 py-2 rounded-lg border border-[#6EA8DA]/30 bg-[#2C6CB0] text-[#EAF2F8] font-bold hover:bg-[#1D3557] transition-all cursor-pointer"
+                    className="px-4 py-2 rounded-lg bg-[#2962FF] hover:bg-[#1e4ed8] text-white font-semibold shadow-[0_0_15px_rgba(41,98,255,0.35)] transition-all cursor-pointer"
                   >
                     Run new scan
                   </button>
@@ -604,8 +648,8 @@ export default function DashboardLayout() {
 
                   <div className="border-t border-[#253240]">
                     <div className="flex items-center justify-between p-2.5 px-4 border-b border-[#253240]/60 bg-[#12181f]/40">
-                      <h2 className="font-mono text-xs font-bold text-white">System pulse</h2>
-                      <div className="font-mono text-[10px] text-[#8a99ad]">/tc-auth/config/pulse</div>
+                      <h2 className="text-xs font-bold text-white">System pulse</h2>
+                      <div className="text-[10px] text-[#8a99ad]">/tc-auth/config/pulse</div>
                     </div>
                     <div className="p-3.5 px-4 font-mono text-[11px] text-[#8a99ad] leading-relaxed">
                       {counts ? (

@@ -94,5 +94,5 @@ def insert_commits(repo_id: int, commits: list[dict], jwt: str):
     )
 
     response.raise_for_status()
-
     return response.json()
+

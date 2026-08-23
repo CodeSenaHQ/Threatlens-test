@@ -29,6 +29,7 @@ import AccountsTab from "./tabs/admin/AccountsTab";
 import SystemConfigTab from "./tabs/admin/SystemConfigTab";
 import SessionsTab from "./tabs/admin/SessionsTab";
 import ChatBotTab from "./tabs/chatbot/ChatBotTab";
+import TokenUsageTab from "./tabs/billing/TokenUsageTab";
 
 // Drawers & Modals
 import ProfileModal from "@/components/drawers/ProfileModal";
@@ -264,47 +265,56 @@ export default function DashboardLayout() {
       }}
     >
       {/* ---------- TOP NAVBAR (Natural Page Flow - Scrolls up with page like LeetCode) ---------- */}
-      <header className="w-full h-14 bg-[#080d1a]/95 backdrop-blur-md border-b border-[#18181b] px-4 lg:px-6 flex items-center justify-between shrink-0 shadow-md">
+      <header className="relative z-50 w-full h-14 bg-[#080d1a]/95 backdrop-blur-md border-b border-[#18181b] px-4 lg:px-6 flex items-center justify-between shrink-0 shadow-md">
         {/* Left Side: Brand & Tabs */}
-        <div className="flex items-center gap-8 lg:gap-14">
+        <div className="h-full flex items-center gap-8 lg:gap-14">
           <Link href="/" className="hover:opacity-90 transition-opacity flex items-center">
             <ThreatLensLogo className="h-6.5 w-auto" />
           </Link>
 
           {/* Top Navigation Tabs */}
-          <nav className="flex items-center gap-6 sm:gap-8 ml-2 lg:ml-4">
+          <nav className="h-full flex items-center gap-7 sm:gap-8 ml-2 lg:ml-4">
             <button
               onClick={() => {
                 setActiveTopTab("dashboard");
                 setActiveNav("dashboard");
               }}
-              className={`transition-all cursor-pointer text-sm sm:text-[15px] font-medium hover:underline underline-offset-8 decoration-[#6EA8DA] ${
+              className={`h-full flex items-center relative transition-colors cursor-pointer text-sm sm:text-[15px] ${
                 activeTopTab === "dashboard" || !activeTopTab
-                  ? "text-white font-semibold"
-                  : "text-[#8a99ad] hover:text-white"
+                  ? "text-white font-medium"
+                  : "text-[#8e8e93] hover:text-white"
               }`}
             >
-              Dashboard
+              <span>Dashboard</span>
+              {(activeTopTab === "dashboard" || !activeTopTab) && (
+                <span className="absolute bottom-0 inset-x-0 h-[2px] bg-white rounded-t-sm" />
+              )}
             </button>
             <button
               onClick={() => setActiveTopTab("chatbot")}
-              className={`transition-all cursor-pointer text-sm sm:text-[15px] font-medium hover:underline underline-offset-8 decoration-[#6EA8DA] ${
+              className={`h-full flex items-center relative transition-colors cursor-pointer text-sm sm:text-[15px] ${
                 activeTopTab === "chatbot"
-                  ? "text-white font-semibold"
-                  : "text-[#8a99ad] hover:text-white"
+                  ? "text-white font-medium"
+                  : "text-[#8e8e93] hover:text-white"
               }`}
             >
-              Chat Bot
+              <span>Chat Bot</span>
+              {activeTopTab === "chatbot" && (
+                <span className="absolute bottom-0 inset-x-0 h-[2px] bg-white rounded-t-sm" />
+              )}
             </button>
             <button
               onClick={() => setActiveTopTab("terminal")}
-              className={`transition-all cursor-pointer text-sm sm:text-[15px] font-medium hover:underline underline-offset-8 decoration-[#6EA8DA] ${
+              className={`h-full flex items-center relative transition-colors cursor-pointer text-sm sm:text-[15px] ${
                 activeTopTab === "terminal"
-                  ? "text-white font-semibold"
-                  : "text-[#8a99ad] hover:text-white"
+                  ? "text-white font-medium"
+                  : "text-[#8e8e93] hover:text-white"
               }`}
             >
-              Terminal History
+              <span>Terminal History</span>
+              {activeTopTab === "terminal" && (
+                <span className="absolute bottom-0 inset-x-0 h-[2px] bg-white rounded-t-sm" />
+              )}
             </button>
           </nav>
         </div>
@@ -347,16 +357,16 @@ export default function DashboardLayout() {
           <div className="relative" ref={tokensRef}>
             <button
               onClick={() => setIsTokensOpen(!isTokensOpen)}
-              className="px-3.5 py-1.5 rounded-lg bg-[#2962FF] hover:bg-[#1e4ed8] text-white text-xs font-semibold shadow-[0_0_15px_rgba(41,98,255,0.25)] transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 font-sans"
+              className="px-3.5 py-1.5 rounded-lg bg-gradient-to-b from-[#1e5adb] via-[#1342a8] to-[#0c2a74] hover:brightness-110 text-[#E0F2FE] hover:text-white text-xs font-bold shadow-[0_0_16px_rgba(29,78,216,0.35)] transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 font-sans tracking-wide border-0 outline-none"
               title="Tokens & Subscriptions"
             >
               <span>Tokens</span>
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isTokensOpen ? "rotate-180" : ""}`} />
+              <ChevronDown className={`w-3.5 h-3.5 text-[#BAE6FD] transition-transform duration-200 ${isTokensOpen ? "rotate-180" : ""}`} />
             </button>
 
             {/* Dropdown Menu */}
             {isTokensOpen && (
-              <div className="absolute right-0 mt-2 w-56 rounded-xl bg-[#0b0f19] border border-[#222f46] shadow-2xl p-1.5 backdrop-blur-xl z-50 animate-in fade-in zoom-in-95 duration-150 select-none">
+              <div className="absolute right-0 top-full mt-2 w-56 rounded-xl bg-[#0b0f19] border border-[#222f46] shadow-[0_10px_40px_rgba(0,0,0,0.95)] p-1.5 backdrop-blur-xl z-[9999] select-none">
                 <div className="px-3 py-1.5 border-b border-[#1c2638] mb-1">
                   <div className="text-[10px] uppercase font-bold text-[#6EA8DA] tracking-wider">
                     API & Credits
@@ -365,7 +375,10 @@ export default function DashboardLayout() {
 
                 {/* Option 1: Token usage */}
                 <button
-                  onClick={() => setIsTokensOpen(false)}
+                  onClick={() => {
+                    setActiveTopTab("tokens");
+                    setIsTokensOpen(false);
+                  }}
                   className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left hover:bg-[#162032] text-[#d8e2e8] hover:text-white transition-colors cursor-pointer group"
                 >
                   <div className="w-7 h-7 rounded-md bg-[#1D3557]/60 border border-[#2C6CB0]/40 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
@@ -396,10 +409,12 @@ export default function DashboardLayout() {
         </div>
       </header>
 
-      {/* ---------- MAIN CONTENT / CHATBOT VIEW ---------- */}
+      {/* ---------- MAIN CONTENT / CHATBOT / BILLING VIEW ---------- */}
       <div className="flex-1 flex flex-col min-w-0">
         {activeTopTab === "chatbot" ? (
           <ChatBotTab user={user} />
+        ) : activeTopTab === "tokens" ? (
+          <TokenUsageTab user={user} />
         ) : (
           <div className="flex-1 flex min-w-0">
             {/* ---------- SIDEBAR (Responsive & Collapsible) ---------- */}
@@ -414,8 +429,8 @@ export default function DashboardLayout() {
 
               <aside className="w-[240px] shrink-0 sticky top-0 h-screen flex flex-col border-r border-[#18181b] bg-[#000000] z-30 shadow-2xl lg:shadow-none">
               {/* Navigation Links */}
-              <nav className="flex-1 overflow-y-auto p-2 space-y-0.5">
-                <div className="text-[7.5px] text-[#6EA8DA] font-bold uppercase tracking-[2px] mb-1 px-2 flex items-center gap-1.5">
+              <nav className="flex-1 overflow-y-auto p-2 space-y-1">
+                <div className="text-[7.5px] text-[#6EA8DA] font-bold uppercase tracking-[2px] mb-1.5 px-2 flex items-center gap-1.5">
                   <span className="w-1 h-1 rounded-full bg-[#6EA8DA] animate-pulse" />
                   <span>Overview</span>
                 </div>
@@ -429,7 +444,7 @@ export default function DashboardLayout() {
                     <button
                       key={item.id}
                       onClick={() => handleNavClick(item.id)}
-                      className={`w-full group flex items-center gap-2 px-2 py-1 rounded-lg text-[9px] font-medium border transition-all duration-200 text-left cursor-pointer ${
+                      className={`w-full group flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[9.5px] font-medium border transition-all duration-200 text-left cursor-pointer ${
                         isActive
                           ? "bg-[#1D3557]/80 text-white border-[#2C6CB0] translate-x-0.5 shadow-sm"
                           : "border-transparent hover:bg-[#18181b] text-[#9caec2] hover:text-white hover:translate-x-0.5"
@@ -459,7 +474,7 @@ export default function DashboardLayout() {
                   );
                 })}
 
-              <div className="text-[7.5px] text-[#C8A27A] font-bold uppercase tracking-[2px] mt-3 mb-1 px-2 flex items-center gap-1.5">
+              <div className="text-[7.5px] text-[#C8A27A] font-bold uppercase tracking-[2px] mt-3.5 mb-1.5 px-2 flex items-center gap-1.5">
                 <span className="w-1 h-1 rounded-full bg-[#C8A27A] animate-pulse" />
                 <span>Security</span>
               </div>
@@ -473,7 +488,7 @@ export default function DashboardLayout() {
                   <button
                     key={item.id}
                     onClick={() => handleNavClick(item.id)}
-                    className={`w-full group flex items-center gap-2 px-2 py-1 rounded-lg text-[9px] font-medium border transition-all duration-200 text-left cursor-pointer ${
+                    className={`w-full group flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[9.5px] font-medium border transition-all duration-200 text-left cursor-pointer ${
                       isActive
                         ? "bg-[#1D3557]/80 text-white border-[#2C6CB0] translate-x-0.5 shadow-sm"
                         : "border-transparent hover:bg-[#18181b] text-[#9caec2] hover:text-white hover:translate-x-0.5"
@@ -505,7 +520,7 @@ export default function DashboardLayout() {
 
               {isAdmin && (
                 <>
-                  <div className="text-[7.5px] text-[#6EA8DA] font-bold uppercase tracking-[2px] mt-3 mb-1 px-2 flex items-center gap-1.5">
+                  <div className="text-[7.5px] text-[#6EA8DA] font-bold uppercase tracking-[2px] mt-3.5 mb-1.5 px-2 flex items-center gap-1.5">
                     <span className="w-1 h-1 rounded-full bg-[#6EA8DA] animate-pulse" />
                     <span>Admin</span>
                   </div>
@@ -519,7 +534,7 @@ export default function DashboardLayout() {
                       <button
                         key={item.id}
                         onClick={() => handleNavClick(item.id)}
-                        className={`w-full group flex items-center gap-2 px-2 py-1 rounded-lg text-[9px] font-medium border transition-all duration-200 text-left cursor-pointer ${
+                        className={`w-full group flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[9.5px] font-medium border transition-all duration-200 text-left cursor-pointer ${
                           isActive
                             ? "bg-[#1D3557]/80 text-white border-[#2C6CB0] translate-x-0.5 shadow-sm"
                             : "border-transparent hover:bg-[#18181b] text-[#9caec2] hover:text-white hover:translate-x-0.5"

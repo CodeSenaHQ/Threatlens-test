@@ -393,7 +393,7 @@ export default function ChatBotTab({ user }) {
                     onKeyDown={handleKeyDown}
                     rows={1}
                     placeholder="Ask anything"
-                    className="flex-1 bg-transparent text-white text-[15px] placeholder-[#8E8E8E] focus:outline-none resize-none max-h-40 leading-relaxed font-sans"
+                    className="flex-1 bg-transparent text-white text-[15px] placeholder-[#8E8E8E] focus:outline-none resize-none max-h-40 leading-relaxed font-sans overflow-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
                     autoFocus
                   />
 
@@ -540,7 +540,7 @@ export default function ChatBotTab({ user }) {
                 onKeyDown={handleKeyDown}
                 rows={1}
                 placeholder="Ask anything..."
-                className="flex-1 bg-transparent text-white text-[14.5px] placeholder-[#8E8E8E] focus:outline-none resize-none max-h-36 leading-relaxed font-sans"
+                className="flex-1 bg-transparent text-white text-[14.5px] placeholder-[#8E8E8E] focus:outline-none resize-none max-h-36 leading-relaxed font-sans overflow-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
               />
 
               <div className="flex items-center gap-2 shrink-0">

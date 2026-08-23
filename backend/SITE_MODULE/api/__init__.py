@@ -1,0 +1,8 @@
+from fastapi import APIRouter
+
+from .chat_route import router as chat_router
+from .usage_route import router as usage_router
+
+site_router = APIRouter()
+site_router.include_router(chat_router)
+site_router.include_router(usage_router)

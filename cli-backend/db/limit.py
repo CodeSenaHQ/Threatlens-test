@@ -46,6 +46,7 @@ def set_limit(
 
     db.commit()
 
+
 def sync_limit():
     data = get_global_limit()
 

@@ -1,8 +1,8 @@
 from connect import auth
 from fastapi import APIRouter, Depends
-from schema.usage import UsageUpdateRequest
+from SITE_MODULE.schema.usage import UsageUpdateRequest
 
-from service.usage_service import (
+from SITE_MODULE.service.usage_service import (
     set_usage,
     get_usage,
 )

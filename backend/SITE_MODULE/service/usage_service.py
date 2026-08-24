@@ -1,4 +1,4 @@
-from db.usage_model import Usage
+from SITE_MODULE.db.usage_model import Usage
 from connect import session_factory
 from utils.get_helper import to_dict
 

@@ -1,11 +1,15 @@
+import httpx
 from db import get_db
+from service.system_service import global_sync_usage
+
+db = get_db()
 
 def set_usage(
     prompt_tokens: int,
     completion_tokens: int,
-    total_tokens: int,
 ):
-    db = get_db()
+    
+    total_tokens = prompt_tokens + completion_tokens 
 
     db.execute(
         """
@@ -28,8 +32,6 @@ def set_usage(
 
 
 def get_usage():
-    db = get_db()
-
     cursor = db.execute(
         """
         SELECT
@@ -42,17 +44,24 @@ def get_usage():
         WHERE id = 1
         """
     )
-
-    return cursor.fetchone()
+    row = cursor.fetchone()
+    if row is None :
+        return None
+    return {
+        "prompt_tokens":row[0],
+        "completion_tokens":row[1],
+        "total_tokens":row[2],
+        "synced_at":row[3],
+        "updated_at":row[4]
+    }
 
 
 def patch_usage(
     prompt_tokens: int,
     completion_tokens: int,
-    total_tokens: int,
 ):
-    db = get_db()
 
+    total_tokens = prompt_tokens + completion_tokens 
     db.execute(
         """
         UPDATE usage
@@ -74,22 +83,63 @@ def patch_usage(
 
 
 def sync_usage():
-    db = get_db()
+    usage = get_usage()
 
-    db.execute(
-        """
-        UPDATE usage
-        SET
-            synced_at = unixepoch()
-        WHERE id = 1
-        """
-    )
+    if usage is None:
+        return {
+            "status": "unable to sync usage"
+        }
 
-    db.commit()
+    body = {
+        "prompt_tokens": usage["prompt_tokens"],
+        "completion_tokens": usage["completion_tokens"]
+    }
+
+    try:
+        response = global_sync_usage(body=body)
+
+        db.execute(
+            """
+            UPDATE usage
+            SET synced_at = unixepoch()
+            WHERE id = 1
+            """
+        )
+
+        db.commit()
+
+        return {
+            "status": "usage synced",
+            "response": response
+        }
+
+    except httpx.HTTPError as e:
+        return {
+            "status": "unable to sync usage",
+            "error": str(e)
+        }
 
 
 def reset_usage():
-    db = get_db()
+    row = db.execute(
+        """
+        SELECT updated_at
+        FROM usage
+        WHERE id = 1
+        """
+    ).fetchone()
+
+    if row is None:
+        return
+
+    updated_at = row[0]
+
+    if updated_at is not None:
+        if db.execute(
+            "SELECT unixepoch() - ?",
+            (updated_at,)
+        ).fetchone()[0] < 86400:
+            return
 
     db.execute(
         """

@@ -1,8 +1,16 @@
 
-from service.repo_service import build_repo, fetch_latest_commit, build_commit_insert , insert_commits
-from repo import Repository
-from db import get_jwt
 from fastapi import APIRouter
+from pydantic import BaseModel
+
+from service.repo_service import save_commits
+
+router = APIRouter(prefix="/git", tags=["Git"])
 
 
-router = APIRouter()
+class RepoRequest(BaseModel):
+    url: str
+
+
+@router.patch("/build")
+def analyze_repo(data: RepoRequest):
+    return save_commits(data.url)

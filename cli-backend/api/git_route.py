@@ -1,7 +1,6 @@
 
 from fastapi import APIRouter
 from pydantic import BaseModel
-
 from service.repo_service import save_commits
 
 router = APIRouter(prefix="/git", tags=["Git"])

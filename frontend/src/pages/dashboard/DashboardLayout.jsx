@@ -15,64 +15,21 @@ import {
   User,
   Bell,
   ChevronDown,
-  ChevronUp,
-<<<<<<< HEAD
-<<<<<<< HEAD
   ChevronRight,
+  ChevronUp,
   BarChart3,
   Zap,
-  LayoutDashboard,
+  Sparkles,
   FolderGit2,
   GitCommit,
   ShieldAlert,
   KeyRound,
   Container,
-=======
-  BarChart3,
-  Zap,
-=======
-  BarChart3,
-  Zap,
->>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
-  Search,
-  Sparkles,
-  FolderGit2,
-  GitCommit,
-  ShieldAlert,
-  Lock,
-<<<<<<< HEAD
->>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
-=======
->>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
   Terminal,
   Users,
   Settings,
   Clock,
-<<<<<<< HEAD
-<<<<<<< HEAD
-  Moon,
-  Search,
-=======
-=======
->>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
-  Flag,
-  Moon,
-  Type,
-  Repeat,
-  ArrowUpCircle,
-  Box,
-  Share2,
-  Figma,
-  FileText,
-  Globe,
-  UserCheck,
-  CheckCircle,
-  Layers,
-  LayoutGrid,
-<<<<<<< HEAD
->>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
-=======
->>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
+  LayoutDashboard,
 } from "lucide-react";
 
 // Domain-Based Tab Views
@@ -86,14 +43,10 @@ import SystemConfigTab from "./tabs/admin/SystemConfigTab";
 import SessionsTab from "./tabs/admin/SessionsTab";
 import PromptHistoryTab from "./tabs/prompts/PromptHistoryTab";
 import TokenUsageTab from "./tabs/billing/TokenUsageTab";
-import IntroductionTab from "./tabs/overview/IntroductionTab";
-import CliAgentTab from "./tabs/docs/CliAgentTab";
 
 // Drawers & Modals
 import ProfileModal from "@/components/drawers/ProfileModal";
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 // Sidebar Navigation Categories
 const NAV_CATEGORIES = [
   {
@@ -134,12 +87,6 @@ const NAV_CATEGORIES = [
 ];
 
 // ── Loading Skeleton ──
-=======
-// â”€â”€ Loading Skeleton â”€â”€
->>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
-=======
-// â”€â”€ Loading Skeleton â”€â”€
->>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
 function SkeletonBlock({ className = "" }) {
   return <div className={`bg-[#1a2330] rounded animate-pulse ${className}`} />;
 }
@@ -160,20 +107,10 @@ export default function DashboardLayout() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isTokensOpen, setIsTokensOpen] = useState(false);
-<<<<<<< HEAD
-<<<<<<< HEAD
   const [collapsedCategories, setCollapsedCategories] = useState({});
-=======
-=======
->>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
-  const [isDocNavOpen, setIsDocNavOpen] = useState(false);
   const [copied, setCopied] = useState(false);
->>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
   const tokensRef = useRef(null);
-  const docNavRef = useRef(null);
-<<<<<<< HEAD
 
-<<<<<<< HEAD
   const toggleCategory = (catId) => {
     setCollapsedCategories((prev) => ({
       ...prev,
@@ -199,20 +136,10 @@ export default function DashboardLayout() {
       : activeItemObj?.label || "Dashboard";
 
   // Close tokens dropdown when clicking outside
-=======
-  // Close dropdowns when clicking outside
->>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
-=======
-
-  // Close dropdowns when clicking outside
->>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (tokensRef.current && !tokensRef.current.contains(e.target)) {
         setIsTokensOpen(false);
-      }
-      if (docNavRef.current && !docNavRef.current.contains(e.target)) {
-        setIsDocNavOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -262,7 +189,7 @@ export default function DashboardLayout() {
     }
   };
 
-  // â”€â”€ Live data state â”€â”€
+  // ── Live data state ──
   const [pulse, setPulse] = useState(null);
   const [counts, setCounts] = useState(null);
   const [repos, setRepos] = useState([]);
@@ -282,7 +209,7 @@ export default function DashboardLayout() {
     return () => clearInterval(interval);
   }, []);
 
-  // â”€â”€ Fetch all dashboard data â”€â”€
+  // ── Fetch all dashboard data ──
   const fetchDashboardData = useCallback(async () => {
     if (!token) return;
     setLoading(true);
@@ -303,17 +230,23 @@ export default function DashboardLayout() {
         setRepos(fetchedRepos);
       }
 
-      if (secTestRes.status === "fulfilled") setSecTestReport(secTestRes.value);
+      if (secTestRes.status === "fulfilled") {
+        setSecTestReport(secTestRes.value);
+      }
 
-      // Fetch latest commits from first repo
+      // If we have repositories, fetch latest commits for the first repository
       if (fetchedRepos.length > 0) {
         try {
           const commitsRes = await repoApi.getCommits(token, fetchedRepos[0].id, 1, 5);
-          setLatestCommits(commitsRes?.data || []);
-        } catch { /* ignore */ }
+          if (commitsRes?.data) {
+            setLatestCommits(commitsRes.data);
+          }
+        } catch {
+          // commits fetch optional
+        }
       }
     } catch {
-      // individual errors handled above
+      toast.error("Telemetry sync interrupted");
     } finally {
       setLoading(false);
     }
@@ -323,83 +256,86 @@ export default function DashboardLayout() {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
-  // â”€â”€ Refresh pulse periodically â”€â”€
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        const p = await authApi.getPulse();
-        setPulse(p);
-      } catch { /* ignore */ }
-    }, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // â”€â”€ Computed dashboard KPIs â”€â”€
-  const secTestFindings = secTestReport?.findings || [];
-  const secTestSummary = secTestReport?.summary?.by_severity || {};
-
-  // Aggregate findings from latest commits
-  const commitFindingCounts = latestCommits.reduce(
-    (acc, c) => {
-      acc.critical += c.summary?.critical || 0;
-      acc.high += c.summary?.high || 0;
-      acc.medium += c.summary?.medium || 0;
-      acc.low += c.summary?.low || 0;
-      return acc;
-    },
-    { critical: 0, high: 0, medium: 0, low: 0 }
-  );
-
-  const kpis = [
-    {
-      label: "Critical findings",
-      value: String((secTestSummary.critical || 0) + commitFindingCounts.critical),
-      sub: secTestReport ? "commit + scanner combined" : "from commit analysis",
-      type: "critical",
-    },
-    {
-      label: "High severity",
-      value: String((secTestSummary.high || 0) + commitFindingCounts.high),
-      sub: `across ${repos.length} repositories`,
-      type: "high",
-    },
-    {
-      label: "Medium severity",
-      value: String((secTestSummary.medium || 0) + commitFindingCounts.medium),
-      sub: "commit + scanner combined",
-      type: "medium",
-    },
-    {
-      label: "Repos monitored",
-      value: String(repos.length),
-      sub: repos.length > 0
-        ? `${repos.reduce((s, r) => s + (r.commit_count || 0), 0).toLocaleString()} total commits`
-        : "no repos scanned yet",
-      type: "low",
-    },
-  ];
-
-  // â”€â”€ Risk gauge â”€â”€
-  const avgRiskScore = latestCommits.length > 0
-    ? Math.round(latestCommits.reduce((s, c) => s + (c.summary?.risk_score || 0), 0) / latestCommits.length)
-    : 0;
-  const gaugeOffset = 314 - (314 * avgRiskScore) / 100;
-  const gaugeColor = avgRiskScore >= 80 ? "#C8A27A" : avgRiskScore >= 50 ? "#6EA8DA" : avgRiskScore >= 20 ? "#2C6CB0" : "#1D3557";
-
+  // Drawer details inspector handler
   const handleOpenDetail = (item) => {
     setSelectedItem(item);
     setIsDrawerOpen(true);
   };
 
-  const handleCopyPayload = (text) => {
-    navigator.clipboard.writeText(text);
+  const handleCopyPayload = (str) => {
+    navigator.clipboard.writeText(str);
     setCopied(true);
-    toast.success("Payload copied to clipboard!");
+    toast.success("Payload copied to clipboard");
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // â”€â”€ Pulse display â”€â”€
-  const pulseHealthy = pulse?.status === "healthy" && pulse?.state === "active";
+  // Severity metrics calculation from SecTest DAST Daemon & Git Commit Findings
+  const secFindings = secTestReport?.findings || [];
+  const totalFindings =
+    secFindings.length +
+    latestCommits.reduce((acc, c) => acc + (c.summary?.findings || 0), 0);
+
+  const criticalCount =
+    (secTestReport?.summary?.by_severity?.critical || 0) +
+    latestCommits.reduce((acc, c) => acc + (c.summary?.critical || 0), 0);
+
+  const highCount =
+    (secTestReport?.summary?.by_severity?.high || 0) +
+    latestCommits.reduce((acc, c) => acc + (c.summary?.high || 0), 0);
+
+  const mediumCount =
+    (secTestReport?.summary?.by_severity?.medium || 0) +
+    latestCommits.reduce((acc, c) => acc + (c.summary?.medium || 0), 0);
+
+  const lowCount =
+    (secTestReport?.summary?.by_severity?.low || 0) +
+    latestCommits.reduce((acc, c) => acc + (c.summary?.low || 0), 0);
+
+  // Compute Overall Posture Risk Score (0 - 100)
+  const calculatedRiskScore = Math.min(
+    100,
+    criticalCount * 25 + highCount * 12 + mediumCount * 5 + lowCount * 1
+  );
+
+  const postureStatus =
+    calculatedRiskScore > 75
+      ? { label: "CRITICAL COMPROMISE", color: "#f43f5e" }
+      : calculatedRiskScore > 40
+      ? { label: "ELEVATED RISK", color: "#fb923c" }
+      : calculatedRiskScore > 10
+      ? { label: "MODERATE DRIFT", color: "#facc15" }
+      : { label: "SECURE POSTURE", color: "#38bdf8" };
+
+  const pulseHealthy = pulse?.status === "ok" || pulse?.status === "healthy";
+
+  // KPIs definition for Overview
+  const kpis = [
+    {
+      label: "Critical Threats",
+      value: loading ? "…" : criticalCount,
+      sub: "Immediate CVE exploit vectors",
+      type: "critical",
+    },
+    {
+      label: "High Severity",
+      value: loading ? "…" : highCount,
+      sub: "Privilege & auth vulnerabilities",
+      type: "high",
+    },
+    {
+      label: "Active Findings",
+      value: loading ? "…" : totalFindings,
+      sub: "Total static & DAST alerts",
+      type: "medium",
+    },
+    {
+      label: "Analyzed Repos",
+      value: loading ? "…" : repos.length,
+      sub: repos.length > 0 ? `${repos.reduce((acc, r) => acc + (r.files_total || 0), 0)} tracked files` : "0 codebases",
+      type: "low",
+    },
+  ];
+
   const scannerOnline = secTestReport !== null;
 
   return (
@@ -414,8 +350,6 @@ export default function DashboardLayout() {
         backgroundAttachment: "fixed",
       }}
     >
-<<<<<<< HEAD
-<<<<<<< HEAD
       {/* ---------- SIDEBAR (Full-Height 100vh on the Left) ---------- */}
       {isSidebarOpen && (
         <>
@@ -429,339 +363,6 @@ export default function DashboardLayout() {
           <aside
             className="w-[260px] shrink-0 h-screen flex flex-col bg-[#000000] z-30 shadow-2xl lg:shadow-none no-scrollbar"
             style={{ borderRight: "1px solid rgba(255, 255, 255, 0.2)" }}
-=======
-=======
->>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
-      {/* ---------- STICKY TOP NAVBAR (Untitled UI Docs Style) ---------- */}
-      <header className="sticky top-0 z-50 w-full h-14 bg-[#09090b]/80 backdrop-blur-xl border-b border-[#27272a] px-4 lg:px-6 flex items-center justify-between shrink-0">
-        {/* Left Side: Brand Logo + Breadcrumbs */}
-        <div className="flex items-center gap-4 lg:gap-6">
-          <Link href="/" className="hover:opacity-90 transition-opacity flex items-center">
-            <ThreatLensLogo className="h-6 w-auto" />
-          </Link>
-
-          {/* Breadcrumb Navigation with Quick Module Switcher */}
-          <div className="flex items-center gap-1.5 text-xs text-[#71717a] relative" ref={docNavRef}>
-            <button
-              onClick={() => handleNavClick("dashboard")}
-              className="hover:text-[#f4f4f5] transition-colors cursor-pointer px-1 py-0.5 rounded hover:bg-[#18181b]"
-              title="Go to Security Overview"
-            >
-              Documentation
-            </button>
-            <span className="text-[#3f3f46]">/</span>
-            
-            {/* Active module pill button - click to toggle switcher dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setIsDocNavOpen(!isDocNavOpen)}
-                className="px-2 py-0.5 rounded-md bg-[#18181b] hover:bg-[#27272a] border border-[#27272a] text-[#f4f4f5] font-medium capitalize flex items-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
-                title="Switch Module"
-              >
-                <span>
-                  {activeTopTab === "tokens"
-                    ? "Token Usage"
-                    : activeTopTab === "plans"
-                    ? "Premium Plans"
-                    : activeNav === "chatbot"
-                    ? "ThreatLensGO"
-                    : activeNav === "dashboard"
-                    ? "Introduction"
-                    : activeNav === "cli"
-                    ? "CLI & Local Agent"
-                    : activeNav}
-                </span>
-                <ChevronDown className={`w-3 h-3 text-[#71717a] transition-transform duration-200 ${isDocNavOpen ? "rotate-180" : ""}`} />
-              </button>
-
-              {/* Quick Navigation Menu */}
-              {isDocNavOpen && (
-                <div className="absolute left-0 top-full mt-2 w-64 rounded-xl bg-[#09090b] border border-[#27272a] shadow-2xl p-1.5 backdrop-blur-xl z-[9999] select-none animate-in fade-in slide-in-from-top-2 duration-150 max-h-80 overflow-y-auto">
-                  <div className="px-2.5 py-1 text-[10.5px] font-semibold text-[#71717a] uppercase tracking-wider">
-                    Quick Navigation
-                  </div>
-<<<<<<< HEAD
-
-                  <div className="space-y-0.5 mt-1">
-                    {[
-                      { id: "dashboard", icon: Sparkles, label: "Introduction" },
-                      { id: "cli", icon: Terminal, label: "CLI & Local Agent" },
-                      { id: "chatbot", icon: Zap, label: "ThreatLensGO Assistant" },
-                      { id: "repositories", icon: FolderGit2, label: "Repositories" },
-                      { id: "commits", icon: GitCommit, label: "Commit Analysis" },
-                      { id: "findings", icon: ShieldAlert, label: "Live Findings" },
-                      { id: "secrets", icon: Lock, label: "Secret Detection" },
-                      { id: "cicd", icon: Box, label: "CI/CD & Docker" },
-                      { id: "compliance", icon: CheckCircle, label: "Compliance & Posture" },
-                    ].map((item) => {
-                      const Icon = item.icon;
-                      const isItemActive = activeTopTab === "dashboard" && activeNav === item.id;
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => {
-                            handleNavClick(item.id);
-                            setIsDocNavOpen(false);
-                          }}
-                          className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-left transition-colors cursor-pointer ${
-                            isItemActive
-                              ? "bg-[#18181b] text-white font-semibold"
-                              : "text-[#a1a1aa] hover:text-white hover:bg-[#18181b]/50"
-                          }`}
-                        >
-                          <Icon className={`w-3.5 h-3.5 ${isItemActive ? "text-[#38bdf8]" : "text-[#71717a]"}`} />
-                          <span className="truncate flex-1">{item.label}</span>
-                          {isItemActive && <span className="w-1.5 h-1.5 rounded-full bg-[#38bdf8]" />}
-                        </button>
-                      );
-                    })}
-
-                    <div className="border-t border-[#1c1c1f] my-1" />
-                    
-                    <button
-                      onClick={() => {
-                        setActiveTopTab("tokens");
-                        setIsDocNavOpen(false);
-                      }}
-                      className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-left transition-colors cursor-pointer ${
-                        activeTopTab === "tokens"
-                          ? "bg-[#18181b] text-white font-semibold"
-                          : "text-[#a1a1aa] hover:text-white hover:bg-[#18181b]/50"
-                      }`}
-                    >
-                      <BarChart3 className={`w-3.5 h-3.5 ${activeTopTab === "tokens" ? "text-[#38bdf8]" : "text-[#71717a]"}`} />
-                      <span className="truncate flex-1">Token Usage & Telemetry</span>
-                      {activeTopTab === "tokens" && <span className="w-1.5 h-1.5 rounded-full bg-[#38bdf8]" />}
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setActiveTopTab("plans");
-                        setIsDocNavOpen(false);
-                      }}
-                      className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-left transition-colors cursor-pointer ${
-                        activeTopTab === "plans"
-                          ? "bg-[#18181b] text-white font-semibold"
-                          : "text-[#a1a1aa] hover:text-white hover:bg-[#18181b]/50"
-                      }`}
-                    >
-                      <Zap className={`w-3.5 h-3.5 ${activeTopTab === "plans" ? "text-[#f59e0b]" : "text-[#71717a]"}`} />
-                      <span className="truncate flex-1">Premium Plans & Pricing</span>
-                      {activeTopTab === "plans" && <span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]" />}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-=======
-
-                  <div className="space-y-0.5 mt-1">
-                    {[
-                      { id: "dashboard", icon: Sparkles, label: "Introduction" },
-                      { id: "cli", icon: Terminal, label: "CLI & Local Agent" },
-                      { id: "chatbot", icon: Zap, label: "ThreatLensGO Assistant" },
-                      { id: "repositories", icon: FolderGit2, label: "Repositories" },
-                      { id: "commits", icon: GitCommit, label: "Commit Analysis" },
-                      { id: "findings", icon: ShieldAlert, label: "Live Findings" },
-                      { id: "secrets", icon: Lock, label: "Secret Detection" },
-                      { id: "cicd", icon: Box, label: "CI/CD & Docker" },
-                      { id: "compliance", icon: CheckCircle, label: "Compliance & Posture" },
-                    ].map((item) => {
-                      const Icon = item.icon;
-                      const isItemActive = activeTopTab === "dashboard" && activeNav === item.id;
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => {
-                            handleNavClick(item.id);
-                            setIsDocNavOpen(false);
-                          }}
-                          className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-left transition-colors cursor-pointer ${
-                            isItemActive
-                              ? "bg-[#18181b] text-white font-semibold"
-                              : "text-[#a1a1aa] hover:text-white hover:bg-[#18181b]/50"
-                          }`}
-                        >
-                          <Icon className={`w-3.5 h-3.5 ${isItemActive ? "text-[#38bdf8]" : "text-[#71717a]"}`} />
-                          <span className="truncate flex-1">{item.label}</span>
-                          {isItemActive && <span className="w-1.5 h-1.5 rounded-full bg-[#38bdf8]" />}
-                        </button>
-                      );
-                    })}
-
-                    <div className="border-t border-[#1c1c1f] my-1" />
-                    
-                    <button
-                      onClick={() => {
-                        setActiveTopTab("tokens");
-                        setIsDocNavOpen(false);
-                      }}
-                      className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-left transition-colors cursor-pointer ${
-                        activeTopTab === "tokens"
-                          ? "bg-[#18181b] text-white font-semibold"
-                          : "text-[#a1a1aa] hover:text-white hover:bg-[#18181b]/50"
-                      }`}
-                    >
-                      <BarChart3 className={`w-3.5 h-3.5 ${activeTopTab === "tokens" ? "text-[#38bdf8]" : "text-[#71717a]"}`} />
-                      <span className="truncate flex-1">Token Usage & Telemetry</span>
-                      {activeTopTab === "tokens" && <span className="w-1.5 h-1.5 rounded-full bg-[#38bdf8]" />}
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setActiveTopTab("plans");
-                        setIsDocNavOpen(false);
-                      }}
-                      className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-left transition-colors cursor-pointer ${
-                        activeTopTab === "plans"
-                          ? "bg-[#18181b] text-white font-semibold"
-                          : "text-[#a1a1aa] hover:text-white hover:bg-[#18181b]/50"
-                      }`}
-                    >
-                      <Zap className={`w-3.5 h-3.5 ${activeTopTab === "plans" ? "text-[#f59e0b]" : "text-[#71717a]"}`} />
-                      <span className="truncate flex-1">Premium Plans & Pricing</span>
-                      {activeTopTab === "plans" && <span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]" />}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Right Side: Search, Pulse, Tokens, Profile */}
-        <div className="flex items-center gap-2.5 sm:gap-3.5">
-          {/* Quick Search */}
-          <div
-            onClick={() => toast.info("Press Ctrl+K or select tabs from sidebar to navigate")}
-            className="hidden md:flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[#18181b] border border-[#27272a] text-xs text-[#a1a1aa] hover:border-[#3f3f46] transition-colors cursor-pointer"
-          >
-            <Search className="w-3.5 h-3.5 text-[#71717a]" />
-            <span className="text-[11.5px] text-[#71717a]">Search docs...</span>
-            <kbd className="text-[9.5px] px-1 py-0.2 rounded bg-[#27272a] text-[#a1a1aa] border border-[#3f3f46] font-mono">âŒ˜K</kbd>
-          </div>
-
-          {/* Pulse Signal */}
-          <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#18181b] border border-[#27272a] text-[10.5px] font-mono text-[#a1a1aa]">
-            <span className={`w-1.5 h-1.5 rounded-full ${pulseHealthy ? "bg-emerald-400 shadow-[0_0_8px_#34d399]" : "bg-amber-400"}`} />
-            <span className="text-white font-medium">{clockStr}</span>
-          </div>
-
-          {/* Notifications */}
-          <button
-            onClick={() => toast.info("No unread alerts")}
-            className="p-1.5 text-[#a1a1aa] hover:text-white hover:bg-[#18181b] rounded-lg transition-colors relative cursor-pointer"
-            title="Notifications"
-          >
-            <Bell className="w-4 h-4" />
-          </button>
-
-          {/* Tokens Dropdown */}
-          <div className="relative" ref={tokensRef}>
-            <button
-              onClick={() => setIsTokensOpen(!isTokensOpen)}
-              className="px-3 py-1.5 rounded-lg bg-[#18181b] hover:bg-[#27272a] border border-[#27272a] text-white text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5"
-              title="Tokens & Subscriptions"
-            >
-              <Zap className="w-3.5 h-3.5 text-[#38bdf8]" />
-              <span className="font-semibold text-xs">Tokens</span>
-              <ChevronDown className={`w-3 h-3 text-[#71717a] transition-transform duration-200 ${isTokensOpen ? "rotate-180" : ""}`} />
-            </button>
-
-            {/* Dropdown Menu */}
-            {isTokensOpen && (
-              <div className="absolute right-0 top-full mt-2 w-56 rounded-xl bg-[#09090b] border border-[#27272a] shadow-2xl p-1.5 backdrop-blur-xl z-[9999] select-none">
-                <div className="px-3 py-1.5 border-b border-[#27272a] mb-1">
-                  <div className="text-[10px] uppercase font-bold text-[#71717a] tracking-wider">
-                    API & Credits
-                  </div>
-                </div>
-
-                {/* Option 1: Token usage */}
-                <button
-                  onClick={() => {
-                    setActiveTopTab("tokens");
-                    setIsTokensOpen(false);
-                  }}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left hover:bg-[#18181b] text-[#d4d4d8] hover:text-white transition-colors cursor-pointer group"
-                >
-                  <div className="w-7 h-7 rounded-md bg-[#27272a] border border-[#3f3f46] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                    <BarChart3 className="w-3.5 h-3.5 text-[#38bdf8]" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-xs font-medium text-white">Token usage</div>
-                    <div className="text-[10px] text-[#71717a]">Quotas & usage metrics</div>
-                  </div>
-                </button>
-
-                {/* Option 2: Premium plans */}
-                <button
-                  onClick={() => {
-                    setActiveTopTab("plans");
-                    setIsTokensOpen(false);
-                  }}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left hover:bg-[#18181b] text-[#d4d4d8] hover:text-white transition-colors cursor-pointer group"
-                >
-                  <div className="w-7 h-7 rounded-md bg-[#27272a] border border-[#3f3f46] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                    <Zap className="w-3.5 h-3.5 text-[#f59e0b]" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-xs font-medium text-white">Premium plans</div>
-                    <div className="text-[10px] text-[#71717a]">Upgrade tier & limit</div>
-                  </div>
-                </button>
-              </div>
-            )}
->>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
-          </div>
-
-          {/* User Profile Avatar */}
-          <button
-            onClick={() => setIsProfileOpen(true)}
-            className="flex items-center rounded-full ring-1 ring-[#27272a] hover:ring-[#3f3f46] transition-all cursor-pointer overflow-hidden p-0.5"
-            title="Account Settings"
-          >
-            {user?.avatar_url ? (
-              <img
-                src={user.avatar_url}
-                alt=""
-                className="w-7 h-7 rounded-full object-cover"
-              />
-            ) : (
-              <div
-                className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white bg-[#27272a] border border-[#3f3f46] shadow-sm"
-              >
-                {user?.name ? user.name.slice(0, 2).toUpperCase() : "TL"}
-              </div>
-            )}
-          </button>
-        </div>
-
-<<<<<<< HEAD
-        {/* Right Side: Search, Pulse, Tokens, Profile */}
-        <div className="flex items-center gap-2.5 sm:gap-3.5">
-          {/* Quick Search */}
-          <div
-            onClick={() => toast.info("Press Ctrl+K or select tabs from sidebar to navigate")}
-            className="hidden md:flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[#18181b] border border-[#27272a] text-xs text-[#a1a1aa] hover:border-[#3f3f46] transition-colors cursor-pointer"
-          >
-            <Search className="w-3.5 h-3.5 text-[#71717a]" />
-            <span className="text-[11.5px] text-[#71717a]">Search docs...</span>
-            <kbd className="text-[9.5px] px-1 py-0.2 rounded bg-[#27272a] text-[#a1a1aa] border border-[#3f3f46] font-mono">âŒ˜K</kbd>
-          </div>
-
-          {/* Pulse Signal */}
-          <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#18181b] border border-[#27272a] text-[10.5px] font-mono text-[#a1a1aa]">
-            <span className={`w-1.5 h-1.5 rounded-full ${pulseHealthy ? "bg-emerald-400 shadow-[0_0_8px_#34d399]" : "bg-amber-400"}`} />
-            <span className="text-white font-medium">{clockStr}</span>
-          </div>
-
-          {/* Notifications */}
-          <button
-            onClick={() => toast.info("No unread alerts")}
-            className="p-1.5 text-[#a1a1aa] hover:text-white hover:bg-[#18181b] rounded-lg transition-colors relative cursor-pointer"
-            title="Notifications"
->>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
           >
             {/* Top Logo Header in Sidebar */}
             <div className="h-14 shrink-0 px-4 flex items-center bg-[#000000]">
@@ -770,12 +371,10 @@ export default function DashboardLayout() {
               </Link>
             </div>
 
-<<<<<<< HEAD
             {/* Navigation Links */}
             <nav className="flex-1 overflow-y-auto px-3 py-2.5 space-y-1 font-sans select-none no-scrollbar">
               {NAV_CATEGORIES.filter((cat) => !cat.adminOnly || isAdmin).map((cat, catIdx, arr) => {
                 const isCollapsed = collapsedCategories[cat.id];
-                const hasActiveChild = cat.items.some((it) => it.id === activeNav);
 
                 return (
                   <div key={cat.id} className="space-y-0.5">
@@ -1039,487 +638,359 @@ export default function DashboardLayout() {
                     Run new scan
                   </button>
                 </div>
-=======
-          {/* Tokens Dropdown */}
-          <div className="relative" ref={tokensRef}>
-            <button
-              onClick={() => setIsTokensOpen(!isTokensOpen)}
-              className="px-3 py-1.5 rounded-lg bg-[#18181b] hover:bg-[#27272a] border border-[#27272a] text-white text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5"
-              title="Tokens & Subscriptions"
-            >
-              <Zap className="w-3.5 h-3.5 text-[#38bdf8]" />
-              <span className="font-semibold text-xs">Tokens</span>
-              <ChevronDown className={`w-3 h-3 text-[#71717a] transition-transform duration-200 ${isTokensOpen ? "rotate-180" : ""}`} />
-            </button>
-
-            {/* Dropdown Menu */}
-            {isTokensOpen && (
-              <div className="absolute right-0 top-full mt-2 w-56 rounded-xl bg-[#09090b] border border-[#27272a] shadow-2xl p-1.5 backdrop-blur-xl z-[9999] select-none">
-                <div className="px-3 py-1.5 border-b border-[#27272a] mb-1">
-                  <div className="text-[10px] uppercase font-bold text-[#71717a] tracking-wider">
-                    API & Credits
-                  </div>
-                </div>
-
-                {/* Option 1: Token usage */}
-                <button
-                  onClick={() => {
-                    setActiveTopTab("tokens");
-                    setIsTokensOpen(false);
-                  }}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left hover:bg-[#18181b] text-[#d4d4d8] hover:text-white transition-colors cursor-pointer group"
-                >
-                  <div className="w-7 h-7 rounded-md bg-[#27272a] border border-[#3f3f46] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                    <BarChart3 className="w-3.5 h-3.5 text-[#38bdf8]" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-xs font-medium text-white">Token usage</div>
-                    <div className="text-[10px] text-[#71717a]">Quotas & usage metrics</div>
-                  </div>
-                </button>
-
-                {/* Option 2: Premium plans */}
-                <button
-                  onClick={() => {
-                    setActiveTopTab("plans");
-                    setIsTokensOpen(false);
-                  }}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left hover:bg-[#18181b] text-[#d4d4d8] hover:text-white transition-colors cursor-pointer group"
-                >
-                  <div className="w-7 h-7 rounded-md bg-[#27272a] border border-[#3f3f46] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                    <Zap className="w-3.5 h-3.5 text-[#f59e0b]" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-xs font-medium text-white">Premium plans</div>
-                    <div className="text-[10px] text-[#71717a]">Upgrade tier & limit</div>
-                  </div>
-                </button>
               </div>
-            )}
-          </div>
 
-          {/* User Profile Avatar */}
-          <button
-            onClick={() => setIsProfileOpen(true)}
-            className="flex items-center rounded-full ring-1 ring-[#27272a] hover:ring-[#3f3f46] transition-all cursor-pointer overflow-hidden p-0.5"
-            title="Account Settings"
-          >
-            {user?.avatar_url ? (
-              <img
-                src={user.avatar_url}
-                alt=""
-                className="w-7 h-7 rounded-full object-cover"
-              />
-            ) : (
-              <div
-                className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white bg-[#27272a] border border-[#3f3f46] shadow-sm"
-              >
-                {user?.name ? user.name.slice(0, 2).toUpperCase() : "TL"}
+              {/* KPI ROW */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4.5">
+                {loading
+                  ? Array.from({ length: 4 }).map((_, i) => (
+                      <SkeletonBlock key={i} className="h-24 rounded-xl" />
+                    ))
+                  : kpis.map((k, i) => (
+                      <div
+                        key={i}
+                        className="bg-[#10151a] border border-[#263544] hover:border-[#38bdf8]/40 rounded-xl p-4.5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-all"
+                      >
+                        <div
+                          className="absolute left-0 top-0 bottom-0 w-[3.5px]"
+                          style={{
+                            backgroundColor: severityColor(k.type),
+                          }}
+                        />
+                        <div className="text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-semibold">{k.label}</div>
+                        <div
+                          className="text-xl font-bold mt-1.5"
+                          style={{ color: severityColor(k.type) }}
+                        >
+                          {k.value}
+                        </div>
+                        <div className="text-[11px] text-[#8a99ad] mt-1">{k.sub}</div>
+                      </div>
+                    ))}
               </div>
-            )}
-          </button>
-        </div>
-      </header>
 
-      {/* ---------- MAIN CONTENT / BILLING VIEW ---------- */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {activeTopTab === "tokens" || activeTopTab === "plans" ? (
-          <TokenUsageTab
-            user={user}
-            initialSection={activeTopTab === "plans" ? "plans" : "usage"}
-            onBack={() => setActiveTopTab("dashboard")}
-          />
-        ) : (
-          <div className="flex-1 flex min-w-0">
-            {/* ---------- SIDEBAR (Untitled UI Hierarchical Collapsible Style) ---------- */}
-            {isSidebarOpen && (
-            <>
-              {/* Mobile backdrop overlay */}
-              <div
-                onClick={() => setIsSidebarOpen(false)}
-                className="fixed inset-0 top-14 bg-black/80 backdrop-blur-xs z-40 lg:hidden cursor-pointer"
-                aria-hidden="true"
-              />
+              {/* GAUGE + COMMITS SPLIT */}
+              <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-5.5">
+                {/* Left: Latest Analyzed Commits */}
+                <div className="bg-[#10151a] border border-[#263544] hover:border-[#2f4255] rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)] flex flex-col justify-between transition-all">
+                  <div>
+                    <div className="flex items-center justify-between p-3 px-4 border-b border-[#253240] bg-[#12181f]/60">
+                      <h2 className="text-xs font-bold text-white uppercase tracking-wider">
+                        Latest analyzed commits
+                      </h2>
+                      <div className="text-[10px] text-[#8a99ad]">
+                        {repos.length > 0 ? `GET /repo/${repos[0]?.id}/commits` : "no repo"}
+                      </div>
+                    </div>
 
-              <aside className="w-[256px] shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] flex flex-col border-r border-[#1c1c1f] bg-[#050507] z-30 select-none">
-              {/* Navigation Links */}
-              <nav className="flex-1 overflow-y-auto px-3 py-4" style={{ scrollbarWidth: "none" }}>
+                    <div className="divide-y divide-[#222e3a]">
+                      {loading ? (
+                        Array.from({ length: 4 }).map((_, i) => (
+                          <div key={i} className="p-3 px-4.5">
+                            <SkeletonBlock className="h-10 w-full" />
+                          </div>
+                        ))
+                      ) : latestCommits.length === 0 ? (
+                        <div className="p-8 text-center">
+                          <WifiOff className="w-6 h-6 mx-auto text-[#8a99ad] mb-2" />
+                          <p className="font-mono text-xs text-[#8a99ad]">No commit data available yet</p>
+                          <p className="font-mono text-[10px] text-[#6f8390] mt-1">Run the CLI scanner to analyze commits</p>
+                        </div>
+                      ) : (
+                        latestCommits.map((c, i) => {
+                          const score = c.summary?.risk_score || 0;
+                          const level = c.summary?.risk_level || "low";
+                          const color = severityColor(level);
+                          return (
+                            <div
+                              key={i}
+                              onClick={() => handleOpenDetail({
+                                sha: c.commit?.short_sha,
+                                message: c.commit?.message,
+                                author: c.commit?.author_name,
+                                date: c.commit?.authored_at,
+                                score: score,
+                                level: level,
+                                findings: c.findings || [],
+                                explanation: `Static AST security analysis identified ${c.findings?.length || 0} policy triggers in commit ${c.commit?.short_sha || ""}.`,
+                              })}
+                              className="p-3 px-4.5 flex items-center justify-between hover:bg-[#16202c] transition-colors cursor-pointer group"
+                            >
+                              <div className="min-w-0 flex-1 pr-3">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-mono text-[11px] text-[#38bdf8] font-bold">
+                                    {c.commit?.short_sha || "commit"}
+                                  </span>
+                                  <span className="text-xs text-white font-medium truncate group-hover:text-[#38bdf8] transition-colors">
+                                    {c.commit?.message || "No commit message"}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2 text-[10px] text-[#8a99ad] mt-0.5">
+                                  <span>{c.commit?.author_name}</span>
+                                  <span>·</span>
+                                  <span>{c.commit?.authored_at ? timeAgo(c.commit.authored_at) : "recently"}</span>
+                                </div>
+                              </div>
 
-                {/* SECTION 1: DOCUMENTATION */}
-                <div className="mb-1">
-                  <div className="flex items-center justify-between px-2 py-1.5 mb-0.5">
-                    <span className="text-[12.5px] font-bold text-white tracking-[-0.01em]">Documentation</span>
-                    <ChevronUp className="w-3.5 h-3.5 text-[#52525b]" />
+                              <div className="flex items-center gap-2.5 shrink-0">
+                                <div className="text-right">
+                                  <div className="text-[11px] font-bold" style={{ color }}>
+                                    Score: {score}
+                                  </div>
+                                  <div className="text-[9.5px] uppercase tracking-wider text-[#8a99ad] font-semibold">
+                                    {level}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
                   </div>
-                  <div className="space-y-px">
-                    {[
-                      { id: "dashboard", icon: Sparkles, label: "Introduction" },
-                      { id: "chatbot", icon: Zap, label: "ThreatLensGO", badge: "AI" },
-                      { id: "repositories", icon: FolderGit2, label: "Repositories" },
-                      { id: "commits", icon: GitCommit, label: "Commit Analysis" },
-                      { id: "cli", icon: Terminal, label: "CLI & Local Agent" },
-                    ].map((item) => {
-                      const isActive = activeNav === item.id;
-                      const Icon = item.icon;
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => handleNavClick(item.id)}
-                          className={`w-full flex items-center gap-2.5 px-2.5 py-[6px] rounded-lg text-[13.5px] font-medium transition-all text-left cursor-pointer ${
-                            isActive
-                              ? "bg-[#1c1c1f] text-white"
-                              : "text-[#71717a] hover:text-[#d4d4d8] hover:bg-[#0f0f11]"
-                          }`}
-                        >
-                          <Icon className="w-[15px] h-[15px] shrink-0 opacity-80" />
-                          <span className="truncate flex-1 leading-none">{item.label}</span>
-                          {item.badge && (
-                            <span className="px-1.5 py-0.5 text-[9px] font-bold rounded-md bg-[#1c1c1f] text-[#a1a1aa] border border-[#27272a] tracking-wide">
-                              {item.badge}
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
+                  <div className="p-3 px-4 border-t border-[#253240] bg-[#12181f]/40 text-right">
+                    <button
+                      onClick={() => setActiveNav("commits")}
+                      className="text-xs text-[#38bdf8] hover:underline font-mono"
+                    >
+                      View all analyzed commits →
+                    </button>
                   </div>
                 </div>
 
-                {/* Dotted Separator */}
-                <div className="border-t border-dashed border-[#1c1c1f] my-3.5 mx-1" />
+                {/* Right: Security Posture Risk Meter */}
+                <div className="bg-[#10151a] border border-[#263544] hover:border-[#2f4255] rounded-xl p-5 flex flex-col justify-between shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-all">
+                  <div>
+                    <div className="flex items-center justify-between pb-3 border-b border-[#253240]">
+                      <h2 className="text-xs font-bold text-white uppercase tracking-wider">
+                        Security Posture Risk Meter
+                      </h2>
+                      <div className="text-[10px] font-mono text-[#8a99ad]">REAL-TIME DAST</div>
+                    </div>
 
-                {/* SECTION 2: SECURITY & RESOURCES */}
-                <div className="mb-1">
-                  <div className="flex items-center justify-between px-2 py-1.5 mb-0.5">
-                    <span className="text-[12.5px] font-bold text-white tracking-[-0.01em]">Security & Resources</span>
-                    <ChevronUp className="w-3.5 h-3.5 text-[#52525b]" />
-                  </div>
-                  <div className="space-y-px">
-                    {[
-                      { id: "findings", icon: ShieldAlert, label: "Live Findings" },
-                      { id: "secrets", icon: Lock, label: "Secret Detection" },
-                      { id: "cicd", icon: Box, label: "CI/CD & Docker" },
-                      { id: "compliance", icon: CheckCircle, label: "Compliance & Posture" },
-                    ].map((item) => {
-                      const isActive = activeNav === item.id;
-                      const Icon = item.icon;
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => handleNavClick(item.id)}
-                          className={`w-full flex items-center gap-2.5 px-2.5 py-[6px] rounded-lg text-[13.5px] font-medium transition-all text-left cursor-pointer ${
-                            isActive
-                              ? "bg-[#1c1c1f] text-white"
-                              : "text-[#71717a] hover:text-[#d4d4d8] hover:bg-[#0f0f11]"
-                          }`}
+                    <div className="py-6 flex flex-col items-center justify-center">
+                      <div className="relative w-36 h-36 flex items-center justify-center">
+                        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="42"
+                            stroke="#1e2832"
+                            strokeWidth="9"
+                            fill="transparent"
+                          />
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="42"
+                            stroke={postureStatus.color}
+                            strokeWidth="9"
+                            strokeDasharray={264}
+                            strokeDashoffset={264 - (264 * calculatedRiskScore) / 100}
+                            strokeLinecap="round"
+                            fill="transparent"
+                            style={{ transition: "stroke-dashoffset 1s ease" }}
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                          <span className="text-3xl font-bold font-mono text-white">
+                            {calculatedRiskScore}
+                          </span>
+                          <span className="text-[9px] uppercase tracking-wider text-[#8a99ad] font-semibold">
+                            / 100 RISK
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 text-center">
+                        <div
+                          className="text-xs font-bold tracking-wider uppercase px-2.5 py-1 rounded-full inline-block"
+                          style={{
+                            backgroundColor: `${postureStatus.color}15`,
+                            color: postureStatus.color,
+                            border: `1px solid ${postureStatus.color}40`,
+                          }}
                         >
-                          <Icon className="w-[15px] h-[15px] shrink-0 opacity-80" />
-                          <span className="truncate flex-1 leading-none">{item.label}</span>
-                        </button>
-                      );
-                    })}
+                          {postureStatus.label}
+                        </div>
+                        <p className="text-[10.5px] text-[#8a99ad] mt-2 max-w-xs">
+                          Calculated continuously from live AST AST patterns, Git diff alerts, and DAST endpoints.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-[#253240] flex items-center justify-between text-xs">
+                    <span className="text-[#8a99ad]">DAST daemon</span>
+                    <span className={`font-mono font-bold ${scannerOnline ? "text-[#38bdf8]" : "text-rose-400"}`}>
+                      {scannerOnline ? ":8765 ONLINE" : "OFFLINE"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* LIVE SECTEST FINDINGS TABLE PREVIEW */}
+              <div className="bg-[#10151a] border border-[#263544] hover:border-[#2f4255] rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-all">
+                <div className="flex items-center justify-between p-3 px-4 border-b border-[#253240] bg-[#12181f]/60">
+                  <h2 className="text-xs font-bold text-white uppercase tracking-wider">
+                    Recent security findings
+                  </h2>
+                  <div className="text-[10px] text-[#8a99ad]">
+                    {secFindings.length} detected CVE/CWE items
                   </div>
                 </div>
 
-                {/* Dotted Separator */}
-                {isAdmin && <div className="border-t border-dashed border-[#1c1c1f] my-3.5 mx-1" />}
-
-                {/* SECTION 3: ADMINISTRATION */}
-                {isAdmin && (
-                  <div className="mb-1">
-                    <div className="flex items-center justify-between px-2 py-1.5 mb-0.5">
-                      <span className="text-[12.5px] font-bold text-white tracking-[-0.01em]">Administration</span>
-                      <ChevronUp className="w-3.5 h-3.5 text-[#52525b]" />
-                    </div>
-                    <div className="space-y-px">
-                      {[
-                        { id: "accounts", icon: Users, label: "Accounts" },
-                        { id: "config", icon: Settings, label: "System Config" },
-                        { id: "sessions", icon: Clock, label: "Sessions" },
-                      ].map((item) => {
-                        const isActive = activeNav === item.id;
-                        const Icon = item.icon;
-                        return (
-                          <button
-                            key={item.id}
-                            onClick={() => handleNavClick(item.id)}
-                            className={`w-full flex items-center gap-2.5 px-2.5 py-[6px] rounded-lg text-[13.5px] font-medium transition-all text-left cursor-pointer ${
-                              isActive
-                                ? "bg-[#1c1c1f] text-white"
-                                : "text-[#71717a] hover:text-[#d4d4d8] hover:bg-[#0f0f11]"
-                            }`}
-                          >
-                            <Icon className="w-[15px] h-[15px] shrink-0 opacity-80" />
-                            <span className="truncate flex-1 leading-none">{item.label}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
+                {secFindings.length === 0 ? (
+                  <div className="p-8 text-center">
+                    <p className="font-mono text-xs text-[#8a99ad]">No active findings detected</p>
+                    <p className="font-mono text-[10px] text-[#6f8390] mt-1">Run a new scan using the top button</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs font-sans">
+                      <thead className="bg-[#0c1014] text-[#8a99ad] text-[10.5px] uppercase font-semibold">
+                        <tr>
+                          <th className="py-2.5 px-4.5">Severity</th>
+                          <th className="py-2.5 px-4.5">Finding</th>
+                          <th className="py-2.5 px-4.5">Module</th>
+                          <th className="py-2.5 px-4.5">Endpoint / Context</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#212c37]">
+                        {secFindings.slice(0, 5).map((f, i) => {
+                          const col = severityColor(f.severity);
+                          return (
+                            <tr
+                              key={i}
+                              onClick={() => handleOpenDetail(f)}
+                              className="hover:bg-[#141b22] transition-colors cursor-pointer group"
+                            >
+                              <td className="py-3 px-4.5 align-top">
+                                <span
+                                  className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider"
+                                  style={{
+                                    backgroundColor: `${col}20`,
+                                    color: col,
+                                    border: `1px solid ${col}40`,
+                                  }}
+                                >
+                                  {f.severity}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4.5 align-top">
+                                <div className="font-semibold text-white">{f.title}</div>
+                                <div className="font-mono text-[#8a99ad] text-[10.5px] mt-0.5">{f.evidence}</div>
+                              </td>
+                              <td className="py-3 px-4.5 align-top font-mono text-[10.5px] text-[#8a99ad]">{f.module}</td>
+                              <td className="py-3 px-4.5 align-top font-mono text-[10.5px] text-[#8a99ad]">
+                                {f.meta?.endpoint} · {f.meta?.cwe}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
                   </div>
                 )}
-              </nav>
-
-              {/* Bottom User Card */}
-              <div className="p-3 border-t border-[#1c1c1f] bg-[#050507]">
-                <button
-                  onClick={() => {
-                    setIsProfileOpen(true);
-                    if (typeof window !== "undefined" && window.innerWidth < 1024) {
-                      setIsSidebarOpen(false);
-                    }
-                  }}
-                  title="Edit Profile & Account Details"
-                  className="w-full flex items-center gap-3 px-2.5 py-2 rounded-xl hover:bg-[#0f0f11] transition-all text-left group cursor-pointer"
-                >
-                  {user?.avatar_url ? (
-                    <img
-                      src={user.avatar_url}
-                      alt=""
-                      className="w-7 h-7 rounded-full object-cover border border-[#27272a]"
-                    />
-                  ) : (
-                    <div
-                      className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white bg-[#18181b] border border-[#27272a] shrink-0"
-                    >
-                      {user?.name ? user.name.slice(0, 2).toUpperCase() : "TL"}
-                    </div>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <div className="text-[13px] text-[#d4d4d8] font-semibold truncate leading-tight">
-                      {user?.name || "Dev User"}
-                    </div>
-                    <div className="text-[#52525b] text-[11px] truncate leading-tight mt-0.5">
-                      {user?.email || (user?.role ? `${user.role} Â· team` : "dev@threatlens.io")}
-                    </div>
-                  </div>
-                  <ChevronDown className="w-3.5 h-3.5 text-[#52525b] shrink-0" />
-                </button>
               </div>
-            </aside>
-          </>
-        )}
 
-      {/* ---------- MAIN CONTENT AREA ---------- */}
-      <div className="flex-1 min-w-0 flex flex-col min-h-screen">
-        {activeNav === "chatbot" ? (
-          <div className="flex-1 flex flex-col min-w-0 h-[calc(100vh-3.5rem)]">
-            <ChatBotTab user={user} />
-          </div>
-        ) : (
-          /* Main Content */
-          <main className="p-8 lg:p-10 pb-20 space-y-7 max-w-[1600px] w-full">
-            {activeNav === "dashboard" && (
-              <div className="pb-20">
-                <IntroductionTab onNavigate={handleNavClick} />
->>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
-              </div>
-            )}
-
-
-
-
-
-=======
-      {/* ---------- MAIN CONTENT / BILLING VIEW ---------- */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {activeTopTab === "tokens" || activeTopTab === "plans" ? (
-          <TokenUsageTab
-            user={user}
-            initialSection={activeTopTab === "plans" ? "plans" : "usage"}
-            onBack={() => setActiveTopTab("dashboard")}
-          />
-        ) : (
-          <div className="flex-1 flex min-w-0">
-            {/* ---------- SIDEBAR (Untitled UI Hierarchical Collapsible Style) ---------- */}
-            {isSidebarOpen && (
-            <>
-              {/* Mobile backdrop overlay */}
-              <div
-                onClick={() => setIsSidebarOpen(false)}
-                className="fixed inset-0 top-14 bg-black/80 backdrop-blur-xs z-40 lg:hidden cursor-pointer"
-                aria-hidden="true"
-              />
-
-              <aside className="w-[256px] shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] flex flex-col border-r border-[#1c1c1f] bg-[#050507] z-30 select-none">
-              {/* Navigation Links */}
-              <nav className="flex-1 overflow-y-auto px-3 py-4" style={{ scrollbarWidth: "none" }}>
-
-                {/* SECTION 1: DOCUMENTATION */}
-                <div className="mb-1">
-                  <div className="flex items-center justify-between px-2 py-1.5 mb-0.5">
-                    <span className="text-[12.5px] font-bold text-white tracking-[-0.01em]">Documentation</span>
-                    <ChevronUp className="w-3.5 h-3.5 text-[#52525b]" />
-                  </div>
-                  <div className="space-y-px">
-                    {[
-                      { id: "dashboard", icon: Sparkles, label: "Introduction" },
-                      { id: "chatbot", icon: Zap, label: "ThreatLensGO", badge: "AI" },
-                      { id: "repositories", icon: FolderGit2, label: "Repositories" },
-                      { id: "commits", icon: GitCommit, label: "Commit Analysis" },
-                      { id: "cli", icon: Terminal, label: "CLI & Local Agent" },
-                    ].map((item) => {
-                      const isActive = activeNav === item.id;
-                      const Icon = item.icon;
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => handleNavClick(item.id)}
-                          className={`w-full flex items-center gap-2.5 px-2.5 py-[6px] rounded-lg text-[13.5px] font-medium transition-all text-left cursor-pointer ${
-                            isActive
-                              ? "bg-[#1c1c1f] text-white"
-                              : "text-[#71717a] hover:text-[#d4d4d8] hover:bg-[#0f0f11]"
-                          }`}
-                        >
-                          <Icon className="w-[15px] h-[15px] shrink-0 opacity-80" />
-                          <span className="truncate flex-1 leading-none">{item.label}</span>
-                          {item.badge && (
-                            <span className="px-1.5 py-0.5 text-[9px] font-bold rounded-md bg-[#1c1c1f] text-[#a1a1aa] border border-[#27272a] tracking-wide">
-                              {item.badge}
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
+              {/* SCANNED REPOSITORIES GRID */}
+              <div className="bg-[#10151a] border border-[#263544] hover:border-[#2f4255] rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-all">
+                <div className="flex items-center justify-between p-3 px-4 border-b border-[#253240] bg-[#12181f]/60">
+                  <h2 className="text-xs font-bold text-white uppercase tracking-wider">
+                    Scanned repositories
+                  </h2>
+                  <div className="text-[10px] text-[#8a99ad]">GET /repo</div>
                 </div>
 
-                {/* Dotted Separator */}
-                <div className="border-t border-dashed border-[#1c1c1f] my-3.5 mx-1" />
-
-                {/* SECTION 2: SECURITY & RESOURCES */}
-                <div className="mb-1">
-                  <div className="flex items-center justify-between px-2 py-1.5 mb-0.5">
-                    <span className="text-[12.5px] font-bold text-white tracking-[-0.01em]">Security & Resources</span>
-                    <ChevronUp className="w-3.5 h-3.5 text-[#52525b]" />
-                  </div>
-                  <div className="space-y-px">
-                    {[
-                      { id: "findings", icon: ShieldAlert, label: "Live Findings" },
-                      { id: "secrets", icon: Lock, label: "Secret Detection" },
-                      { id: "cicd", icon: Box, label: "CI/CD & Docker" },
-                      { id: "compliance", icon: CheckCircle, label: "Compliance & Posture" },
-                    ].map((item) => {
-                      const isActive = activeNav === item.id;
-                      const Icon = item.icon;
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => handleNavClick(item.id)}
-                          className={`w-full flex items-center gap-2.5 px-2.5 py-[6px] rounded-lg text-[13.5px] font-medium transition-all text-left cursor-pointer ${
-                            isActive
-                              ? "bg-[#1c1c1f] text-white"
-                              : "text-[#71717a] hover:text-[#d4d4d8] hover:bg-[#0f0f11]"
-                          }`}
-                        >
-                          <Icon className="w-[15px] h-[15px] shrink-0 opacity-80" />
-                          <span className="truncate flex-1 leading-none">{item.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Dotted Separator */}
-                {isAdmin && <div className="border-t border-dashed border-[#1c1c1f] my-3.5 mx-1" />}
-
-                {/* SECTION 3: ADMINISTRATION */}
-                {isAdmin && (
-                  <div className="mb-1">
-                    <div className="flex items-center justify-between px-2 py-1.5 mb-0.5">
-                      <span className="text-[12.5px] font-bold text-white tracking-[-0.01em]">Administration</span>
-                      <ChevronUp className="w-3.5 h-3.5 text-[#52525b]" />
+                <div className="p-4.5 grid grid-cols-1 md:grid-cols-3 gap-4.5">
+                  {loading ? (
+                    Array.from({ length: 3 }).map((_, i) => (
+                      <SkeletonBlock key={i} className="h-44 rounded-xl" />
+                    ))
+                  ) : repos.length === 0 ? (
+                    <div className="md:col-span-3 p-8 text-center">
+                      <p className="font-mono text-xs text-[#8a99ad]">No repositories scanned yet</p>
+                      <p className="font-mono text-[10px] text-[#6f8390] mt-1">Use the CLI backend to scan a repository</p>
                     </div>
-                    <div className="space-y-px">
-                      {[
-                        { id: "accounts", icon: Users, label: "Accounts" },
-                        { id: "config", icon: Settings, label: "System Config" },
-                        { id: "sessions", icon: Clock, label: "Sessions" },
-                      ].map((item) => {
-                        const isActive = activeNav === item.id;
-                        const Icon = item.icon;
-                        return (
-                          <button
-                            key={item.id}
-                            onClick={() => handleNavClick(item.id)}
-                            className={`w-full flex items-center gap-2.5 px-2.5 py-[6px] rounded-lg text-[13.5px] font-medium transition-all text-left cursor-pointer ${
-                              isActive
-                                ? "bg-[#1c1c1f] text-white"
-                                : "text-[#71717a] hover:text-[#d4d4d8] hover:bg-[#0f0f11]"
-                            }`}
-                          >
-                            <Icon className="w-[15px] h-[15px] shrink-0 opacity-80" />
-                            <span className="truncate flex-1 leading-none">{item.label}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </nav>
-
-              {/* Bottom User Card */}
-              <div className="p-3 border-t border-[#1c1c1f] bg-[#050507]">
-                <button
-                  onClick={() => {
-                    setIsProfileOpen(true);
-                    if (typeof window !== "undefined" && window.innerWidth < 1024) {
-                      setIsSidebarOpen(false);
-                    }
-                  }}
-                  title="Edit Profile & Account Details"
-                  className="w-full flex items-center gap-3 px-2.5 py-2 rounded-xl hover:bg-[#0f0f11] transition-all text-left group cursor-pointer"
-                >
-                  {user?.avatar_url ? (
-                    <img
-                      src={user.avatar_url}
-                      alt=""
-                      className="w-7 h-7 rounded-full object-cover border border-[#27272a]"
-                    />
                   ) : (
-                    <div
-                      className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white bg-[#18181b] border border-[#27272a] shrink-0"
-                    >
-                      {user?.name ? user.name.slice(0, 2).toUpperCase() : "TL"}
-                    </div>
+                    repos.slice(0, 6).map((r, i) => {
+                      const langs = r.languages || {};
+                      const langTotal = Object.values(langs).reduce((s, v) => s + v, 0) || 1;
+                      const langEntries = Object.entries(langs).sort((a, b) => b[1] - a[1]);
+                      const langColors = ["#4d9cff", "#f2c94c", "#38bdf8", "#10b981", "#a78bfa"];
+
+                      return (
+                        <div
+                          key={i}
+                          onClick={() => setActiveNav("repositories")}
+                          className="bg-[#10151a] border border-[#283747] hover:border-[#38bdf8]/40 rounded-xl p-4 space-y-3.5 shadow-sm transition-all cursor-pointer"
+                        >
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <div className="text-sm font-bold text-white hover:text-[#38bdf8] transition-colors">
+                                {r.name}
+                              </div>
+                              <div className="text-[10.5px] font-mono text-[#8a99ad] truncate max-w-[200px] mt-0.5">
+                                {r.url || "local repository"}
+                              </div>
+                            </div>
+                            <div className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#1d2733] text-[#38bdf8] border border-[#283747]">
+                              {r.default_branch || "main"}
+                            </div>
+                          </div>
+
+                          {/* Stats Grid */}
+                          <div className="grid grid-cols-3 gap-2 py-2 border-y border-[#202c38] text-center font-mono">
+                            <div>
+                              <div className="text-[9.5px] text-[#8a99ad] uppercase">Commits</div>
+                              <div className="text-xs font-bold text-white mt-0.5">{r.commit_count || 0}</div>
+                            </div>
+                            <div>
+                              <div className="text-[9.5px] text-[#8a99ad] uppercase">Files</div>
+                              <div className="text-xs font-bold text-white mt-0.5">{r.files_total || 0}</div>
+                            </div>
+                            <div>
+                              <div className="text-[9.5px] text-[#8a99ad] uppercase">Size</div>
+                              <div className="text-xs font-bold text-white mt-0.5">{formatBytes(r.total_size || 0)}</div>
+                            </div>
+                          </div>
+
+                          {/* Language Breakdown Bar */}
+                          <div>
+                            <div className="h-1.5 w-full bg-[#18232e] rounded-full overflow-hidden flex">
+                              {langEntries.map(([lang, bytes], li) => {
+                                const pct = (bytes / langTotal) * 100;
+                                return (
+                                  <div
+                                    key={lang}
+                                    style={{
+                                      width: `${pct}%`,
+                                      backgroundColor: langColors[li % langColors.length],
+                                    }}
+                                  />
+                                );
+                              })}
+                            </div>
+                            <div className="flex items-center gap-3 mt-2 text-[10px] font-mono text-[#8a99ad] flex-wrap">
+                              {langEntries.slice(0, 3).map(([lang, bytes], li) => (
+                                <span key={lang} className="flex items-center gap-1">
+                                  <span
+                                    className="w-2 h-2 rounded-full"
+                                    style={{ backgroundColor: langColors[li % langColors.length] }}
+                                  />
+                                  {lang} ({Math.round((bytes / langTotal) * 100)}%)
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
                   )}
-                  <div className="min-w-0 flex-1">
-                    <div className="text-[13px] text-[#d4d4d8] font-semibold truncate leading-tight">
-                      {user?.name || "Dev User"}
-                    </div>
-                    <div className="text-[#52525b] text-[11px] truncate leading-tight mt-0.5">
-                      {user?.email || (user?.role ? `${user.role} Â· team` : "dev@threatlens.io")}
-                    </div>
-                  </div>
-                  <ChevronDown className="w-3.5 h-3.5 text-[#52525b] shrink-0" />
-                </button>
+                </div>
               </div>
-            </aside>
-          </>
-        )}
-
-      {/* ---------- MAIN CONTENT AREA ---------- */}
-      <div className="flex-1 min-w-0 flex flex-col min-h-screen">
-        {activeNav === "chatbot" ? (
-          <div className="flex-1 flex flex-col min-w-0 h-[calc(100vh-3.5rem)]">
-            <ChatBotTab user={user} />
-          </div>
-        ) : (
-          /* Main Content */
-          <main className="p-8 lg:p-10 pb-20 space-y-7 max-w-[1600px] w-full">
-            {activeNav === "dashboard" && (
-              <div className="pb-20">
-                <IntroductionTab onNavigate={handleNavClick} />
-              </div>
-            )}
-
-
-
-
-
->>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
-          {activeNav === "cli" && (
-            <div className="p-5 sm:p-8 flex-1 overflow-y-auto">
-              <CliAgentTab onNavigate={handleNavClick} />
-            </div>
+            </>
           )}
 
           {activeNav === "repositories" && <RepositoriesTab onInspectCommit={handleOpenDetail} />}
@@ -1535,6 +1006,7 @@ export default function DashboardLayout() {
           {activeNav === "accounts" && <AccountsTab />}
 
           {activeNav === "config" && <SystemConfigTab />}
+
           {activeNav === "sessions" && <SessionsTab />}
           </main>
         )}
@@ -1555,7 +1027,7 @@ export default function DashboardLayout() {
                 <div className="flex items-start justify-between pb-3 border-b border-[#253240]">
                   <div>
                     <span className="font-mono text-[10px] text-[#38bdf8] uppercase tracking-wider font-semibold">
-                      {selectedItem.sha ? `Commit ${selectedItem.sha}` : `Finding Â· ${selectedItem.module || "SecTest"}`}
+                      {selectedItem.sha ? `Commit ${selectedItem.sha}` : `Finding · ${selectedItem.module || "SecTest"}`}
                     </span>
                     <h2 className="text-base font-mono font-bold text-white mt-1">
                       {selectedItem.title || selectedItem.msg || selectedItem.message}

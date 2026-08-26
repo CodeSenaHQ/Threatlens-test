@@ -96,3 +96,21 @@ def insert_commits(repo_id: int, commits: list[dict], jwt: str):
     response.raise_for_status()
     return response.json()
 
+def save_commits(url: str):
+    repo = Repository(url)
+    response = build_repo(repo=repo, jwt=jwt)
+    if response["status"] == "created":
+        commits= build_commit_insert(repo=repo, sha=None)
+        return insert_commits(repo_id=response["repo_id"],commits=commits,jwt=jwt)
+    
+    elif response["status"] == "already_up_to_date":
+        return {
+            "status" : "Already upto date",
+            "actions" : "No actions taken"
+        }
+    
+    else : 
+        sha = fetch_latest_commit(repo_id=response["repo_id"], jwt= jwt)
+        commits= build_commit_insert(repo=repo, sha=sha)
+        return insert_commits(repo_id=response["repo_id"],commits=commits,jwt=jwt)
+

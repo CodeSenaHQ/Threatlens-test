@@ -59,7 +59,7 @@ export default function AccountsTab() {
   return (
     <div className="space-y-7">
       {/* Top Page Header */}
-      <div className="flex flex-wrap items-end justify-between gap-4 pb-2 border-b border-[#253240]/60">
+      <div className="flex flex-wrap items-end justify-between gap-4 pb-2">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-white">Accounts & User Directory</h1>
           <p className="text-xs text-[#8a99ad] mt-1">

@@ -27,3 +27,7 @@ class ChatHistoryRequest(BaseModel):
     chat_id: int
     messages: list[dict]
 
+class PatchUsageRequest(BaseModel):
+    prompt_tokens: int
+    completion_tokens: int
+

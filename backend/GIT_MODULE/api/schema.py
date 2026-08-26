@@ -51,3 +51,4 @@ class CommitAnalysisListResponse(BaseModel):
 class AICommitAnalysisRequest(BaseModel):
     url: str
     analysis: dict 
+    stream : bool = False

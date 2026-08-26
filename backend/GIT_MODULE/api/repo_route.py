@@ -1,6 +1,9 @@
+from GIT_MODULE.ai.builder import ai_call_stream
 from fastapi import APIRouter, Query, Depends
 from GIT_MODULE.repo import Repository
-from GIT_MODULE.ai import ai_call
+from GIT_MODULE.ai import ai_call 
+from GIT_MODULE.ai.builder import ai_call_stream
+from fastapi.responses import StreamingResponse
 from connect import auth
 
 from GIT_MODULE.service import (
@@ -85,7 +88,6 @@ def get_raw_commit_analysis(
     "/{repo_id}/commits",
     response_model=CommitAnalysisResponse,
 )
-
 def store_raw_commit_analysis(
     repo_id: int,
     request: CommitAnalysisRequest,
@@ -111,6 +113,15 @@ async def ai_commit_analysis(
     repo = Repository(request.url)
     diff = repo.diff(sha)
 
+    if request.stream:
+        return StreamingResponse(
+            ai_call_stream(
+                diffs=diff,
+                raw_analysis=request.analysis,
+            ),
+            media_type="application/x-ndjson",
+        )
+
     response = await ai_call(
         diffs=diff,
         raw_analysis=request.analysis,
@@ -118,5 +129,6 @@ async def ai_commit_analysis(
 
     return {
         "diff": diff,
-        "ai_response": response,
+        "response": response,
     }
+

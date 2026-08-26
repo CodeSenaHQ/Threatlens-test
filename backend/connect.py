@@ -4,11 +4,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from tc_auth import Auth 
 from fastapi import FastAPI
 from config import config
-from tc_auth.db import create_session_factory
-from tc_auth.db.models import *
+from tc_auth.db import create_session_factory , Base
+# from SITE_MODULE.db import Chat , ChatHistory , Usage
 
 
-engine = create_engine("postgresql://workspace:admin@localhost:5432/tc_auth", echo=False)
+engine = create_engine("postgresql://workspace:admin@localhost:5432/tc_auth", echo=True)
 
 app = FastAPI()
 auth = Auth(engine, app)
@@ -56,12 +56,16 @@ auth.github.config(
 
 
 def init():
+    from SITE_MODULE.db import Chat , ChatHistory , Usage
+    from GIT_MODULE.db import Commit , Repo
     Base.metadata.create_all(
         bind=engine,
     )
 
 
 def destroy():
+    from SITE_MODULE.db import Chat , ChatHistory , Usage
+    from GIT_MODULE.db import Commit , Repo
     Base.metadata.drop_all(
         bind=engine,
     )

@@ -5,19 +5,30 @@ from config import config
 from db import save_jwt
 
 
-def password_login(identifier: str, password: str) -> dict : 
+def password_login(identifier: str, password: str) -> dict:
     response = httpx.post(
         f"{config.AUTH_BASE_URL}/login/password",
         json={
             "identifier": identifier,
-            "password": password
+            "password": password,
         }
     )
 
-    data = response.json().get("access_token")
-    if not data :
-        raise HTTPException(detail="login failed" , status_code=400)
-    save_jwt(data["access_token"])
+    print("STATUS:", response.status_code)
+    print("BODY:", repr(response.text))
+
+    response.raise_for_status()
+
+    data = response.json()
+    access_token = data.get("access_token")
+
+    if not access_token:
+        raise HTTPException(
+            detail="login failed",
+            status_code=400,
+        )
+
+    save_jwt(access_token)
 
     return {"status": "logged in"}
 

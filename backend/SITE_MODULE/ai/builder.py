@@ -1,10 +1,10 @@
 import json
-
 from google import genai
-
+from SITE_MODULE.service.chat_service import get_chat_history
+from .context import build_chat_messages 
 from config import config
-from GIT_MODULE.ai.context import build_commit_ai_prompt
-from GIT_MODULE.ai.prompt import SYSTEM_PROMPT
+
+from SITE_MODULE.ai.prompt import SYSTEM_PROMPT
 
 
 client = genai.Client(
@@ -13,7 +13,7 @@ client = genai.Client(
 
 
 async def gemini_call(
-    message: str,
+    message: list[dict],
 ) -> dict:
 
     response = client.models.generate_content(
@@ -29,8 +29,8 @@ async def gemini_call(
 
 
 async def gemini_call_stream(
-    message: str,
-):
+    message: list[dict],
+): 
     response = client.models.generate_content_stream(
         model="gemini-3.5-flash-lite",
         contents=message,
@@ -45,38 +45,39 @@ async def gemini_call_stream(
             yield chunk.text
 
 
+
 async def ai_call(
-    diffs: list[dict],
-    raw_analysis: dict,
+    chat_id: int,
+    prompt: str,
 ) -> dict:
 
-    message = build_commit_ai_prompt(
-        diffs=diffs,
-        data=raw_analysis,
-        max_diff_chars=10_000,
+    history = get_chat_history(
+        chat_id=chat_id,
+        limit=25,
+    )
+
+    message = build_chat_messages(
+        history=history,
+        prompt=prompt,
     )
 
     return await gemini_call(message)
 
 
+
 async def ai_call_stream(
-    diffs: list[dict],
-    raw_analysis: dict,
+    chat_id: int,
+    prompt: str,
 ):
-    message = build_commit_ai_prompt(
-        diffs=diffs,
-        data=raw_analysis,
-        max_diff_chars=10_000,
+    history = get_chat_history(
+        chat_id=chat_id,
+        limit=25,
     )
 
-    yield json.dumps({
-        "type": "diff",
-        "data": diffs,
-    }) + "\n"
+    message = build_chat_messages(
+        history=history,
+        prompt=prompt,
+    )
 
     async for chunk in gemini_call_stream(message):
-        yield json.dumps({
-            "type": "response",
-            "data": chunk,
-        }) + "\n"
-
+        yield chunk

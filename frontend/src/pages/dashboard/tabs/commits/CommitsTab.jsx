@@ -134,9 +134,9 @@ export default function CommitsTab({ onInspectCommit }) {
   return (
     <div className="space-y-7">
       {/* Top Page Header */}
-      <div className="flex flex-wrap items-end justify-between gap-4 pb-2 border-b border-[#253240]/60">
+      <div className="flex flex-wrap items-end justify-between gap-4 pb-2">
         <div>
-          <h1 className="font-mono text-lg font-bold tracking-tight text-white">Analyzed Git Commits</h1>
+          <h1 className="text-xl font-bold tracking-tight text-white">Analyzed Git Commits</h1>
           <p className="text-xs text-[#8a99ad] mt-1">
             {selectedRepo
               ? `GET /repo/${selectedRepo.id}/commits · ${selectedRepo.username}/${selectedRepo.name}`

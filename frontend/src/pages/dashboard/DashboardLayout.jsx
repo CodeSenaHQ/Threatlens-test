@@ -1008,8 +1008,8 @@ export default function DashboardLayout() {
         <div className="flex-1 min-w-0 min-h-0 flex flex-col h-full overflow-y-auto">
           {activeTopTab === "tokens" ? (
             <TokenUsageTab user={user} />
-          ) : activeNav === "threatlensgo" ? (
-            <ChatBotTab user={user} />
+          ) : activeNav === "prompts" || activeNav === "threatlensgo" ? (
+            <PromptHistoryTab user={user} />
           ) : (
           /* Main Content */
           <main className="p-8 lg:p-10 pb-20 space-y-7 max-w-[1600px] w-full">

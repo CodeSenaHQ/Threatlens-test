@@ -155,9 +155,9 @@ export default function PromptHistoryTab({ user }) {
   };
 
   return (
-    <div className="relative min-h-[calc(100vh-80px)] w-full flex flex-col justify-between overflow-hidden">
+    <div className="relative w-full flex flex-col pb-24">
       {/* Background Gradient Waves Animation */}
-      <div className="absolute inset-0 pointer-events-none z-0 opacity-40">
+      <div className="fixed inset-0 pointer-events-none z-0 opacity-40 overflow-hidden">
         <GradientWaves
           horizonColor="#010114"
           waveColor="#6f6e9d"
@@ -212,7 +212,6 @@ export default function PromptHistoryTab({ user }) {
                 <tr className="border-b border-[#1b2636] text-[12px] font-semibold text-[#8a99ad]">
                   <th className="pb-3.5 font-medium">Name</th>
                   <th className="pb-3.5 font-medium">Tools</th>
-                  <th className="pb-3.5 font-medium">Agents</th>
                   <th className="pb-3.5 font-medium cursor-pointer flex items-center gap-1">
                     <span>Last modified</span>
                     <ArrowDown className="w-3.5 h-3.5" />
@@ -223,7 +222,7 @@ export default function PromptHistoryTab({ user }) {
               <tbody className="divide-y divide-[#182332]">
                 {filteredPrompts.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="py-12 text-center text-xs text-[#8a99ad]">
+                    <td colSpan={4} className="py-12 text-center text-xs text-[#8a99ad]">
                       No prompts found matching your search.
                     </td>
                   </tr>
@@ -254,14 +253,6 @@ export default function PromptHistoryTab({ user }) {
                         <div className="flex items-center gap-2 text-xs text-[#d8e2e8]">
                           <Briefcase className="w-3.5 h-3.5 text-[#8a99ad]" />
                           <span>{p.toolsCount} tools</span>
-                        </div>
-                      </td>
-
-                      {/* Agents */}
-                      <td className="py-4 px-4 align-middle whitespace-nowrap">
-                        <div className="flex items-center gap-2 text-xs text-[#d8e2e8]">
-                          <Bot className="w-3.5 h-3.5 text-[#8a99ad]" />
-                          <span>{p.agentsCount} agent{p.agentsCount > 1 ? "s" : ""}</span>
                         </div>
                       </td>
 
@@ -461,15 +452,9 @@ export default function PromptHistoryTab({ user }) {
             </div>
 
             <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-[#080d14] border border-[#1e2a3b] rounded-xl p-3">
-                  <div className="text-[10px] text-[#8a99ad] uppercase font-semibold">Configured Tools</div>
-                  <div className="text-sm font-bold text-white mt-1">{selectedPrompt.toolsCount} Active Integrations</div>
-                </div>
-                <div className="bg-[#080d14] border border-[#1e2a3b] rounded-xl p-3">
-                  <div className="text-[10px] text-[#8a99ad] uppercase font-semibold">Assigned Agents</div>
-                  <div className="text-sm font-bold text-white mt-1">{selectedPrompt.agentsCount} Orchestration Agent</div>
-                </div>
+              <div className="bg-[#080d14] border border-[#1e2a3b] rounded-xl p-3">
+                <div className="text-[10px] text-[#8a99ad] uppercase font-semibold">Configured Tools</div>
+                <div className="text-sm font-bold text-white mt-1">{selectedPrompt.toolsCount} Active Integrations</div>
               </div>
 
               <div className="space-y-1.5">

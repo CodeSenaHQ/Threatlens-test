@@ -17,6 +17,7 @@ import {
   ChevronDown,
   ChevronUp,
 <<<<<<< HEAD
+<<<<<<< HEAD
   ChevronRight,
   BarChart3,
   Zap,
@@ -29,21 +30,31 @@ import {
 =======
   BarChart3,
   Zap,
+=======
+  BarChart3,
+  Zap,
+>>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
   Search,
   Sparkles,
   FolderGit2,
   GitCommit,
   ShieldAlert,
   Lock,
+<<<<<<< HEAD
+>>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
+=======
 >>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
   Terminal,
   Users,
   Settings,
   Clock,
 <<<<<<< HEAD
+<<<<<<< HEAD
   Moon,
   Search,
 =======
+=======
+>>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
   Flag,
   Moon,
   Type,
@@ -58,6 +69,9 @@ import {
   CheckCircle,
   Layers,
   LayoutGrid,
+<<<<<<< HEAD
+>>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
+=======
 >>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
 } from "lucide-react";
 
@@ -78,6 +92,7 @@ import CliAgentTab from "./tabs/docs/CliAgentTab";
 // Drawers & Modals
 import ProfileModal from "@/components/drawers/ProfileModal";
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 // Sidebar Navigation Categories
 const NAV_CATEGORIES = [
@@ -122,6 +137,9 @@ const NAV_CATEGORIES = [
 =======
 // â”€â”€ Loading Skeleton â”€â”€
 >>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
+=======
+// â”€â”€ Loading Skeleton â”€â”€
+>>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
 function SkeletonBlock({ className = "" }) {
   return <div className={`bg-[#1a2330] rounded animate-pulse ${className}`} />;
 }
@@ -143,13 +161,17 @@ export default function DashboardLayout() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isTokensOpen, setIsTokensOpen] = useState(false);
 <<<<<<< HEAD
+<<<<<<< HEAD
   const [collapsedCategories, setCollapsedCategories] = useState({});
 =======
+=======
+>>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
   const [isDocNavOpen, setIsDocNavOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 >>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
   const tokensRef = useRef(null);
   const docNavRef = useRef(null);
+<<<<<<< HEAD
 
 <<<<<<< HEAD
   const toggleCategory = (catId) => {
@@ -178,6 +200,10 @@ export default function DashboardLayout() {
 
   // Close tokens dropdown when clicking outside
 =======
+  // Close dropdowns when clicking outside
+>>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
+=======
+
   // Close dropdowns when clicking outside
 >>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
   useEffect(() => {
@@ -389,6 +415,7 @@ export default function DashboardLayout() {
       }}
     >
 <<<<<<< HEAD
+<<<<<<< HEAD
       {/* ---------- SIDEBAR (Full-Height 100vh on the Left) ---------- */}
       {isSidebarOpen && (
         <>
@@ -403,6 +430,8 @@ export default function DashboardLayout() {
             className="w-[260px] shrink-0 h-screen flex flex-col bg-[#000000] z-30 shadow-2xl lg:shadow-none no-scrollbar"
             style={{ borderRight: "1px solid rgba(255, 255, 255, 0.2)" }}
 =======
+=======
+>>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
       {/* ---------- STICKY TOP NAVBAR (Untitled UI Docs Style) ---------- */}
       <header className="sticky top-0 z-50 w-full h-14 bg-[#09090b]/80 backdrop-blur-xl border-b border-[#27272a] px-4 lg:px-6 flex items-center justify-between shrink-0">
         {/* Left Side: Brand Logo + Breadcrumbs */}
@@ -451,6 +480,80 @@ export default function DashboardLayout() {
                   <div className="px-2.5 py-1 text-[10.5px] font-semibold text-[#71717a] uppercase tracking-wider">
                     Quick Navigation
                   </div>
+<<<<<<< HEAD
+
+                  <div className="space-y-0.5 mt-1">
+                    {[
+                      { id: "dashboard", icon: Sparkles, label: "Introduction" },
+                      { id: "cli", icon: Terminal, label: "CLI & Local Agent" },
+                      { id: "chatbot", icon: Zap, label: "ThreatLensGO Assistant" },
+                      { id: "repositories", icon: FolderGit2, label: "Repositories" },
+                      { id: "commits", icon: GitCommit, label: "Commit Analysis" },
+                      { id: "findings", icon: ShieldAlert, label: "Live Findings" },
+                      { id: "secrets", icon: Lock, label: "Secret Detection" },
+                      { id: "cicd", icon: Box, label: "CI/CD & Docker" },
+                      { id: "compliance", icon: CheckCircle, label: "Compliance & Posture" },
+                    ].map((item) => {
+                      const Icon = item.icon;
+                      const isItemActive = activeTopTab === "dashboard" && activeNav === item.id;
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            handleNavClick(item.id);
+                            setIsDocNavOpen(false);
+                          }}
+                          className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-left transition-colors cursor-pointer ${
+                            isItemActive
+                              ? "bg-[#18181b] text-white font-semibold"
+                              : "text-[#a1a1aa] hover:text-white hover:bg-[#18181b]/50"
+                          }`}
+                        >
+                          <Icon className={`w-3.5 h-3.5 ${isItemActive ? "text-[#38bdf8]" : "text-[#71717a]"}`} />
+                          <span className="truncate flex-1">{item.label}</span>
+                          {isItemActive && <span className="w-1.5 h-1.5 rounded-full bg-[#38bdf8]" />}
+                        </button>
+                      );
+                    })}
+
+                    <div className="border-t border-[#1c1c1f] my-1" />
+                    
+                    <button
+                      onClick={() => {
+                        setActiveTopTab("tokens");
+                        setIsDocNavOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-left transition-colors cursor-pointer ${
+                        activeTopTab === "tokens"
+                          ? "bg-[#18181b] text-white font-semibold"
+                          : "text-[#a1a1aa] hover:text-white hover:bg-[#18181b]/50"
+                      }`}
+                    >
+                      <BarChart3 className={`w-3.5 h-3.5 ${activeTopTab === "tokens" ? "text-[#38bdf8]" : "text-[#71717a]"}`} />
+                      <span className="truncate flex-1">Token Usage & Telemetry</span>
+                      {activeTopTab === "tokens" && <span className="w-1.5 h-1.5 rounded-full bg-[#38bdf8]" />}
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setActiveTopTab("plans");
+                        setIsDocNavOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-left transition-colors cursor-pointer ${
+                        activeTopTab === "plans"
+                          ? "bg-[#18181b] text-white font-semibold"
+                          : "text-[#a1a1aa] hover:text-white hover:bg-[#18181b]/50"
+                      }`}
+                    >
+                      <Zap className={`w-3.5 h-3.5 ${activeTopTab === "plans" ? "text-[#f59e0b]" : "text-[#71717a]"}`} />
+                      <span className="truncate flex-1">Premium Plans & Pricing</span>
+                      {activeTopTab === "plans" && <span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]" />}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+=======
 
                   <div className="space-y-0.5 mt-1">
                     {[
@@ -526,6 +629,115 @@ export default function DashboardLayout() {
           </div>
         </div>
 
+        {/* Right Side: Search, Pulse, Tokens, Profile */}
+        <div className="flex items-center gap-2.5 sm:gap-3.5">
+          {/* Quick Search */}
+          <div
+            onClick={() => toast.info("Press Ctrl+K or select tabs from sidebar to navigate")}
+            className="hidden md:flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[#18181b] border border-[#27272a] text-xs text-[#a1a1aa] hover:border-[#3f3f46] transition-colors cursor-pointer"
+          >
+            <Search className="w-3.5 h-3.5 text-[#71717a]" />
+            <span className="text-[11.5px] text-[#71717a]">Search docs...</span>
+            <kbd className="text-[9.5px] px-1 py-0.2 rounded bg-[#27272a] text-[#a1a1aa] border border-[#3f3f46] font-mono">âŒ˜K</kbd>
+          </div>
+
+          {/* Pulse Signal */}
+          <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#18181b] border border-[#27272a] text-[10.5px] font-mono text-[#a1a1aa]">
+            <span className={`w-1.5 h-1.5 rounded-full ${pulseHealthy ? "bg-emerald-400 shadow-[0_0_8px_#34d399]" : "bg-amber-400"}`} />
+            <span className="text-white font-medium">{clockStr}</span>
+          </div>
+
+          {/* Notifications */}
+          <button
+            onClick={() => toast.info("No unread alerts")}
+            className="p-1.5 text-[#a1a1aa] hover:text-white hover:bg-[#18181b] rounded-lg transition-colors relative cursor-pointer"
+            title="Notifications"
+          >
+            <Bell className="w-4 h-4" />
+          </button>
+
+          {/* Tokens Dropdown */}
+          <div className="relative" ref={tokensRef}>
+            <button
+              onClick={() => setIsTokensOpen(!isTokensOpen)}
+              className="px-3 py-1.5 rounded-lg bg-[#18181b] hover:bg-[#27272a] border border-[#27272a] text-white text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5"
+              title="Tokens & Subscriptions"
+            >
+              <Zap className="w-3.5 h-3.5 text-[#38bdf8]" />
+              <span className="font-semibold text-xs">Tokens</span>
+              <ChevronDown className={`w-3 h-3 text-[#71717a] transition-transform duration-200 ${isTokensOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {/* Dropdown Menu */}
+            {isTokensOpen && (
+              <div className="absolute right-0 top-full mt-2 w-56 rounded-xl bg-[#09090b] border border-[#27272a] shadow-2xl p-1.5 backdrop-blur-xl z-[9999] select-none">
+                <div className="px-3 py-1.5 border-b border-[#27272a] mb-1">
+                  <div className="text-[10px] uppercase font-bold text-[#71717a] tracking-wider">
+                    API & Credits
+                  </div>
+                </div>
+
+                {/* Option 1: Token usage */}
+                <button
+                  onClick={() => {
+                    setActiveTopTab("tokens");
+                    setIsTokensOpen(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left hover:bg-[#18181b] text-[#d4d4d8] hover:text-white transition-colors cursor-pointer group"
+                >
+                  <div className="w-7 h-7 rounded-md bg-[#27272a] border border-[#3f3f46] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                    <BarChart3 className="w-3.5 h-3.5 text-[#38bdf8]" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-medium text-white">Token usage</div>
+                    <div className="text-[10px] text-[#71717a]">Quotas & usage metrics</div>
+                  </div>
+                </button>
+
+                {/* Option 2: Premium plans */}
+                <button
+                  onClick={() => {
+                    setActiveTopTab("plans");
+                    setIsTokensOpen(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left hover:bg-[#18181b] text-[#d4d4d8] hover:text-white transition-colors cursor-pointer group"
+                >
+                  <div className="w-7 h-7 rounded-md bg-[#27272a] border border-[#3f3f46] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                    <Zap className="w-3.5 h-3.5 text-[#f59e0b]" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-medium text-white">Premium plans</div>
+                    <div className="text-[10px] text-[#71717a]">Upgrade tier & limit</div>
+                  </div>
+                </button>
+              </div>
+            )}
+>>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
+          </div>
+
+          {/* User Profile Avatar */}
+          <button
+            onClick={() => setIsProfileOpen(true)}
+            className="flex items-center rounded-full ring-1 ring-[#27272a] hover:ring-[#3f3f46] transition-all cursor-pointer overflow-hidden p-0.5"
+            title="Account Settings"
+          >
+            {user?.avatar_url ? (
+              <img
+                src={user.avatar_url}
+                alt=""
+                className="w-7 h-7 rounded-full object-cover"
+              />
+            ) : (
+              <div
+                className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white bg-[#27272a] border border-[#3f3f46] shadow-sm"
+              >
+                {user?.name ? user.name.slice(0, 2).toUpperCase() : "TL"}
+              </div>
+            )}
+          </button>
+        </div>
+
+<<<<<<< HEAD
         {/* Right Side: Search, Pulse, Tokens, Profile */}
         <div className="flex items-center gap-2.5 sm:gap-3.5">
           {/* Quick Search */}
@@ -1106,6 +1318,204 @@ export default function DashboardLayout() {
 
 
 
+=======
+      {/* ---------- MAIN CONTENT / BILLING VIEW ---------- */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {activeTopTab === "tokens" || activeTopTab === "plans" ? (
+          <TokenUsageTab
+            user={user}
+            initialSection={activeTopTab === "plans" ? "plans" : "usage"}
+            onBack={() => setActiveTopTab("dashboard")}
+          />
+        ) : (
+          <div className="flex-1 flex min-w-0">
+            {/* ---------- SIDEBAR (Untitled UI Hierarchical Collapsible Style) ---------- */}
+            {isSidebarOpen && (
+            <>
+              {/* Mobile backdrop overlay */}
+              <div
+                onClick={() => setIsSidebarOpen(false)}
+                className="fixed inset-0 top-14 bg-black/80 backdrop-blur-xs z-40 lg:hidden cursor-pointer"
+                aria-hidden="true"
+              />
+
+              <aside className="w-[256px] shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] flex flex-col border-r border-[#1c1c1f] bg-[#050507] z-30 select-none">
+              {/* Navigation Links */}
+              <nav className="flex-1 overflow-y-auto px-3 py-4" style={{ scrollbarWidth: "none" }}>
+
+                {/* SECTION 1: DOCUMENTATION */}
+                <div className="mb-1">
+                  <div className="flex items-center justify-between px-2 py-1.5 mb-0.5">
+                    <span className="text-[12.5px] font-bold text-white tracking-[-0.01em]">Documentation</span>
+                    <ChevronUp className="w-3.5 h-3.5 text-[#52525b]" />
+                  </div>
+                  <div className="space-y-px">
+                    {[
+                      { id: "dashboard", icon: Sparkles, label: "Introduction" },
+                      { id: "chatbot", icon: Zap, label: "ThreatLensGO", badge: "AI" },
+                      { id: "repositories", icon: FolderGit2, label: "Repositories" },
+                      { id: "commits", icon: GitCommit, label: "Commit Analysis" },
+                      { id: "cli", icon: Terminal, label: "CLI & Local Agent" },
+                    ].map((item) => {
+                      const isActive = activeNav === item.id;
+                      const Icon = item.icon;
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => handleNavClick(item.id)}
+                          className={`w-full flex items-center gap-2.5 px-2.5 py-[6px] rounded-lg text-[13.5px] font-medium transition-all text-left cursor-pointer ${
+                            isActive
+                              ? "bg-[#1c1c1f] text-white"
+                              : "text-[#71717a] hover:text-[#d4d4d8] hover:bg-[#0f0f11]"
+                          }`}
+                        >
+                          <Icon className="w-[15px] h-[15px] shrink-0 opacity-80" />
+                          <span className="truncate flex-1 leading-none">{item.label}</span>
+                          {item.badge && (
+                            <span className="px-1.5 py-0.5 text-[9px] font-bold rounded-md bg-[#1c1c1f] text-[#a1a1aa] border border-[#27272a] tracking-wide">
+                              {item.badge}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Dotted Separator */}
+                <div className="border-t border-dashed border-[#1c1c1f] my-3.5 mx-1" />
+
+                {/* SECTION 2: SECURITY & RESOURCES */}
+                <div className="mb-1">
+                  <div className="flex items-center justify-between px-2 py-1.5 mb-0.5">
+                    <span className="text-[12.5px] font-bold text-white tracking-[-0.01em]">Security & Resources</span>
+                    <ChevronUp className="w-3.5 h-3.5 text-[#52525b]" />
+                  </div>
+                  <div className="space-y-px">
+                    {[
+                      { id: "findings", icon: ShieldAlert, label: "Live Findings" },
+                      { id: "secrets", icon: Lock, label: "Secret Detection" },
+                      { id: "cicd", icon: Box, label: "CI/CD & Docker" },
+                      { id: "compliance", icon: CheckCircle, label: "Compliance & Posture" },
+                    ].map((item) => {
+                      const isActive = activeNav === item.id;
+                      const Icon = item.icon;
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => handleNavClick(item.id)}
+                          className={`w-full flex items-center gap-2.5 px-2.5 py-[6px] rounded-lg text-[13.5px] font-medium transition-all text-left cursor-pointer ${
+                            isActive
+                              ? "bg-[#1c1c1f] text-white"
+                              : "text-[#71717a] hover:text-[#d4d4d8] hover:bg-[#0f0f11]"
+                          }`}
+                        >
+                          <Icon className="w-[15px] h-[15px] shrink-0 opacity-80" />
+                          <span className="truncate flex-1 leading-none">{item.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Dotted Separator */}
+                {isAdmin && <div className="border-t border-dashed border-[#1c1c1f] my-3.5 mx-1" />}
+
+                {/* SECTION 3: ADMINISTRATION */}
+                {isAdmin && (
+                  <div className="mb-1">
+                    <div className="flex items-center justify-between px-2 py-1.5 mb-0.5">
+                      <span className="text-[12.5px] font-bold text-white tracking-[-0.01em]">Administration</span>
+                      <ChevronUp className="w-3.5 h-3.5 text-[#52525b]" />
+                    </div>
+                    <div className="space-y-px">
+                      {[
+                        { id: "accounts", icon: Users, label: "Accounts" },
+                        { id: "config", icon: Settings, label: "System Config" },
+                        { id: "sessions", icon: Clock, label: "Sessions" },
+                      ].map((item) => {
+                        const isActive = activeNav === item.id;
+                        const Icon = item.icon;
+                        return (
+                          <button
+                            key={item.id}
+                            onClick={() => handleNavClick(item.id)}
+                            className={`w-full flex items-center gap-2.5 px-2.5 py-[6px] rounded-lg text-[13.5px] font-medium transition-all text-left cursor-pointer ${
+                              isActive
+                                ? "bg-[#1c1c1f] text-white"
+                                : "text-[#71717a] hover:text-[#d4d4d8] hover:bg-[#0f0f11]"
+                            }`}
+                          >
+                            <Icon className="w-[15px] h-[15px] shrink-0 opacity-80" />
+                            <span className="truncate flex-1 leading-none">{item.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </nav>
+
+              {/* Bottom User Card */}
+              <div className="p-3 border-t border-[#1c1c1f] bg-[#050507]">
+                <button
+                  onClick={() => {
+                    setIsProfileOpen(true);
+                    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+                      setIsSidebarOpen(false);
+                    }
+                  }}
+                  title="Edit Profile & Account Details"
+                  className="w-full flex items-center gap-3 px-2.5 py-2 rounded-xl hover:bg-[#0f0f11] transition-all text-left group cursor-pointer"
+                >
+                  {user?.avatar_url ? (
+                    <img
+                      src={user.avatar_url}
+                      alt=""
+                      className="w-7 h-7 rounded-full object-cover border border-[#27272a]"
+                    />
+                  ) : (
+                    <div
+                      className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white bg-[#18181b] border border-[#27272a] shrink-0"
+                    >
+                      {user?.name ? user.name.slice(0, 2).toUpperCase() : "TL"}
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[13px] text-[#d4d4d8] font-semibold truncate leading-tight">
+                      {user?.name || "Dev User"}
+                    </div>
+                    <div className="text-[#52525b] text-[11px] truncate leading-tight mt-0.5">
+                      {user?.email || (user?.role ? `${user.role} Â· team` : "dev@threatlens.io")}
+                    </div>
+                  </div>
+                  <ChevronDown className="w-3.5 h-3.5 text-[#52525b] shrink-0" />
+                </button>
+              </div>
+            </aside>
+          </>
+        )}
+
+      {/* ---------- MAIN CONTENT AREA ---------- */}
+      <div className="flex-1 min-w-0 flex flex-col min-h-screen">
+        {activeNav === "chatbot" ? (
+          <div className="flex-1 flex flex-col min-w-0 h-[calc(100vh-3.5rem)]">
+            <ChatBotTab user={user} />
+          </div>
+        ) : (
+          /* Main Content */
+          <main className="p-8 lg:p-10 pb-20 space-y-7 max-w-[1600px] w-full">
+            {activeNav === "dashboard" && (
+              <div className="pb-20">
+                <IntroductionTab onNavigate={handleNavClick} />
+              </div>
+            )}
+
+
+
+
+
+>>>>>>> 49d3c182e2f23abd2ebd834845970466466503f0
           {activeNav === "cli" && (
             <div className="p-5 sm:p-8 flex-1 overflow-y-auto">
               <CliAgentTab onNavigate={handleNavClick} />

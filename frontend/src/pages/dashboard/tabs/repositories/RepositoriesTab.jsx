@@ -143,18 +143,18 @@ export default function RepositoriesTab({ onSelectRepo, onInspectCommit }) {
         </div>
 
         {/* Language Filter Chips */}
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap text-xs">
           {["all", ...allLanguages.slice(0, 5)].map((lang) => (
             <button
               key={lang}
               onClick={() => setSelectedLanguage(lang)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all ${
+              className={`px-4 py-2 rounded-lg text-xs font-semibold font-sans transition-all cursor-pointer flex items-center ${
                 selectedLanguage === lang
-                  ? "bg-[#38bdf8] text-[#04140c] font-bold shadow-[0_0_10px_rgba(56,189,248,0.3)]"
-                  : "bg-[#10151a] border border-[#283747] text-[#8a99ad] hover:text-white"
+                  ? "bg-[#2962FF] hover:bg-[#1e4ed8] text-white shadow-[0_0_15px_rgba(41,98,255,0.35)]"
+                  : "bg-[#10151a] border border-[#2b3947] text-[#d8e2e8] hover:text-white hover:border-white/[0.2] hover:bg-[#141b21]"
               }`}
             >
-              {lang === "all" ? "All Languages" : lang}
+              <span>{lang === "all" ? "All Languages" : lang}</span>
             </button>
           ))}
         </div>

@@ -30,6 +30,7 @@ import {
   Settings,
   Clock,
   LayoutDashboard,
+  BookOpen,
 } from "lucide-react";
 
 // Domain-Based Tab Views
@@ -43,6 +44,7 @@ import SystemConfigTab from "./tabs/admin/SystemConfigTab";
 import SessionsTab from "./tabs/admin/SessionsTab";
 import PromptHistoryTab from "./tabs/prompts/PromptHistoryTab";
 import TokenUsageTab from "./tabs/billing/TokenUsageTab";
+import CliAgentTab from "./tabs/docs/CliAgentTab";
 
 // Drawers & Modals
 import ProfileModal from "@/components/drawers/ProfileModal";
@@ -50,9 +52,10 @@ import ProfileModal from "@/components/drawers/ProfileModal";
 // Sidebar Navigation Categories
 const NAV_CATEGORIES = [
   {
-    id: "overview",
-    title: "Overview",
+    id: "introduction",
+    title: "Introduction",
     items: [
+      { id: "docs", label: "Documentation", icon: BookOpen },
       { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
       { id: "repositories", label: "Repositories", icon: FolderGit2 },
       { id: "commits", label: "Commits", icon: GitCommit },
@@ -128,7 +131,7 @@ export default function DashboardLayout() {
   const breadcrumbCategory =
     activeTopTab === "tokens"
       ? "Billing"
-      : activeCategoryObj?.title || "Overview";
+      : activeCategoryObj?.title || "Introduction";
 
   const breadcrumbItem =
     activeTopTab === "tokens"
@@ -162,7 +165,13 @@ export default function DashboardLayout() {
   }, []);
 
   const handleNavClick = (id) => {
-    setActiveNav(id);
+    if (id === "chatbot" || id === "threatlensgo") {
+      setActiveNav("prompts");
+    } else if (id === "cli") {
+      setActiveNav("docs");
+    } else {
+      setActiveNav(id);
+    }
     setActiveTopTab("dashboard");
     if (typeof window !== "undefined" && window.innerWidth < 1024) {
       setIsSidebarOpen(false);
@@ -447,45 +456,6 @@ export default function DashboardLayout() {
                 );
               })}
             </nav>
-
-            {/* Bottom User Card */}
-            <div className="p-3 bg-[#000000]">
-              <button
-                onClick={() => {
-                  setIsProfileOpen(true);
-                  if (typeof window !== "undefined" && window.innerWidth < 1024) {
-                    setIsSidebarOpen(false);
-                  }
-                }}
-                title="Edit Profile & Account Details"
-                className="w-full flex items-center gap-3 p-2 rounded-lg bg-transparent hover:bg-[#18181b] transition-all text-left group cursor-pointer"
-              >
-                {user?.avatar_url ? (
-                  <img
-                    src={user.avatar_url}
-                    alt=""
-                    className="w-7 h-7 rounded-full object-cover border border-white/20 group-hover:scale-105 transition-transform"
-                  />
-                ) : (
-                  <div
-                    className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-sm group-hover:scale-105 transition-transform shrink-0"
-                    style={{
-                      background: "linear-gradient(135deg, #7c3aed, #c084fc)",
-                    }}
-                  >
-                    {user?.name ? user.name.slice(0, 2).toUpperCase() : "TL"}
-                  </div>
-                )}
-                <div className="min-w-0 flex-1">
-                  <div className="text-[13px] text-white font-medium truncate group-hover:text-[#c084fc] transition-colors">
-                    {user?.name || "User"}
-                  </div>
-                  <div className="text-[#8a99ad] text-[10px] uppercase font-medium tracking-wider truncate">
-                    {user?.role || "analyst"}
-                  </div>
-                </div>
-              </button>
-            </div>
           </aside>
         </>
       )}
@@ -547,14 +517,14 @@ export default function DashboardLayout() {
               )}
             </button>
 
-            {/* Tokens Dropdown */}
+            {/* Billing Dropdown */}
             <div className="relative" ref={tokensRef}>
               <button
                 onClick={() => setIsTokensOpen(!isTokensOpen)}
                 className="px-3.5 py-1.5 rounded-lg bg-gradient-to-b from-[#1e5adb] via-[#1342a8] to-[#0c2a74] hover:brightness-110 text-[#E0F2FE] hover:text-white text-xs font-bold shadow-[0_0_16px_rgba(29,78,216,0.35)] transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 font-sans tracking-wide border-0 outline-none"
-                title="Tokens & Subscriptions"
+                title="Billing & Subscriptions"
               >
-                <span>Tokens</span>
+                <span>Billing</span>
                 <ChevronDown className={`w-3.5 h-3.5 text-[#BAE6FD] transition-transform duration-200 ${isTokensOpen ? "rotate-180" : ""}`} />
               </button>
 
@@ -607,6 +577,10 @@ export default function DashboardLayout() {
         <div className="flex-1 min-w-0 min-h-0 flex flex-col h-full overflow-y-auto">
           {activeTopTab === "tokens" ? (
             <TokenUsageTab user={user} />
+          ) : activeNav === "docs" || activeNav === "documentation" ? (
+            <main className="p-8 lg:p-10 pb-20 space-y-7 max-w-[1600px] w-full">
+              <CliAgentTab onNavigate={handleNavClick} />
+            </main>
           ) : activeNav === "prompts" || activeNav === "threatlensgo" ? (
             <PromptHistoryTab user={user} />
           ) : (

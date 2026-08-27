@@ -215,18 +215,18 @@ export default function CommitsTab({ onInspectCommit }) {
         </div>
 
         {/* Severity Filter Chips */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 text-xs">
           {["all", "critical", "high", "medium", "low"].map((sev) => (
             <button
               key={sev}
               onClick={() => setSeverityFilter(sev)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium uppercase transition-all ${
+              className={`px-4 py-2 rounded-lg text-xs font-semibold font-sans uppercase transition-all cursor-pointer flex items-center ${
                 severityFilter === sev
-                  ? "bg-[#38bdf8] text-[#04140c] font-bold shadow-[0_0_10px_rgba(56,189,248,0.3)]"
-                  : "bg-[#10151a] border border-[#283747] text-[#8a99ad] hover:text-white"
+                  ? "bg-[#2962FF] hover:bg-[#1e4ed8] text-white shadow-[0_0_15px_rgba(41,98,255,0.35)]"
+                  : "bg-[#10151a] border border-[#2b3947] text-[#d8e2e8] hover:text-white hover:border-white/[0.2] hover:bg-[#141b21]"
               }`}
             >
-              {sev}
+              <span>{sev}</span>
             </button>
           ))}
         </div>

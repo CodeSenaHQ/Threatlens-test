@@ -11,7 +11,6 @@ import ErrorBoundary from "@/components/common/ErrorBoundary";
 import LandingPage from "@/pages/landing/LandingPage";
 import AuthPage from "@/pages/auth/AuthPage";
 import OAuthCallback from "@/pages/auth/OAuthCallback";
-import CommitAnalysisPage from "@/pages/commit-analysis/CommitAnalysisPage";
 import DashboardLayout from "@/pages/dashboard/DashboardLayout";
 import NotFound from "@/pages/not-found/NotFound";
 
@@ -21,7 +20,7 @@ function Router() {
       <Route path="/" component={LandingPage} />
       <Route path="/dashboard" component={DashboardLayout} />
       <Route path="/operations" component={DashboardLayout} />
-      <Route path="/commit-analysis" component={CommitAnalysisPage} />
+      <Route path="/commit-analysis" component={DashboardLayout} />
       <Route path="/signup">
         {() => <AuthPage initialMode="signup" />}
       </Route>

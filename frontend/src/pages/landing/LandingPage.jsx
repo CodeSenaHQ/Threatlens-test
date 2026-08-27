@@ -108,7 +108,7 @@ function Navbar() {
           <Link href="/dashboard" className="text-[#8a99ad] hover:text-[#EAF2F8] font-medium text-[14px] transition-colors flex items-center gap-1.5">
             Dashboard
           </Link>
-          <Link href="/commit-analysis" className="text-[#8a99ad] hover:text-[#EAF2F8] font-medium text-[14px] transition-colors flex items-center gap-1.5">
+          <Link href="/dashboard" className="text-[#8a99ad] hover:text-[#EAF2F8] font-medium text-[14px] transition-colors flex items-center gap-1.5">
             Commit Analysis
           </Link>
         </nav>
@@ -151,7 +151,7 @@ function Navbar() {
       </div>
       <div className={`mobile-nav ${open ? "open" : ""}`}>
         <Link onClick={closeMenu} href="/dashboard">Dashboard</Link>
-        <Link onClick={closeMenu} href="/commit-analysis">Commit Analysis</Link>
+        <Link onClick={closeMenu} href="/dashboard">Commit Analysis</Link>
         {user ? (
           <button onClick={() => { logout(); closeMenu(); }} className="button button-ghost text-red-400">
             Sign Out (@{user.handle})
@@ -723,7 +723,7 @@ function Footer() {
         </div>
         <div className="footer-links">
           <Link href="/dashboard">Dashboard</Link>
-          <Link href="/commit-analysis">Commit Analysis</Link>
+          <Link href="/dashboard">Commit Analysis</Link>
           <a href="https://github.com" target="_blank" rel="noreferrer">GitHub</a>
         </div>
       </div>

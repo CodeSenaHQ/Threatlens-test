@@ -8,7 +8,7 @@ from tc_auth.db import create_session_factory , Base
 # from SITE_MODULE.db import Chat , ChatHistory , Usage
 
 
-engine = create_engine("postgresql://workspace:admin@localhost:5432/tc_auth", echo=True)
+engine = create_engine("postgresql://workspace:admin@localhost:5432/tc_auth", echo=False)
 
 app = FastAPI()
 auth = Auth(engine, app)

@@ -18,7 +18,6 @@ import {
   ChevronRight,
   ChevronUp,
   BarChart3,
-  Zap,
   Sparkles,
   FolderGit2,
   GitCommit,
@@ -521,7 +520,7 @@ export default function DashboardLayout() {
             <div className="relative" ref={tokensRef}>
               <button
                 onClick={() => setIsTokensOpen(!isTokensOpen)}
-                className="px-3.5 py-1.5 rounded-lg bg-gradient-to-b from-[#1e5adb] via-[#1342a8] to-[#0c2a74] hover:brightness-110 text-[#E0F2FE] hover:text-white text-xs font-bold shadow-[0_0_16px_rgba(29,78,216,0.35)] transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 font-sans tracking-wide border-0 outline-none"
+                className="px-3.5 py-1.5 rounded-lg bg-gradient-to-b from-[#1e5adb] via-[#1342a8] to-[#0c2a74] hover:brightness-110 text-[#E0F2FE] hover:text-white text-[13px] font-semibold shadow-[0_0_16px_rgba(29,78,216,0.35)] transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 font-sans border-0 outline-none"
                 title="Billing & Subscriptions"
               >
                 <span>Billing</span>
@@ -551,20 +550,6 @@ export default function DashboardLayout() {
                     <div className="min-w-0 flex-1">
                       <div className="text-xs font-medium text-white">Token usage</div>
                       <div className="text-[10px] text-[#8a99ad]">Quotas & usage metrics</div>
-                    </div>
-                  </button>
-
-                  {/* Option 2: Premium plans */}
-                  <button
-                    onClick={() => setIsTokensOpen(false)}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left hover:bg-[#162032] text-[#d8e2e8] hover:text-white transition-colors cursor-pointer group"
-                  >
-                    <div className="w-7 h-7 rounded-md bg-[#3b2d18]/60 border border-[#C8A27A]/40 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                      <Zap className="w-3.5 h-3.5 text-[#C8A27A]" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-xs font-medium text-white">Premium plans</div>
-                      <div className="text-[10px] text-[#8a99ad]">Upgrade tier & limit</div>
                     </div>
                   </button>
                 </div>

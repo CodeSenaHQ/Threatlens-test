@@ -58,7 +58,7 @@ const INITIAL_DAILY_DATA = [
   { date: "Aug 23", fullDate: "Aug 23, 2026 UTC", chatIn: 34500, chatOut: 12100, termIn: 29800, termOut: 5900, requests: 14 },
 ];
 
-const PLANS = [
+export const PLANS = [
   {
     id: "free", name: "Free", icon: Zap, monthlyPrice: 0, yearlyPrice: 0,
     description: "For individuals exploring ThreatLens security scanning.",

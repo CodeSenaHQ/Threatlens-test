@@ -39,6 +39,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   Sparkles,
+  Star,
   Terminal,
   TriangleAlert,
   X,
@@ -49,6 +50,7 @@ import { Link } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
 import { ThreatLensLogo } from "@/components/common/ThreatLensLogo";
 import FloatingLines from "@/components/common/FloatingLines";
+import { PLANS } from "@/pages/dashboard/tabs/billing/TokenUsageTab";
 
 const heroImage = "/terminal_cli_preview.jpg";
 
@@ -108,9 +110,9 @@ function Navbar() {
           <Link href="/dashboard" className="text-[#8a99ad] hover:text-[#EAF2F8] font-medium text-[14px] transition-colors flex items-center gap-1.5">
             Dashboard
           </Link>
-          <Link href="/dashboard" className="text-[#8a99ad] hover:text-[#EAF2F8] font-medium text-[14px] transition-colors flex items-center gap-1.5">
-            Commit Analysis
-          </Link>
+          <a href="#pricing" className="text-[#8a99ad] hover:text-[#EAF2F8] font-medium text-[14px] transition-colors flex items-center gap-1.5">
+            Pricing
+          </a>
         </nav>
         <div className="nav-actions">
           <a className="github-link text-[#8a99ad] hover:text-[#EAF2F8] font-medium text-[14px] transition-colors flex items-center gap-2" href="https://github.com" target="_blank" rel="noreferrer" aria-label="Open GitHub">
@@ -151,7 +153,7 @@ function Navbar() {
       </div>
       <div className={`mobile-nav ${open ? "open" : ""}`}>
         <Link onClick={closeMenu} href="/dashboard">Dashboard</Link>
-        <Link onClick={closeMenu} href="/dashboard">Commit Analysis</Link>
+        <a onClick={closeMenu} href="#pricing">Pricing</a>
         {user ? (
           <button onClick={() => { logout(); closeMenu(); }} className="button button-ghost text-red-400">
             Sign Out (@{user.handle})
@@ -672,6 +674,174 @@ function SecurityReport() {
   );
 }
 
+function PricingSection() {
+  const [billingCycle, setBillingCycle] = useState("monthly");
+
+  return (
+    <section className="section pricing-section" id="pricing">
+      <div className="container">
+        <div className="split-heading centered-heading">
+          <h2>Simple, predictable security pricing</h2>
+          <p className="max-w-xl mx-auto text-[#8a99ad] mt-4 text-center">
+            Scale your code security posture from individual developer repositories to full enterprise supply chain defense.
+          </p>
+
+          {/* Billing Cycle Toggle */}
+          <div className="flex items-center justify-center gap-3 mt-8">
+            <span className={`text-sm font-medium transition-colors ${billingCycle === "monthly" ? "text-white" : "text-[#8a99ad]"}`}>
+              Monthly
+            </span>
+            <button
+              type="button"
+              onClick={() => setBillingCycle(billingCycle === "monthly" ? "yearly" : "monthly")}
+              className={`relative w-11 h-6 rounded-full transition-colors duration-300 cursor-pointer focus:outline-none border border-white/10 ${
+                billingCycle === "yearly" ? "bg-[#38bdf8]" : "bg-[#162032]"
+              }`}
+              aria-label="Toggle billing cycle"
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-300 ${
+                  billingCycle === "yearly" ? "translate-x-5" : "translate-x-0"
+                }`}
+              />
+            </button>
+            <span className={`text-sm font-medium transition-colors ${billingCycle === "yearly" ? "text-white" : "text-[#8a99ad]"}`}>
+              Yearly
+            </span>
+            {billingCycle === "yearly" && (
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold">
+                Save 20%
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Pricing Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch mt-12">
+          {PLANS.map((plan, index) => {
+            const PlanIcon = plan.icon || Shield;
+            const displayPrice =
+              plan.monthlyPrice === null
+                ? null
+                : billingCycle === "yearly"
+                ? plan.yearlyPrice
+                : plan.monthlyPrice;
+
+            return (
+              <FadeIn
+                key={plan.id}
+                delay={index * 0.1}
+                className={`relative flex flex-col rounded-2xl border p-7 gap-6 transition-all duration-300 backdrop-blur-xl ${
+                  plan.popular
+                    ? "bg-gradient-to-b from-[#0e1d3a]/90 via-[#0a1224]/90 to-[#07090d]/90 border-[#2C6CB0] shadow-[0_0_40px_rgba(44,108,176,0.2)]"
+                    : plan.id === "enterprise"
+                    ? "bg-gradient-to-b from-[#170e30]/90 via-[#0d091a]/90 to-[#07090d]/90 border-[#3b1f6b] hover:border-[#a78bfa]/50"
+                    : "bg-[#0a0d14]/90 border-white/10 hover:border-white/20"
+                }`}
+              >
+                {plan.popular && (
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#38bdf8] text-[#04101c] text-[11px] font-bold tracking-wide shadow-lg shadow-sky-500/30 whitespace-nowrap">
+                    <Sparkles className="w-3 h-3" /> Most Popular
+                  </div>
+                )}
+
+                {/* Plan Header */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                      style={{ background: `${plan.color}15`, border: `1px solid ${plan.color}28` }}
+                    >
+                      <PlanIcon className="w-5 h-5" style={{ color: plan.color }} />
+                    </div>
+                    <div>
+                      <div className="text-[17px] font-bold text-white leading-tight">{plan.name}</div>
+                      <div className="text-[11px] text-[#8a99ad] font-medium font-mono">{plan.tokens}</div>
+                    </div>
+                  </div>
+                  <p className="text-xs text-[#8a99ad] leading-relaxed min-h-[36px]">{plan.description}</p>
+                </div>
+
+                {/* Price Display */}
+                <div className="space-y-1">
+                  {displayPrice === null ? (
+                    <div>
+                      <div className="text-3xl font-bold text-white">Custom</div>
+                      <div className="text-xs text-[#8a99ad]">Volume-based enterprise pricing</div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-3xl font-bold text-white">${displayPrice}</span>
+                        <span className="text-[#8a99ad] text-sm font-medium">/ month</span>
+                      </div>
+                      {billingCycle === "yearly" && displayPrice > 0 && (
+                        <div className="text-[11.5px] text-emerald-400 font-medium mt-1">
+                          ${(plan.monthlyPrice - plan.yearlyPrice) * 12} saved per year
+                        </div>
+                      )}
+                      {displayPrice === 0 && (
+                        <div className="text-[11.5px] text-[#8a99ad] mt-1">Free forever · No credit card required</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* CTA Action */}
+                <Link
+                  href={plan.id === "enterprise" ? "mailto:sales@threatlens.io" : "/signup"}
+                  className={`w-full py-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+                    plan.popular
+                      ? "bg-[#38bdf8] hover:bg-[#7dd3fc] text-[#040d18] shadow-lg shadow-sky-500/20 active:scale-[0.98]"
+                      : plan.id === "enterprise"
+                      ? "bg-transparent border border-[#3b1f6b] hover:border-[#a78bfa] text-[#a78bfa] hover:bg-[#a78bfa]/10 active:scale-[0.98]"
+                      : "bg-[#141b27] hover:bg-[#1a2333] border border-white/10 text-white active:scale-[0.98]"
+                  }`}
+                >
+                  <span>{plan.id === "enterprise" ? "Contact Sales" : plan.cta === "Current Plan" ? "Get Started Free" : plan.cta}</span>
+                  <ArrowRight size={15} />
+                </Link>
+
+                <div className="border-t border-dashed border-white/10" />
+
+                {/* Features List */}
+                <div className="space-y-3 flex-1">
+                  <div className="text-[11px] font-bold text-[#8a99ad] uppercase tracking-wider font-mono">
+                    What&apos;s included
+                  </div>
+                  {plan.features.map((feature, idx) => (
+                    <div key={idx} className="flex items-start gap-2.5">
+                      {feature.included ? (
+                        <div
+                          className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+                          style={{ background: `${plan.color}20` }}
+                        >
+                          <Check className="w-2.5 h-2.5" style={{ color: plan.color }} />
+                        </div>
+                      ) : (
+                        <div className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 bg-white/5">
+                          <X className="w-2.5 h-2.5 text-zinc-600" />
+                        </div>
+                      )}
+                      <span
+                        className={`text-xs leading-snug ${
+                          feature.included ? "text-[#c2d0df]" : "text-zinc-600"
+                        }`}
+                      >
+                        {feature.label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </FadeIn>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function BlockchainTrust() {
   return (
     <section className="section trust-section" id="trust">
@@ -723,7 +893,7 @@ function Footer() {
         </div>
         <div className="footer-links">
           <Link href="/dashboard">Dashboard</Link>
-          <Link href="/dashboard">Commit Analysis</Link>
+          <a href="#pricing">Pricing</a>
           <a href="https://github.com" target="_blank" rel="noreferrer">GitHub</a>
         </div>
       </div>
@@ -742,6 +912,7 @@ export default function LandingPage() {
         <ValueProposition />
         <HowItWorks />
         <SecurityReport />
+        <PricingSection />
         <BlockchainTrust />
         <FinalCTA />
       </main>

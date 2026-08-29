@@ -21,29 +21,6 @@ attacks: dict[str, XSSAttack] = {}
 
 
 # ------------------------------------------------------------
-# Start XSS Attack
-# ------------------------------------------------------------
-
-@router.post("")
-async def start_xss(
-    config: XSSConfig,
-):
-
-    attack = XSSAttack(
-        config.model_dump()
-    )
-
-    attack_id = await attack.start()
-
-    attacks[attack_id] = attack
-
-    return {
-        "attack_id": attack_id,
-        "status": "started",
-    }
-
-
-# ------------------------------------------------------------
 # Get XSS Test Cases
 # ------------------------------------------------------------
 
@@ -140,6 +117,30 @@ async def update_xss_cases(
             }
             for item in data
         ]
+    }
+
+
+
+# ------------------------------------------------------------
+# Start XSS Attack
+# ------------------------------------------------------------
+
+@router.post("")
+async def start_xss(
+    config: XSSConfig,
+):
+
+    attack = XSSAttack(
+        config.model_dump()
+    )
+
+    attack_id = await attack.start()
+
+    attacks[attack_id] = attack
+
+    return {
+        "attack_id": attack_id,
+        "status": "started",
     }
 
 

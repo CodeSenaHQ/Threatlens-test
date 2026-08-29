@@ -38,9 +38,7 @@ config = {
 async def data_burning():
 
     attack = DDoSAttack(config)
-
     attack_id = await attack.start()
-
     print("Attack ID:", attack_id)
 
     while True:

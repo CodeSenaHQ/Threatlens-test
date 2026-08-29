@@ -63,6 +63,13 @@ def get_history(
         "data": history,
     }
 
+# data will be list of dicts with keys: role, content, tool_calls, tool_call_id
+# class ChatMessage(BaseModel):
+#     role: str
+#     content: Any = None
+#     tool_calls: list[dict] | None = None
+#     tool_call_id: str | None = None
+
 
 @router.post(
     "",

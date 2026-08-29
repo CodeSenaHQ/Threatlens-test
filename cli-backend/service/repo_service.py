@@ -106,7 +106,7 @@ def save_commits(url: str):
     elif response["status"] == "already_up_to_date":
         return {
             "status" : "Already upto date",
-            "actions" : "No actions taken"
+            "count" : None
         }
     
     else : 
@@ -114,3 +114,11 @@ def save_commits(url: str):
         commits= build_commit_insert(repo=repo, sha=sha)
         return insert_commits(repo_id=response["repo_id"],commits=commits,jwt=jwt)
 
+
+"""
+return of inserst_commits when called api to insert
+    return {
+        "status": "stored",
+        "count": len(request.data),
+    }
+"""

@@ -41,6 +41,7 @@ def upsert_repository_api(
     request: RepositoryUpsertRequest,
     account=Depends(auth.deps.get_current),
 ):
+    print(account)
     return upsert_repository(
         account_id=account["account"]["id"],
         data=request.data,

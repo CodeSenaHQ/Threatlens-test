@@ -14,7 +14,7 @@ def chk_state():
     )
     return response.json()
 
-
+chk_state()
 
 def global_sync_usage(body):
     response = httpx.put(

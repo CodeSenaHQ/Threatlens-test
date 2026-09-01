@@ -1,12 +1,13 @@
 import json
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, BackgroundTasks
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from attack.proxy import (
     OriginProxyAttack,
     CASES_FILE,
+    save_origin_proxy,
 )
 from schema.proxy import OriginProxyConfig
 
@@ -166,6 +167,7 @@ async def update_origin_proxy_cases(
 @router.post("")
 async def start_origin_proxy(
     config: OriginProxyConfig,
+    background_tasks: BackgroundTasks,
 ):
 
     attack = OriginProxyAttack(
@@ -175,6 +177,13 @@ async def start_origin_proxy(
     attack_id = await attack.start()
 
     attacks[attack_id] = attack
+
+    background_tasks.add_task(
+        save_origin_proxy,
+        attack_id,
+        attack,
+        config,
+    )
 
     return {
         "attack_id": attack_id,

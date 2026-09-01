@@ -5,7 +5,6 @@ from service.repo_service import save_commits
 
 router = APIRouter(prefix="/git", tags=["Git"])
 
-
 class RepoRequest(BaseModel):
     url: str
 

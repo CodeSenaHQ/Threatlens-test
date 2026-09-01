@@ -4,3 +4,4 @@ from .models import (
 )
 
 from .usage_model import Usage
+from .attack_model import Attack

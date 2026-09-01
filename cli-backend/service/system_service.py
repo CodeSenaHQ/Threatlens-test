@@ -1,5 +1,4 @@
 from config import config
-from fastapi import HTTPException
 import httpx
 from db import get_jwt
 
@@ -14,7 +13,7 @@ def chk_state():
     )
     return response.json()
 
-chk_state()
+
 
 def global_sync_usage(body):
     response = httpx.put(

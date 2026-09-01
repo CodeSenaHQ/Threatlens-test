@@ -2,11 +2,10 @@
 
 import json
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, BackgroundTasks
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-
-from attack.sqli import SQLInjectionAttack, CASES_FILE
+from attack.sqli import SQLInjectionAttack, CASES_FILE, save_sqli
 from schema.sqli import SQLiConfig
 
 
@@ -134,6 +133,7 @@ async def update_sqli_cases(
 @router.post("")
 async def start_sqli(
     config: SQLiConfig,
+    background_tasks: BackgroundTasks,
 ):
 
     attack = SQLInjectionAttack(
@@ -143,6 +143,12 @@ async def start_sqli(
     attack_id = await attack.start()
 
     attacks[attack_id] = attack
+    background_tasks.add_task(
+        save_sqli,
+        attack_id,
+        attack,
+        config,
+    )
 
     return {
         "attack_id": attack_id,

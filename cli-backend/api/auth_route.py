@@ -2,6 +2,7 @@ from fastapi import APIRouter , HTTPException
 from fastapi.responses import RedirectResponse
 from config import config
 from service.auth_service import oauth_callback , password_login
+from service.system_service import chk_state
 from pydantic import BaseModel
 
 
@@ -20,6 +21,9 @@ def heartbeat():
         "connect": True
     }
 
+@router.get("/me")
+def get_me():
+    return chk_state()
 
 @router.post("/password/login")
 def pass_login(body: PasswordLoginRequest):

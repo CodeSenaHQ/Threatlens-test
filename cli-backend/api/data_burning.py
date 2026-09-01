@@ -2,8 +2,9 @@
 
 import json
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException , BackgroundTasks
 from fastapi.responses import StreamingResponse
+from attack.data_burning.execute import save_data_burn
 
 from attack.ddos import DDoSAttack
 from schema.data_burning import DataBurningConfig
@@ -29,6 +30,7 @@ attacks: dict[str, DDoSAttack] = {}
 @router.post("")
 async def start_data_burning(
     config: DataBurningConfig,
+    background_tasks: BackgroundTasks,
 ):
 
     attack = DDoSAttack(
@@ -38,6 +40,13 @@ async def start_data_burning(
     attack_id = await attack.start()
 
     attacks[attack_id] = attack
+
+    background_tasks.add_task(
+        save_data_burn,
+        attack_id,
+        attack,
+        config,
+    )
 
     return {
         "attack_id": attack_id,

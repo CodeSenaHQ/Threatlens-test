@@ -34,6 +34,10 @@ class OriginProxyAttack:
             "successful": 0,
             "failed": 0,
             "timeouts": 0,
+            "active_requests": 0,
+            "latencies": [],
+            "status_codes": {},
+            "errors": {},
         }
 
     # --------------------------------------------------------
@@ -240,6 +244,7 @@ class OriginProxyAttack:
         )
 
         self.stats["attempted_requests"] += 1
+        self.stats["active_requests"] += 1
 
         result = {
             "case": test["case"],
@@ -254,6 +259,8 @@ class OriginProxyAttack:
 
         try:
 
+            request_start = time.monotonic()
+
             response = await client.request(
                 method=method,
                 url=url,
@@ -261,6 +268,23 @@ class OriginProxyAttack:
                 params=params,
                 json=body if method.upper() != "GET"
                 else None,
+            )
+
+            latency_ms = (
+                time.monotonic() - request_start
+            ) * 1000
+
+            self.stats["latencies"].append(
+                latency_ms
+            )
+
+            self.stats["status_codes"][str(
+                response.status_code
+            )] = (
+                self.stats["status_codes"].get(
+                    str(response.status_code),
+                    0,
+                ) + 1
             )
 
             self.stats["successful"] += 1
@@ -288,8 +312,16 @@ class OriginProxyAttack:
 
             self.stats["timeouts"] += 1
 
+            error_type = "TimeoutException"
+            self.stats["errors"][error_type] = (
+                self.stats["errors"].get(
+                    error_type,
+                    0,
+                ) + 1
+            )
+
             result["error"] = {
-                "type": "TimeoutException",
+                "type": error_type,
                 "message": str(exc),
             }
 
@@ -297,10 +329,21 @@ class OriginProxyAttack:
 
             self.stats["failed"] += 1
 
+            error_type = type(exc).__name__
+            self.stats["errors"][error_type] = (
+                self.stats["errors"].get(
+                    error_type,
+                    0,
+                ) + 1
+            )
+
             result["error"] = {
-                "type": type(exc).__name__,
+                "type": error_type,
                 "message": str(exc),
             }
+
+        finally:
+            self.stats["active_requests"] -= 1
 
         self.results.append(result)
 
@@ -457,6 +500,46 @@ class OriginProxyAttack:
             "attempted_requests"
         ]
 
+        latencies = sorted(
+            self.stats["latencies"]
+        )
+
+        def percentile(values, percentile):
+
+            if not values:
+                return None
+
+            if len(values) == 1:
+                return values[0]
+
+            position = (
+                (len(values) - 1)
+                * percentile
+            )
+
+            lower = int(position)
+            upper = min(
+                lower + 1,
+                len(values) - 1,
+            )
+
+            weight = position - lower
+
+            return (
+                values[lower]
+                + (
+                    values[upper]
+                    - values[lower]
+                )
+                * weight
+            )
+
+        average_latency = (
+            sum(latencies) / len(latencies)
+            if latencies
+            else None
+        )
+
         return {
             "attack_id": self.attack_id,
             "status": self.status,
@@ -467,6 +550,9 @@ class OriginProxyAttack:
                     "planned_requests"
                 ],
                 "attempted_requests": attempted,
+                "active_requests": self.stats[
+                    "active_requests"
+                ],
             },
 
             "requests": {
@@ -481,7 +567,36 @@ class OriginProxyAttack:
                 ],
             },
 
+            "performance": {
+                "requests_per_second": (
+                    attempted / elapsed
+                    if elapsed > 0
+                    else 0
+                ),
+                "average_latency_ms": average_latency,
+                "p50_latency_ms": percentile(
+                    latencies,
+                    0.50,
+                ),
+                "p95_latency_ms": percentile(
+                    latencies,
+                    0.95,
+                ),
+                "p99_latency_ms": percentile(
+                    latencies,
+                    0.99,
+                ),
+            },
+
+            "status_codes": self.stats[
+                "status_codes"
+            ],
+
             "findings": self.results,
+
+            "errors": self.stats[
+                "errors"
+            ],
         }
 
     # --------------------------------------------------------

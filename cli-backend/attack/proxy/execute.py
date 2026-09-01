@@ -1,4 +1,7 @@
 from . import OriginProxyAttack
+from schema.proxy import OriginProxyConfig
+
+from attack import sse, plot, save_attack
 import asyncio
 
 config = {
@@ -25,25 +28,19 @@ config = {
 }
 
 
-async def main():
-
-    attack = OriginProxyAttack(config)
-    attack_id = await attack.start()
-    print("Attack ID:", attack_id)
-
-    while True:
-
-        await asyncio.sleep(7)
-        status = attack.get_status()
-        print(status)
-
-        if status["status"] in {
-            "completed",
-            "failed",
-            "stopped",
-        }:
-            break
+async def save_origin_proxy(attack_id: str, attack: OriginProxyAttack, config: OriginProxyConfig ):
+    plt = await plot(attack) 
+    print(plt)
+    status = attack.get_status()
+    save_attack(
+        attack_id = attack_id, 
+        attack_type="origin_proxy",
+        plot=plt, 
+        request=config.model_dump(), 
+        status=status,
+    )
 
 
-if __name__ == "__main__":
-    asyncio.run(main())
+# attack = OriginProxyAttack(config)
+# if __name__ == "__main__":
+#     asyncio.run(sse(attack))

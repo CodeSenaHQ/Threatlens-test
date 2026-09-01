@@ -2,10 +2,12 @@
 
 import json
 
+from fastapi import BackgroundTasks
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 
 from attack.ddos import DDoSAttack
+from attack.ddos.execute import save_ddos
 from schema.ddos import DDoSConfig
 
 
@@ -27,7 +29,10 @@ attacks: dict[str, DDoSAttack] = {}
 # ------------------------------------------------------------
 
 @router.post("")
-async def start_ddos(config: DDoSConfig):
+async def start_ddos(
+    config: DDoSConfig,
+    background_tasks: BackgroundTasks,
+):
 
     attack = DDoSAttack(
         config.model_dump()
@@ -36,6 +41,13 @@ async def start_ddos(config: DDoSConfig):
     attack_id = await attack.start()
 
     attacks[attack_id] = attack
+
+    background_tasks.add_task(
+        save_ddos,
+        attack_id,
+        attack,
+        config,
+    )
 
     return {
         "attack_id": attack_id,

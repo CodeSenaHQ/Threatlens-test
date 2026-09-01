@@ -1,4 +1,6 @@
 from . import SQLInjectionAttack
+from schema.sqli import SQLiConfig
+from attack import plot , save_attack , sse
 import asyncio
 
 
@@ -30,26 +32,19 @@ config = {
   }
 }
 
-
-async def main():
-
-    attack = SQLInjectionAttack(config)
-    attack_id = await attack.start()
-    print("Attack ID:", attack_id)
-
-    while True:
-
-        await asyncio.sleep(1)
-        status = attack.get_status()
-        print(status)
-
-        if status["status"] in {
-            "completed",
-            "failed",
-            "stopped",
-        }:
-            break
+async def save_sqli(attack_id: str, attack: SQLInjectionAttack, config: SQLiConfig ):
+    plt = await plot(attack)  
+    status = attack.get_status()
+    save_attack(
+        attack_id = attack_id, 
+        attack_type="sqli",
+        plot=plt, 
+        request=config.model_dump(), 
+        status=status,
+    )
 
 
-if __name__ == "__main__":
-    asyncio.run(main())
+
+# attack = SQLInjectionAttack(config)
+# if __name__ == "__main__":
+#     asyncio.run(sse(attack))

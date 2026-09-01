@@ -1,6 +1,8 @@
 from attack.ddos import DDoSAttack
+from attack import plot , save_attack , sse
+from schema.data_burning import DataBurningConfig
 import asyncio
-import json
+
 
 
 config = {
@@ -35,51 +37,20 @@ config = {
 }
 
 
-async def data_burning():
-
-    attack = DDoSAttack(config)
-    attack_id = await attack.start()
-    print("Attack ID:", attack_id)
-
-    while True:
-
-        await asyncio.sleep(3)
-
-        status = attack.get_status()
-
-        print(
-            json.dumps(
-                status,
-                indent=2,
-            )
-        )
-
-        if status["status"] in {
-            "completed",
-            "failed",
-            "stopped",
-        }:
-            break
+async def save_data_burn(attack_id: str, attack: DDoSAttack, config: DataBurningConfig ):
+    plt = await plot(attack)  
+    status = attack.get_status()
+    save_attack(
+        attack_id = attack_id, 
+        attack_type="data_burning",
+        plot=plt, 
+        request=config.model_dump(), 
+        status=status,
+    )
 
 
-async def sse():
 
-    attack = DDoSAttack(config)
+# attack = DDoSAttack(config)
 
-    attack_id = await attack.start()
-
-    print("Attack ID:", attack_id)
-
-    async for status in attack.stream(
-        interval=1
-    ):
-        print(
-            json.dumps(
-                status,
-                indent=2,
-            )
-        )
-
-
-if __name__ == "__main__":
-    asyncio.run(sse())
+# if __name__ == "__main__":
+#     asyncio.run(sse(attack))

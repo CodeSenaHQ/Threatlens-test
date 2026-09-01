@@ -1,5 +1,7 @@
+from attack import save_attack, plot, sse
 from attack.ddos import DDoSAttack
-import asyncio , json
+from schema.ddos import DDoSConfig
+import asyncio 
 
 
 config = {
@@ -8,13 +10,13 @@ config = {
         "endpoint": "/tc-auth/config/pulse",
         "method": "GET",
         "path_params": None,
-        "query_params": None,
+        "query_params": None
     },
 
     "request": {
         "headers": None,
         "auth": None,
-        "body": None,
+        "body": None
     },
 
     "attack": {
@@ -24,46 +26,23 @@ config = {
         "delay": 0.2,
         "timeout": 1,
         "retries": 0,
-        "on_failure": "continue",
-    },
+        "on_failure": "continue"
+    }
 }
 
 
-async def ddos_sim():
-
-    attack = DDoSAttack(config)
-    attack_id = await attack.start()
-    print("Attack ID:", attack_id)
-
-    while True:
-
-        await asyncio.sleep(3)
-        status = attack.get_status()
-
-        print(
-            json.dumps(
-                status,
-                indent=2,
-            )
-        )
-
-        if status["status"] in {
-            "completed",
-            "failed",
-            "stopped",
-        }:
-            break
+async def save_ddos(attack_id: str, attack: DDoSAttack, config: DDoSConfig ):
+    plt = await plot(attack)  
+    status = attack.get_status()
+    save_attack(
+        attack_id = attack_id, 
+        attack_type="ddos",
+        plot=plt, 
+        request=config.model_dump(), 
+        status=status,
+    )
 
 
-async def sse():
-
-    attack = DDoSAttack(config)
-    attack_id = await attack.start()
-    print("Attack ID:", attack_id)
-    async for status in attack.stream(interval=1):
-        print(status)
-
-
-
-if __name__ == "__main__":
-    asyncio.run(sse())
+# attack = DDoSAttack(config)
+# if __name__ == "__main__":
+#     asyncio.run(sse(attack))

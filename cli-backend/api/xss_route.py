@@ -1,9 +1,9 @@
 import json
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, BackgroundTasks
 from fastapi.responses import StreamingResponse
 
-from attack.xss import XSSAttack, CASES_FILE
+from attack.xss import XSSAttack, CASES_FILE, save_xss
 from schema.xss import XSSConfig, XSSCaseStatus
 
 
@@ -128,7 +128,10 @@ async def update_xss_cases(
 @router.post("")
 async def start_xss(
     config: XSSConfig,
+    background_tasks: BackgroundTasks,
 ):
+
+
 
     attack = XSSAttack(
         config.model_dump()
@@ -137,6 +140,13 @@ async def start_xss(
     attack_id = await attack.start()
 
     attacks[attack_id] = attack
+
+    background_tasks.add_task(
+        save_xss,
+        attack_id,
+        attack,
+        config,
+    )
 
     return {
         "attack_id": attack_id,

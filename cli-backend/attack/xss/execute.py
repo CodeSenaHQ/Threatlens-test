@@ -1,4 +1,6 @@
 from . import XSSAttack
+from schema.xss import XSSConfig
+from attack import save_attack, plot , sse
 import asyncio
 
 
@@ -28,29 +30,18 @@ config = {
 }
 
 
-async def main():
+async def save_xss(attack_id: str, attack: XSSAttack, config: XSSConfig ):
+    plt = await plot(attack)  
+    status = attack.get_status()
+    save_attack(
+        attack_id = attack_id, 
+        attack_type="xss",
+        plot=plt, 
+        request=config.model_dump(), 
+        status=status,
+    )
 
-    attack = XSSAttack(config)
+# attack = XSSAttack(config)
 
-    attack_id = await attack.start()
-
-    print("Attack ID:", attack_id)
-
-    while True:
-
-        await asyncio.sleep(1)
-
-        status = attack.get_status()
-
-        print(status)
-
-        if status["status"] in {
-            "completed",
-            "failed",
-            "stopped",
-        }:
-            break
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
+# if __name__ == "__main__":
+#     asyncio.run(sse(attack))

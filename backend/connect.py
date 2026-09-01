@@ -56,7 +56,7 @@ auth.github.config(
 
 
 def init():
-    from SITE_MODULE.db import Chat , ChatHistory , Usage
+    from SITE_MODULE.db import Chat , ChatHistory , Usage , Attack
     from GIT_MODULE.db import Commit , Repo
     Base.metadata.create_all(
         bind=engine,
@@ -64,11 +64,9 @@ def init():
 
 
 def destroy():
-    from SITE_MODULE.db import Chat , ChatHistory , Usage
+    from SITE_MODULE.db import Chat , ChatHistory , Usage , Attack
     from GIT_MODULE.db import Commit , Repo
     Base.metadata.drop_all(
         bind=engine,
     )
 
-
-    

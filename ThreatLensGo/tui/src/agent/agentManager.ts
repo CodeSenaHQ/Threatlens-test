@@ -9,6 +9,8 @@ import { ToolRegistry } from './tools/toolRegistry.js';
 import { AutonomousAgentLoop } from './AutonomousAgentLoop.js';
 import { AgentController } from './types.js';
 import { LLMClient, OpenAILLMClient } from './llm/llmClient.js';
+import { BackendGatewayLLMClient } from './llm/backendGatewayClient.js';
+import { backendClient } from '../api/backendClient.js';
 import { MockAgentController } from './MockAgentController.js';
 import { DEFAULT_AGENT_CONFIG, AgentConfig } from './config.js';
 
@@ -66,7 +68,11 @@ export class ThreatLensAgentManager {
     this.watcher = new FileWatcher(this.workspaceRoot, this.store, extractor);
     await this.watcher.start();
 
-    // 4. Resolve LLM Client
+    // 4. Resolve LLM Client priority:
+    // (1) options.customLLM if provided
+    // (2) BackendGatewayLLMClient if backend is online
+    // (3) OpenAILLMClient if local API keys exist
+    // (4) MockAgentController otherwise
     let llmClient: LLMClient;
 
     if (options?.customLLM) {
@@ -74,27 +80,42 @@ export class ThreatLensAgentManager {
       this.isLive = true;
       this.modelName = 'Custom LLM';
     } else {
-      const openRouterKey = process.env.OPENROUTER_API_KEY;
-      const openAiKey = process.env.OPENAI_API_KEY;
-      const anthropicKey = process.env.ANTHROPIC_API_KEY;
-      const apiKey = openRouterKey || openAiKey || anthropicKey;
+      let isBackendOnline = false;
+      try {
+        const pulse = await backendClient.pulse();
+        isBackendOnline = pulse.connect === true || pulse.status === 'Live';
+      } catch {
+        isBackendOnline = false;
+      }
 
-      if (apiKey) {
+      if (isBackendOnline) {
         this.isLive = true;
-        this.modelName = process.env.LLM_MODEL || (openRouterKey ? 'anthropic/claude-3.5-sonnet' : 'gpt-4o');
-        const baseUrl = process.env.LLM_BASE_URL || (openRouterKey ? 'https://openrouter.ai/api/v1' : 'https://api.openai.com/v1');
-
-        llmClient = new OpenAILLMClient({
-          apiKey,
-          baseUrl,
-          model: this.modelName,
-        });
+        const model = process.env.LLM_MODEL || 'default';
+        this.modelName = `Backend Gateway (${model})`;
+        llmClient = new BackendGatewayLLMClient(process.env.LLM_MODEL);
       } else {
-        // Fallback to MockAgentController if no API keys are provided in terminal environment
-        this.isLive = false;
-        this.modelName = 'Simulated Agent (Set OPENROUTER_API_KEY for live LLM)';
-        this.controller = new MockAgentController();
-        return this.controller;
+        const openRouterKey = process.env.OPENROUTER_API_KEY;
+        const openAiKey = process.env.OPENAI_API_KEY;
+        const anthropicKey = process.env.ANTHROPIC_API_KEY;
+        const apiKey = openRouterKey || openAiKey || anthropicKey;
+
+        if (apiKey) {
+          this.isLive = true;
+          this.modelName = process.env.LLM_MODEL || (openRouterKey ? 'anthropic/claude-3.5-sonnet' : 'gpt-4o');
+          const baseUrl = process.env.LLM_BASE_URL || (openRouterKey ? 'https://openrouter.ai/api/v1' : 'https://api.openai.com/v1');
+
+          llmClient = new OpenAILLMClient({
+            apiKey,
+            baseUrl,
+            model: this.modelName,
+          });
+        } else {
+          // Fallback to MockAgentController if no API keys are provided in terminal environment
+          this.isLive = false;
+          this.modelName = 'Simulated Agent (Set OPENROUTER_API_KEY for live LLM)';
+          this.controller = new MockAgentController();
+          return this.controller;
+        }
       }
     }
 

@@ -38,5 +38,3 @@ user = {
 
 chain = build_chain(config=config, user=user)
 print(chain.load_chain())
-
-

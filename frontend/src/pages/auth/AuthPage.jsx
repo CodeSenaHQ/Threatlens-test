@@ -2,80 +2,16 @@ import { useAuth } from "@/contexts/AuthContext";
 import { authApi } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowLeft, ArrowRight, Check, ChevronDown, Eye, EyeOff,
-  KeyRound, Lock, Mail, RefreshCw, ShieldAlert, ShieldCheck,
-  User, Zap, Activity, AlertTriangle,
+  ArrowLeft, ArrowRight, Check, Eye, EyeOff,
+  KeyRound, Lock, Mail, RefreshCw, ShieldAlert,
+  User,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { toast } from "sonner";
 import { ThreatLensLogo } from "@/components/common/ThreatLensLogo";
 
-const LANGUAGES = [
-  { code: "en", label: "English",  flag: "🇺🇸" },
-  { code: "de", label: "Deutsch",  flag: "🇩🇪" },
-  { code: "fr", label: "Français", flag: "🇫🇷" },
-  { code: "es", label: "Español",  flag: "🇪🇸" },
-  { code: "ja", label: "日本語",   flag: "🇯🇵" },
-  { code: "hi", label: "हिंदी",   flag: "🇮🇳" },
-];
 
-const LIVE_EVENTS = [
-  { type: "threat", Icon: AlertTriangle, color: "#f87171", label: "SQLi payload blocked",    sub: "192.168.1.44 → /api/users" },
-  { type: "ok",     Icon: ShieldCheck,   color: "#34d399", label: "AST scan passed",         sub: "commit a3f9c12 · main branch" },
-  { type: "warn",   Icon: Zap,           color: "#fbbf24", label: "Rate limit triggered",    sub: "endpoint /api/login 429" },
-  { type: "ok",     Icon: ShieldCheck,   color: "#34d399", label: "Ed25519 receipt minted",  sub: "3 files attested · 0 mutations" },
-  { type: "threat", Icon: AlertTriangle, color: "#f87171", label: "JWT tampering detected",  sub: "alg:none attack neutralised" },
-  { type: "ok",     Icon: Activity,      color: "#60a5fa", label: "OWASP ASVS 4.0 passed",  sub: "47/47 checks compliant" },
-];
-
-function LiveFeed() {
-  const [idx, setIdx] = useState(0);
-  useEffect(() => {
-    const t = setInterval(() => setIdx((i) => (i + 1) % LIVE_EVENTS.length), 2800);
-    return () => clearInterval(t);
-  }, []);
-  const ev = LIVE_EVENTS[idx];
-  const Icon = ev.Icon;
-  return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={idx}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -8 }}
-        transition={{ duration: 0.35 }}
-        className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.07] backdrop-blur-sm"
-      >
-        <span
-          className="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center"
-          style={{ background: ev.color + "22", border: "1px solid " + ev.color + "44" }}
-        >
-          <Icon className="w-3.5 h-3.5" style={{ color: ev.color }} />
-        </span>
-        <div className="min-w-0">
-          <p className="text-[12px] font-semibold text-white truncate">{ev.label}</p>
-          <p className="text-[10px] text-[#60748a] truncate font-mono">{ev.sub}</p>
-        </div>
-        <span
-          className="ml-auto flex-shrink-0 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-          style={{ color: ev.color, background: ev.color + "18", border: "1px solid " + ev.color + "30" }}
-        >
-          {ev.type === "threat" ? "blocked" : ev.type === "warn" ? "warn" : "ok"}
-        </span>
-      </motion.div>
-    </AnimatePresence>
-  );
-}
-
-function StatBadge({ value, label, color }) {
-  return (
-    <div className="flex flex-col gap-0.5 p-3 rounded-xl bg-white/[0.04] border border-white/[0.07]">
-      <span className="text-xl font-extrabold tracking-tight" style={{ color }}>{value}</span>
-      <span className="text-[11px] text-[#5e778f] leading-tight">{label}</span>
-    </div>
-  );
-}
 
 function Field({ label, id, rightEl, children }) {
   return (
@@ -107,8 +43,6 @@ export default function AuthPage({ initialMode = "signup" }) {
   const [otp, setOtp]                       = useState("");
   const [otpSent, setOtpSent]               = useState(false);
   const [otpCountdown, setOtpCountdown]     = useState(0);
-  const [langOpen, setLangOpen]             = useState(false);
-  const [selectedLang, setSelectedLang]     = useState(LANGUAGES[0]);
 
   const [, setLocation] = useLocation();
   const { login, isAuthenticated } = useAuth();
@@ -263,13 +197,6 @@ export default function AuthPage({ initialMode = "signup" }) {
           <Link href="/" className="group flex items-center gap-2.5">
             <ThreatLensLogo className="h-7 w-auto transition-transform duration-300 group-hover:scale-105" />
           </Link>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.06] border border-white/[0.1] backdrop-blur-md">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#34d399] opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-[#34d399]" />
-            </span>
-            <span className="text-[11px] font-mono text-[#6db89e] tracking-wide">Engine v2.4 Active</span>
-          </div>
         </div>
 
         {/* Centre content */}
@@ -290,58 +217,13 @@ export default function AuthPage({ initialMode = "signup" }) {
             </p>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }}
-            transition={{ duration:0.7, delay:0.18 }}
-            className="grid grid-cols-3 gap-3 mt-8"
-          >
-            <StatBadge value="99.9%"   label="AST coverage"    color="#4facfe" />
-            <StatBadge value="0-day"   label="Injection shield" color="#34d399" />
-            <StatBadge value="Ed25519" label="Crypto receipts"  color="#a78bfa" />
-          </motion.div>
 
-          <motion.div
-            initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }}
-            transition={{ duration:0.7, delay:0.3 }}
-            className="mt-8 space-y-2"
-          >
-            <p className="text-[10px] font-mono uppercase tracking-widest text-[#445566] mb-2">
-              ↯ Live threat feed
-            </p>
-            <LiveFeed />
-          </motion.div>
+
+
         </div>
 
         {/* Bottom bar */}
-        <div className="relative z-10 px-10 pb-8 flex items-center justify-between">
-          <div className="relative">
-            <button type="button" onClick={() => setLangOpen(!langOpen)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.07] text-xs text-[#8ea4be] hover:text-white transition-all cursor-pointer">
-              <span>{selectedLang.flag}</span>
-              <span className="font-medium">{selectedLang.label}</span>
-              <ChevronDown className="w-3 h-3" />
-            </button>
-            <AnimatePresence>
-              {langOpen && (
-                <motion.div
-                  initial={{ opacity:0, y:6, scale:0.96 }} animate={{ opacity:1, y:0, scale:1 }}
-                  exit={{ opacity:0, y:4, scale:0.96 }} transition={{ duration:0.15 }}
-                  className="absolute bottom-full mb-2 left-0 w-36 rounded-xl bg-[#0c1628] border border-white/[0.12] shadow-2xl p-1.5 z-50 backdrop-blur-xl"
-                >
-                  {LANGUAGES.map((lang) => (
-                    <button key={lang.code} type="button"
-                      onClick={() => { setSelectedLang(lang); setLangOpen(false); toast.success("Language: " + lang.label); }}
-                      className={"w-full flex items-center gap-2 px-2.5 py-1.5 text-xs rounded-lg transition-colors text-left cursor-pointer " +
-                        (selectedLang.code === lang.code
-                          ? "bg-[#2546ff]/20 text-[#93c5fd] font-semibold"
-                          : "text-[#8ea4be] hover:bg-white/[0.05] hover:text-white")}>
-                      <span>{lang.flag}</span><span>{lang.label}</span>
-                    </button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+        <div className="relative z-10 px-10 pb-8 flex items-center justify-end">
           <div className="flex items-center gap-5 text-[11px] text-[#4d6070]">
             <button onClick={() => toast.info("Standard ThreatLens security license.")} className="hover:text-[#93c5fd] transition-colors cursor-pointer">Terms</button>
             <button onClick={() => setLocation("/dashboard")} className="hover:text-[#93c5fd] transition-colors cursor-pointer">Plans</button>
@@ -368,10 +250,6 @@ export default function AuthPage({ initialMode = "signup" }) {
           <Link href="/" className="flex items-center gap-2 text-xs text-[#5d7a94] hover:text-white transition-colors group">
             <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
             Back to Overview
-          </Link>
-          <Link href="/dashboard" className="flex items-center gap-1.5 text-xs text-[#4d8eff] font-semibold hover:text-[#93c5fd] transition-colors">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#4d8eff] shadow-[0_0_6px_#4d8eff]" />
-            Live Demo
           </Link>
         </div>
 

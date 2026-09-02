@@ -355,7 +355,7 @@ export default function   DashboardLayout() {
                   </button>
                   <button
                     onClick={() => setActiveNav("findings")}
-                    className="px-4 py-2 rounded-lg border border-[#38bdf8] bg-[#38bdf8] text-[#04140c] font-bold hover:brightness-110 shadow-[0_0_16px_rgba(56,189,248,0.4)] transition-all cursor-pointer"
+                    className="px-4 py-2 rounded-lg bg-gradient-to-b from-[#1e5adb] via-[#1342a8] to-[#0c2a74] text-[#E0F2FE] hover:text-white font-bold hover:brightness-110 shadow-[0_0_16px_rgba(29,78,216,0.35)] transition-all cursor-pointer"
                   >
                     Run new scan
                   </button>
@@ -788,7 +788,7 @@ export default function   DashboardLayout() {
 
                 <button
                   onClick={() => setIsDrawerOpen(false)}
-                  className="px-4.5 py-2 rounded-lg font-mono text-xs bg-[#38bdf8] text-[#04140c] font-bold hover:brightness-110 shadow-[0_0_14px_rgba(56,189,248,0.4)] transition-all"
+                  className="px-4.5 py-2 rounded-lg font-mono text-xs bg-gradient-to-b from-[#1e5adb] via-[#1342a8] to-[#0c2a74] text-[#E0F2FE] hover:text-white font-bold hover:brightness-110 shadow-[0_0_14px_rgba(29,78,216,0.35)] transition-all cursor-pointer"
                 >
                   Done
                 </button>

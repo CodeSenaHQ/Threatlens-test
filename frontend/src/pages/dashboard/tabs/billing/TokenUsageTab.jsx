@@ -260,7 +260,7 @@ export default function TokenUsageTab({ user, initialSection = "usage", onBack }
             </div>
             <button
               onClick={() => setViewMode("plans")}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#38bdf8] hover:bg-[#7dd3fc] text-[#04101c] text-xs font-bold transition-all shrink-0 cursor-pointer shadow-md shadow-sky-500/20"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-b from-[#1e5adb] via-[#1342a8] to-[#0c2a74] text-[#E0F2FE] hover:text-white text-xs font-bold transition-all shrink-0 cursor-pointer shadow-md shadow-blue-900/30 hover:brightness-110"
             >
               <span>Explore Plans</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -520,7 +520,7 @@ export default function TokenUsageTab({ user, initialSection = "usage", onBack }
                   <button onClick={() => plan.current ? toast.info("You are currently on the Free tier") : plan.id === "enterprise" ? toast.info("Contact sales@threatlens.io for custom deployment") : toast.success(`Upgrading to ${plan.name}...`)}
                     className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 ${
                       plan.current ? "bg-[#1c1c1f] border border-[#27272a] text-[#52525b] cursor-default"
-                      : plan.popular ? "bg-[#38bdf8] hover:bg-[#7dd3fc] text-[#040d18] shadow-lg shadow-sky-500/20 active:scale-[0.98]"
+                      : plan.popular ? "bg-gradient-to-b from-[#1e5adb] via-[#1342a8] to-[#0c2a74] text-[#E0F2FE] hover:text-white shadow-lg shadow-blue-900/30 hover:brightness-110 active:scale-[0.98]"
                       : plan.id === "enterprise" ? "bg-transparent border border-[#3b1f6b] hover:border-[#a78bfa] text-[#a78bfa] hover:bg-[#a78bfa]/10 active:scale-[0.98]"
                       : "bg-[#1c1c1f] hover:bg-[#252528] border border-[#2e2e33] text-white active:scale-[0.98]"}`}>
                     {plan.current ? <><BadgeCheck className="w-4 h-4" />{plan.cta}</> : <>{plan.cta}<ArrowRight className="w-3.5 h-3.5" /></>}

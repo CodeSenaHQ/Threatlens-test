@@ -520,11 +520,11 @@ export default function DashboardLayout() {
             <div className="relative" ref={tokensRef}>
               <button
                 onClick={() => setIsTokensOpen(!isTokensOpen)}
-                className="px-3.5 py-1.5 rounded-lg bg-gradient-to-b from-[#1e5adb] via-[#1342a8] to-[#0c2a74] hover:brightness-110 text-[#E0F2FE] hover:text-white text-[13px] font-semibold shadow-[0_0_16px_rgba(29,78,216,0.35)] transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 font-sans border-0 outline-none"
+                className="px-3.5 py-1.5 rounded-lg bg-[#2962FF] hover:bg-[#1e4ed8] text-white text-[13px] font-semibold shadow-[0_0_15px_rgba(41,98,255,0.35)] transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 font-sans border-0 outline-none"
                 title="Billing & Subscriptions"
               >
                 <span>Billing</span>
-                <ChevronDown className={`w-3.5 h-3.5 text-[#BAE6FD] transition-transform duration-200 ${isTokensOpen ? "rotate-180" : ""}`} />
+                <ChevronDown className={`w-3.5 h-3.5 text-white/80 transition-transform duration-200 ${isTokensOpen ? "rotate-180" : ""}`} />
               </button>
 
               {/* Dropdown Menu */}
@@ -1039,7 +1039,7 @@ export default function DashboardLayout() {
 
                 <button
                   onClick={() => setIsDrawerOpen(false)}
-                  className="px-4.5 py-2 rounded-lg font-mono text-xs bg-[#38bdf8] text-[#04140c] font-bold hover:brightness-110 shadow-[0_0_14px_rgba(56,189,248,0.4)] transition-all"
+                  className="px-4.5 py-2 rounded-lg font-mono text-xs bg-[#2962FF] hover:bg-[#1e4ed8] text-white font-bold shadow-[0_0_15px_rgba(41,98,255,0.35)] transition-all cursor-pointer"
                 >
                   Done
                 </button>

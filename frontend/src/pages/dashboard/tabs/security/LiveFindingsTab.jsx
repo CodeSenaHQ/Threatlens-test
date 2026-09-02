@@ -127,7 +127,7 @@ export default function LiveFindingsTab({ onInspectFinding }) {
         <button
           onClick={handleTriggerProbe}
           disabled={isScanning}
-          className="px-5 py-2 rounded-lg border border-[#6EA8DA]/30 bg-[#2C6CB0] text-[#EAF2F8] font-semibold text-xs hover:bg-[#1D3557] flex items-center gap-2 transition-all disabled:opacity-50 cursor-pointer"
+          className="px-5 py-2 rounded-lg bg-[#2962FF] hover:bg-[#1e4ed8] text-white font-semibold text-xs shadow-[0_0_15px_rgba(41,98,255,0.35)] flex items-center gap-2 transition-all disabled:opacity-50 cursor-pointer active:scale-95"
         >
           <Play className="w-3.5 h-3.5 fill-current" />
           <span>{isScanning ? "Probing Target..." : "Launch Live Probe"}</span>
@@ -177,7 +177,7 @@ export default function LiveFindingsTab({ onInspectFinding }) {
             onClick={() => setSelectedModule(mod)}
             className={`px-3 py-1.5 rounded-lg text-xs uppercase font-semibold transition-all shrink-0 cursor-pointer ${
               selectedModule === mod
-                ? "bg-[#2C6CB0] text-white border border-[#6EA8DA]/40 font-bold"
+                ? "bg-[#2962FF] hover:bg-[#1e4ed8] text-white font-bold shadow-[0_0_15px_rgba(41,98,255,0.35)]"
                 : "bg-[#10151a] border border-[#283747] text-[#8a99ad] hover:text-white"
             }`}
           >

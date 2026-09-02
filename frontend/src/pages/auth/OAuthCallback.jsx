@@ -77,7 +77,7 @@ export default function OAuthCallback() {
           <div className="pt-2">
             <button
               onClick={() => setLocation("/login")}
-              className="px-5 py-2 rounded-lg bg-[#38bdf8] text-[#04140c] font-bold text-xs font-mono hover:brightness-110 shadow-[0_0_15px_rgba(56,189,248,0.35)] transition-all cursor-pointer"
+              className="px-5 py-2 rounded-lg bg-gradient-to-b from-[#1e5adb] via-[#1342a8] to-[#0c2a74] text-[#E0F2FE] hover:text-white font-bold text-xs font-mono hover:brightness-110 shadow-[0_0_15px_rgba(29,78,216,0.35)] transition-all cursor-pointer"
             >
               Back to Login
             </button>

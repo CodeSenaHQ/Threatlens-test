@@ -201,7 +201,7 @@ export default function SystemConfigTab() {
             <button
               onClick={handleSaveEmail}
               disabled={saving}
-              className="px-3 py-1.5 rounded font-mono text-xs bg-[#38bdf8] text-[#04140c] font-bold hover:brightness-110 flex items-center gap-1.5 transition-all disabled:opacity-50"
+              className="px-3.5 py-1.5 rounded-lg font-mono text-xs bg-gradient-to-b from-[#1e5adb] via-[#1342a8] to-[#0c2a74] text-[#E0F2FE] hover:text-white font-bold hover:brightness-110 shadow-[0_0_12px_rgba(29,78,216,0.35)] flex items-center gap-1.5 transition-all disabled:opacity-50 cursor-pointer"
             >
               <Save className="w-3 h-3" />
               <span>Save</span>
@@ -251,7 +251,7 @@ export default function SystemConfigTab() {
             <button
               onClick={handleSaveJwt}
               disabled={saving}
-              className="px-3 py-1.5 rounded font-mono text-xs bg-[#38bdf8] text-[#04140c] font-bold hover:brightness-110 flex items-center gap-1.5 transition-all disabled:opacity-50"
+              className="px-3.5 py-1.5 rounded-lg font-mono text-xs bg-gradient-to-b from-[#1e5adb] via-[#1342a8] to-[#0c2a74] text-[#E0F2FE] hover:text-white font-bold hover:brightness-110 shadow-[0_0_12px_rgba(29,78,216,0.35)] flex items-center gap-1.5 transition-all disabled:opacity-50 cursor-pointer"
             >
               <Save className="w-3 h-3" />
               <span>Save</span>
@@ -292,7 +292,7 @@ export default function SystemConfigTab() {
             <button
               onClick={handleSaveGithub}
               disabled={saving}
-              className="px-3 py-1.5 rounded font-mono text-xs bg-[#38bdf8] text-[#04140c] font-bold hover:brightness-110 flex items-center gap-1.5 transition-all disabled:opacity-50"
+              className="px-3.5 py-1.5 rounded-lg font-mono text-xs bg-gradient-to-b from-[#1e5adb] via-[#1342a8] to-[#0c2a74] text-[#E0F2FE] hover:text-white font-bold hover:brightness-110 shadow-[0_0_12px_rgba(29,78,216,0.35)] flex items-center gap-1.5 transition-all disabled:opacity-50 cursor-pointer"
             >
               <Save className="w-3 h-3" />
               <span>Save</span>
@@ -328,7 +328,7 @@ export default function SystemConfigTab() {
             <button
               onClick={handleSaveGoogle}
               disabled={saving}
-              className="px-3 py-1.5 rounded font-mono text-xs bg-[#38bdf8] text-[#04140c] font-bold hover:brightness-110 flex items-center gap-1.5 transition-all disabled:opacity-50"
+              className="px-3.5 py-1.5 rounded-lg font-mono text-xs bg-gradient-to-b from-[#1e5adb] via-[#1342a8] to-[#0c2a74] text-[#E0F2FE] hover:text-white font-bold hover:brightness-110 shadow-[0_0_12px_rgba(29,78,216,0.35)] flex items-center gap-1.5 transition-all disabled:opacity-50 cursor-pointer"
             >
               <Save className="w-3 h-3" />
               <span>Save</span>

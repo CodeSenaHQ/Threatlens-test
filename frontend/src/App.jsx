@@ -1,7 +1,6 @@
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import React from "react";
-import { Toaster } from "sonner";
 import { Route, Switch } from "wouter";
 
 // Common Components
@@ -42,7 +41,6 @@ export default function App() {
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark">
         <AuthProvider>
-          <Toaster richColors theme="dark" position="top-right" />
           <Router />
         </AuthProvider>
       </ThemeProvider>

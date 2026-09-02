@@ -365,7 +365,7 @@ export default function CommitsTab({ onInspectCommit }) {
                       <button
                         onClick={(e) => handleRunAiReview(commitData, e)}
                         disabled={analyzingSha === sha}
-                        className="px-3 py-1.5 rounded font-mono text-xs bg-[#38bdf8] text-[#04140c] font-bold hover:brightness-110 shadow-[0_0_12px_rgba(56,189,248,0.35)] flex items-center gap-1.5 transition-all disabled:opacity-50"
+                        className="px-3.5 py-1.5 rounded-lg font-mono text-xs bg-[#2962FF] hover:bg-[#1e4ed8] text-white font-bold shadow-[0_0_15px_rgba(41,98,255,0.35)] flex items-center gap-1.5 transition-all disabled:opacity-50 cursor-pointer active:scale-95"
                       >
                         <Sparkles className="w-3.5 h-3.5" />
                         <span>{analyzingSha === sha ? "Analyzing..." : "Run AI Review"}</span>

@@ -792,7 +792,7 @@ function PricingSection() {
                   href={plan.id === "enterprise" ? "mailto:sales@threatlens.io" : "/signup"}
                   className={`w-full py-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
                     plan.popular
-                      ? "bg-[#38bdf8] hover:bg-[#7dd3fc] text-[#040d18] shadow-lg shadow-sky-500/20 active:scale-[0.98]"
+                      ? "bg-gradient-to-b from-[#1e5adb] via-[#1342a8] to-[#0c2a74] text-[#E0F2FE] hover:text-white shadow-lg shadow-blue-900/30 hover:brightness-110 active:scale-[0.98]"
                       : plan.id === "enterprise"
                       ? "bg-transparent border border-[#3b1f6b] hover:border-[#a78bfa] text-[#a78bfa] hover:bg-[#a78bfa]/10 active:scale-[0.98]"
                       : "bg-[#141b27] hover:bg-[#1a2333] border border-white/10 text-white active:scale-[0.98]"

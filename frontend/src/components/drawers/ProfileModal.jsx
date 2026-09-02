@@ -234,7 +234,7 @@ export default function ProfileModal({ isOpen, onClose }) {
               <button
                 type="submit"
                 disabled={saving}
-                className="px-4 py-2 rounded-lg border border-[#38bdf8] bg-[#38bdf8] text-[#04140c] font-bold text-xs font-mono hover:brightness-110 shadow-[0_0_15px_rgba(56,189,248,0.35)] flex items-center gap-1.5 transition-all disabled:opacity-50 cursor-pointer"
+                className="px-4 py-2 rounded-lg bg-gradient-to-b from-[#1e5adb] via-[#1342a8] to-[#0c2a74] text-[#E0F2FE] hover:text-white font-bold text-xs font-mono hover:brightness-110 shadow-[0_0_15px_rgba(29,78,216,0.35)] flex items-center gap-1.5 transition-all disabled:opacity-50 cursor-pointer"
               >
                 {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                 <span>{saving ? "Saving..." : "Save Profile Details"}</span>

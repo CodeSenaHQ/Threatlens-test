@@ -7,6 +7,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from attack.sqli import SQLInjectionAttack, CASES_FILE, save_sqli
 from schema.sqli import SQLiConfig
+from attack.store import add_attack, get_attack
 
 
 router = APIRouter(
@@ -14,12 +15,6 @@ router = APIRouter(
     tags=["SQL Injection Attack"],
 )
 
-
-# ------------------------------------------------------------
-# In-memory attack registry
-# ------------------------------------------------------------
-
-attacks: dict[str, SQLInjectionAttack] = {}
 
 
 # ------------------------------------------------------------
@@ -142,7 +137,12 @@ async def start_sqli(
 
     attack_id = await attack.start()
 
-    attacks[attack_id] = attack
+    add_attack(
+        attack_id,
+        attack,
+        "sqli",
+    )
+
     background_tasks.add_task(
         save_sqli,
         attack_id,
@@ -164,16 +164,7 @@ async def start_sqli(
 async def get_sqli_attack(
     attack_id: str,
 ):
-
-    attack = attacks.get(attack_id)
-
-    if attack is None:
-
-        raise HTTPException(
-            status_code=404,
-            detail="Attack not found",
-        )
-
+    attack = get_attack(attack_id)
     return attack.get_status()
 
 
@@ -185,16 +176,7 @@ async def get_sqli_attack(
 async def stop_sqli_attack(
     attack_id: str,
 ):
-
-    attack = attacks.get(attack_id)
-
-    if attack is None:
-
-        raise HTTPException(
-            status_code=404,
-            detail="Attack not found",
-        )
-
+    attack = get_attack(attack_id)
     await attack.stop()
 
     return {
@@ -211,18 +193,9 @@ async def stop_sqli_attack(
 async def stream_sqli_attack(
     attack_id: str,
 ):
-
-    attack = attacks.get(attack_id)
-
-    if attack is None:
-
-        raise HTTPException(
-            status_code=404,
-            detail="Attack not found",
-        )
+    attack = get_attack(attack_id)
 
     async def event_generator():
-
         async for status in attack.stream(
             interval=1.0
         ):

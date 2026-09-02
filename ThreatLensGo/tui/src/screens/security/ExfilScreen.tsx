@@ -5,7 +5,7 @@ import { useSecuritySession } from '../../state/securitySession.js';
 import { MultiSelect } from '../../components/MultiSelect.js';
 import { TerminalLayout } from '../../components/TerminalLayout.js';
 import { Select } from '../../components/Select.js';
-import { SimulationRunner } from '../../components/SimulationRunner.js';
+import { AttackRunner } from '../../components/AttackRunner.js';
 
 type Step = 1 | 2 | 3;
 type ExfilVector =
@@ -14,6 +14,21 @@ type ExfilVector =
   | 'Debug endpoint exposure'
   | 'Header leakage';
 type ScanDepth = 'Surface scan' | 'Deep scan';
+
+function parseTargetUrl(raw: string): { base_url: string; endpoint: string } {
+  try {
+    const u = new URL(raw.startsWith('http') ? raw : `http://${raw}`);
+    return {
+      base_url: `${u.protocol}//${u.host}`,
+      endpoint: u.pathname && u.pathname !== '' ? u.pathname : '/',
+    };
+  } catch {
+    return {
+      base_url: raw,
+      endpoint: '/',
+    };
+  }
+}
 
 export const ExfilScreen: React.FC = () => {
   const { pop } = useNavigation();
@@ -25,7 +40,7 @@ export const ExfilScreen: React.FC = () => {
     'Error message leakage',
   ]);
   const [depth, setDepth] = useState<ScanDepth>('Surface scan');
-  const [isSimulating, setIsSimulating] = useState(false);
+  const [isAttacking, setIsAttacking] = useState(false);
 
   const isInteractive = Boolean(process.stdin?.isTTY);
 
@@ -44,23 +59,12 @@ export const ExfilScreen: React.FC = () => {
       setStep(2);
       return;
     }
-
-    const payload = {
-      target: targetUrl,
-      category: 'exfil',
-      params: {
-        vectors,
-        depth,
-      },
-    };
-
-    console.log(payload);
-    setIsSimulating(true);
+    setIsAttacking(true);
   };
 
   useInput(
     (_input, key) => {
-      if (isSimulating) return;
+      if (isAttacking) return;
       if (key.escape) {
         if (step === 3) {
           setStep(2);
@@ -74,6 +78,37 @@ export const ExfilScreen: React.FC = () => {
     { isActive: isInteractive }
   );
 
+  // Construct data-burning configuration
+  const { base_url, endpoint } = parseTargetUrl(targetUrl);
+  const isDeep = depth === 'Deep scan';
+
+  const dataBurningConfig = {
+    target: {
+      base_url,
+      endpoint,
+      method: 'GET',
+      path_params: null,
+      query_params: null,
+    },
+    request: {
+      headers: {
+        'X-ThreatLens-Vectors': vectors.join(','),
+        'X-Scan-Depth': depth,
+      },
+      auth: null,
+      body: null,
+    },
+    attack: {
+      duration: isDeep ? 30 : 15,
+      requests: isDeep ? 50 : 25,
+      concurrency: isDeep ? 10 : 5,
+      delay: 0.1,
+      timeout: 5,
+      retries: 0,
+      on_failure: 'continue',
+    },
+  };
+
   return (
     <TerminalLayout
       title="Data Exfiltration & Leakage Assessment"
@@ -82,11 +117,11 @@ export const ExfilScreen: React.FC = () => {
       step={step}
       totalSteps={3}
       accentColor="yellow"
-      statusText={isSimulating ? 'EXFILTRATION SUITE RUNNING' : `STEP ${step} OF 3`}
-      statusType={isSimulating ? 'success' : 'ready'}
-      keyHints={isSimulating ? '[Enter / Esc] Return' : `↑↓ navigate · space toggle · enter confirm · esc ${step === 1 ? 'exit' : 'back'}`}
+      statusText={isAttacking ? 'DATA-BURNING RUNNING' : `STEP ${step} OF 3`}
+      statusType={isAttacking ? 'warning' : 'ready'}
+      keyHints={isAttacking ? 's / esc halt attack' : `↑↓ navigate · space toggle · enter confirm · esc ${step === 1 ? 'exit' : 'back'}`}
     >
-      {!isSimulating ? (
+      {!isAttacking ? (
         <>
           {/* Step 1: Vectors MultiSelect */}
           {step === 1 && (
@@ -138,7 +173,10 @@ export const ExfilScreen: React.FC = () => {
               </Text>
               <Box flexDirection="column" marginY={1} paddingLeft={2}>
                 <Text color="gray">
-                  • Target Base URL: <Text color="cyan" bold>{targetUrl}</Text>
+                  • Target Base URL: <Text color="cyan" bold>{base_url}</Text>
+                </Text>
+                <Text color="gray">
+                  • Endpoint: <Text color="cyan" bold>{endpoint}</Text>
                 </Text>
                 <Text color="gray">
                   • Exfiltration Vectors: <Text color="yellow" bold>{vectors.join(', ')}</Text>
@@ -150,7 +188,7 @@ export const ExfilScreen: React.FC = () => {
               <Box marginTop={1}>
                 <Select
                   items={[
-                    { label: 'Confirm & Run Exfiltration Scan', value: 'confirm' as const },
+                    { label: 'Confirm & Launch Data Burning Assessment', value: 'confirm' as const },
                     { label: 'Back to edit', value: 'back' as const },
                   ]}
                   onSelect={handleConfirmSelect}
@@ -161,11 +199,10 @@ export const ExfilScreen: React.FC = () => {
           )}
         </>
       ) : (
-        <SimulationRunner
-          moduleName="Data Exfiltration & Leakage Audit"
-          target={targetUrl}
-          params={{ vectors, depth }}
-          onDone={pop}
+        <AttackRunner
+          attackType="data-burning"
+          config={dataBurningConfig}
+          onDone={() => pop()}
         />
       )}
     </TerminalLayout>

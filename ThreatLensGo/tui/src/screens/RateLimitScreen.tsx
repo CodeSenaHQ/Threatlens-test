@@ -1,22 +1,97 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { Box, Text, useInput } from 'ink';
+import TextInput from 'ink-text-input';
 import { useNavigation } from '../state/navigation.js';
 import { useSecuritySession } from '../state/securitySession.js';
 import { TerminalLayout } from '../components/TerminalLayout.js';
+import { AttackRunner } from '../components/AttackRunner.js';
+import type { AttackStatus } from '../api/types.js';
+
+function parseTargetUrl(raw: string): { base_url: string; endpoint: string } {
+  try {
+    const u = new URL(raw.startsWith('http') ? raw : `http://${raw}`);
+    return {
+      base_url: `${u.protocol}//${u.host}`,
+      endpoint: u.pathname && u.pathname !== '' ? u.pathname : '/api/v1/resource',
+    };
+  } catch {
+    return {
+      base_url: raw || 'http://localhost:8000',
+      endpoint: '/api/v1/resource',
+    };
+  }
+}
 
 export const RateLimitScreen: React.FC = () => {
   const { pop } = useNavigation();
   const { targetUrl } = useSecuritySession();
 
+  const [step, setStep] = useState<'config' | 'running' | 'done'>('config');
+  const [urlInput, setUrlInput] = useState(targetUrl || 'http://localhost:8000/api/v1/resource');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [attackResult, setAttackResult] = useState<AttackStatus | null>(null);
+
   const isInteractive = Boolean(process.stdin?.isTTY);
+  const parsed = parseTargetUrl(urlInput);
+
+  // Light intensity DDoS configuration tailored for Rate Limiting / 429 testing
+  const rateLimitConfig = {
+    target: {
+      base_url: parsed.base_url,
+      endpoint: parsed.endpoint,
+      method: 'GET',
+      path_params: null,
+      query_params: null,
+    },
+    request: {
+      headers: null,
+      auth: null,
+      body: null,
+    },
+    attack: {
+      duration: 5,
+      requests: 50,
+      concurrency: 5, // Light intensity = 5 concurrent workers
+      delay: 0.1,
+      timeout: 1,
+      retries: 0,
+      on_failure: 'continue',
+    },
+  };
+
+  const handleStart = useCallback(() => {
+    if (!urlInput.trim()) {
+      setErrorMessage('Target URL cannot be empty.');
+      return;
+    }
+    setErrorMessage(null);
+    setAttackResult(null);
+    setStep('running');
+  }, [urlInput]);
+
+  const handleDone = useCallback((result: AttackStatus) => {
+    setAttackResult(result);
+    setStep('done');
+  }, []);
+
+  const handleError = useCallback((err: string) => {
+    setErrorMessage(err);
+    setStep('done');
+  }, []);
 
   useInput(
     (_input, key) => {
       if (key.escape) {
-        pop();
+        if (step === 'done') {
+          setStep('config');
+        } else if (step === 'config') {
+          pop();
+        }
+      } else if (key.return && step === 'done') {
+        setStep('config');
       }
     },
-    { isActive: isInteractive }
+    { isActive: isInteractive && step !== 'running' }
   );
 
   return (
@@ -25,20 +100,139 @@ export const RateLimitScreen: React.FC = () => {
       subtitle="Verify endpoint throttling thresholds, burst capacities, and 429 response enforcement"
       breadcrumb="SECURITY > RATE LIMIT"
       accentColor="yellow"
-      statusText="MODULE UNDER DEVELOPMENT"
-      statusType="warning"
-      keyHints="esc return to security menu"
+      statusText={
+        step === 'running'
+          ? 'EVALUATING 429 POLICIES'
+          : step === 'done'
+          ? 'ASSESSMENT COMPLETE'
+          : 'CONFIGURE RATE TEST'
+      }
+      statusType={step === 'running' ? 'warning' : step === 'done' ? 'success' : 'ready'}
+      keyHints={
+        step === 'running'
+          ? 's stop · esc abort'
+          : step === 'done'
+          ? 'enter / esc re-test or back'
+          : 'enter start assessment · esc back'
+      }
     >
-      <Box flexDirection="column" marginY={1} paddingLeft={1}>
-        <Text color="gray">
-          • Active Target: <Text color="cyan" bold>{targetUrl || 'Not configured'}</Text>
-        </Text>
-        <Box marginTop={1}>
-          <Text color="gray">
-            This module evaluates API threshold policies, token-bucket implementations, and HTTP 429 response rate limits.
-          </Text>
+      {step === 'config' && (
+        <Box flexDirection="column" marginY={1}>
+          <Box flexDirection="row" marginY={1}>
+            <Box width={26}>
+              <Text bold color="yellow">
+                › Target Endpoint:
+              </Text>
+            </Box>
+            <Box flexGrow={1}>
+              <TextInput
+                value={urlInput}
+                onChange={(val) => {
+                  setUrlInput(val);
+                  if (errorMessage) setErrorMessage(null);
+                }}
+                onSubmit={handleStart}
+                focus={isInteractive}
+                placeholder="http://localhost:8000/api/v1/resource"
+              />
+            </Box>
+          </Box>
+
+          <Box flexDirection="column" marginY={1} paddingLeft={2}>
+            <Text color="gray">
+              • Engine: <Text color="white" bold>DDoS Light Intensity (5 concurrent workers)</Text>
+            </Text>
+            <Text color="gray">
+              • Burst Volume: <Text color="white">50 requests over 5 seconds</Text>
+            </Text>
+            <Text color="gray">
+              • Objective: <Text color="cyan">Trigger & verify HTTP 429 (Too Many Requests) throttling</Text>
+            </Text>
+          </Box>
+
+          {errorMessage && (
+            <Box marginTop={1} paddingLeft={2}>
+              <Text color="red" bold>
+                ✗ {errorMessage}
+              </Text>
+            </Box>
+          )}
+
+          <Box marginTop={1}>
+            <Text color="gray" dimColor>
+              Press <Text bold color="white">[Enter]</Text> to launch rate-limit stress test.
+            </Text>
+          </Box>
         </Box>
-      </Box>
+      )}
+
+      {step === 'running' && (
+        <Box flexDirection="column" marginY={1}>
+          <AttackRunner
+            attackType="ddos"
+            config={rateLimitConfig}
+            onDone={handleDone}
+            onError={handleError}
+          />
+        </Box>
+      )}
+
+      {step === 'done' && (
+        <Box flexDirection="column" marginY={1} paddingLeft={1}>
+          {attackResult ? (
+            <Box flexDirection="column">
+              <Box flexDirection="row" alignItems="center" marginBottom={1}>
+                <Text color="green" bold>✓ </Text>
+                <Text bold color="green">
+                  Assessment Completed Successfully ({attackResult.status || 'finished'})
+                </Text>
+              </Box>
+
+              <Box flexDirection="column" paddingLeft={2} marginY={1}>
+                <Text color="gray">
+                  • Target: <Text color="cyan">{urlInput}</Text>
+                </Text>
+                <Text color="gray">
+                  • Total Requests Sent: <Text color="white" bold>{attackResult.metrics?.requests_sent ?? 50}</Text>
+                </Text>
+                <Text color="gray">
+                  • Successful Responses: <Text color="green" bold>{attackResult.metrics?.successful_requests ?? 0}</Text>
+                </Text>
+                <Text color="gray">
+                  • Rate-Limited / 429 Responses: <Text color="yellow" bold>{attackResult.metrics?.failed_requests ?? 0}</Text>
+                </Text>
+                <Text color="gray">
+                  • Average Latency: <Text color="white">{(attackResult.metrics?.avg_latency_ms ?? 0).toFixed(1)} ms</Text>
+                </Text>
+              </Box>
+
+              <Box marginTop={1} paddingLeft={2}>
+                {(attackResult.metrics?.failed_requests ?? 0) > 0 ? (
+                  <Text color="green" bold>
+                    🛡 Rate Limit Enforced: Endpoint throttled excess traffic and triggered protective thresholds.
+                  </Text>
+                ) : (
+                  <Text color="yellow">
+                    ⚠ Warning: No 429 throttling observed at 5 concurrent bursts. Consider reviewing rate limit policy.
+                  </Text>
+                )}
+              </Box>
+            </Box>
+          ) : (
+            <Box flexDirection="column">
+              <Text color="red" bold>
+                ✗ {errorMessage || 'Rate limiting assessment encountered an error.'}
+              </Text>
+            </Box>
+          )}
+
+          <Box marginTop={2}>
+            <Text color="gray" dimColor>
+              Press <Text bold color="white">[Enter]</Text> or <Text bold color="white">[Esc]</Text> to reconfigure.
+            </Text>
+          </Box>
+        </Box>
+      )}
     </TerminalLayout>
   );
 };

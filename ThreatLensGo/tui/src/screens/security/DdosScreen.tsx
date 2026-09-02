@@ -5,12 +5,43 @@ import { useNavigation } from '../../state/navigation.js';
 import { useSecuritySession } from '../../state/securitySession.js';
 import { TerminalLayout } from '../../components/TerminalLayout.js';
 import { Select } from '../../components/Select.js';
-import { SimulationRunner } from '../../components/SimulationRunner.js';
+import { AttackRunner } from '../../components/AttackRunner.js';
 
 type Step = 1 | 2 | 3 | 4;
 type AttackPattern = 'Flood' | 'Slowloris-style' | 'Burst-spike';
 type Intensity = 'Light' | 'Medium' | 'Heavy';
 type DurationOption = '10s' | '30s' | '60s' | 'Custom';
+
+const CONCURRENCY_MAP: Record<Intensity, number> = {
+  Light: 5,
+  Medium: 10,
+  Heavy: 20,
+};
+
+function parseDurationSeconds(d: string): number {
+  const match = d.match(/(\d+)\s*([smh]?)/i);
+  if (!match) return 30;
+  const val = parseInt(match[1], 10);
+  const unit = (match[2] || 's').toLowerCase();
+  if (unit === 'm') return val * 60;
+  if (unit === 'h') return val * 3600;
+  return val;
+}
+
+function parseTargetUrl(raw: string): { base_url: string; endpoint: string } {
+  try {
+    const u = new URL(raw.startsWith('http') ? raw : `http://${raw}`);
+    return {
+      base_url: `${u.protocol}//${u.host}`,
+      endpoint: u.pathname && u.pathname !== '' ? u.pathname : '/',
+    };
+  } catch {
+    return {
+      base_url: raw,
+      endpoint: '/',
+    };
+  }
+}
 
 export const DdosScreen: React.FC = () => {
   const { pop } = useNavigation();
@@ -23,7 +54,7 @@ export const DdosScreen: React.FC = () => {
   const [customDuration, setCustomDuration] = useState('');
   const [isEnteringCustom, setIsEnteringCustom] = useState(false);
   const [customError, setCustomError] = useState('');
-  const [isSimulating, setIsSimulating] = useState(false);
+  const [isAttacking, setIsAttacking] = useState(false);
 
   const isInteractive = Boolean(process.stdin?.isTTY);
 
@@ -67,24 +98,12 @@ export const DdosScreen: React.FC = () => {
       setStep(3);
       return;
     }
-
-    const payload = {
-      target: targetUrl,
-      category: 'ddos',
-      params: {
-        pattern,
-        intensity,
-        duration: effectiveDuration,
-      },
-    };
-
-    console.log(payload);
-    setIsSimulating(true);
+    setIsAttacking(true);
   };
 
   useInput(
     (_input, key) => {
-      if (isSimulating) return;
+      if (isAttacking) return;
       if (key.escape) {
         if (isEnteringCustom) {
           setIsEnteringCustom(false);
@@ -102,6 +121,36 @@ export const DdosScreen: React.FC = () => {
     { isActive: isInteractive }
   );
 
+  // Construct DDoSConfig per specification
+  const { base_url, endpoint } = parseTargetUrl(targetUrl);
+  const parsedDuration = parseDurationSeconds(effectiveDuration);
+  const concurrencyValue = CONCURRENCY_MAP[intensity] || 10;
+  const requestCount = parsedDuration * concurrencyValue * 2;
+
+  const ddosConfig = {
+    target: {
+      base_url,
+      endpoint,
+      method: 'GET',
+      path_params: null,
+      query_params: null,
+    },
+    request: {
+      headers: null,
+      auth: null,
+      body: null,
+    },
+    attack: {
+      duration: parsedDuration,
+      requests: requestCount,
+      concurrency: concurrencyValue,
+      delay: 0.2,
+      timeout: 1,
+      retries: 0,
+      on_failure: 'continue',
+    },
+  };
+
   return (
     <TerminalLayout
       title="DDoS Traffic Simulation"
@@ -110,11 +159,11 @@ export const DdosScreen: React.FC = () => {
       step={step}
       totalSteps={4}
       accentColor="yellow"
-      statusText={isSimulating ? 'SIMULATION DISPATCHED' : `STEP ${step} OF 4`}
-      statusType={isSimulating ? 'success' : 'ready'}
-      keyHints={isSimulating ? '[Enter / Esc] Return' : `↑↓ navigate · enter select · esc ${step === 1 ? 'exit' : 'back'}`}
+      statusText={isAttacking ? 'ATTACK DISPATCHED' : `STEP ${step} OF 4`}
+      statusType={isAttacking ? 'warning' : 'ready'}
+      keyHints={isAttacking ? 's / esc halt attack' : `↑↓ navigate · enter select · esc ${step === 1 ? 'exit' : 'back'}`}
     >
-      {!isSimulating ? (
+      {!isAttacking ? (
         <>
           {/* Step 1: Pattern */}
           {step === 1 && (
@@ -145,9 +194,9 @@ export const DdosScreen: React.FC = () => {
               <Box marginTop={1}>
                 <Select
                   items={[
-                    { label: '1. Light (Low concurrency probe to gauge baseline latencies)', value: 'Light' as Intensity },
-                    { label: '2. Medium (Standard baseline threshold stress testing)', value: 'Medium' as Intensity },
-                    { label: '3. Heavy (Maximal concurrency rate to identify crash thresholds)', value: 'Heavy' as Intensity },
+                    { label: '1. Light (Low concurrency [5 workers] baseline latency probe)', value: 'Light' as Intensity },
+                    { label: '2. Medium (Standard concurrency [10 workers] stress test)', value: 'Medium' as Intensity },
+                    { label: '3. Heavy (High concurrency [20 workers] capacity stress test)', value: 'Heavy' as Intensity },
                   ]}
                   onSelect={handleIntensitySelect}
                   isFocused={isInteractive}
@@ -212,22 +261,25 @@ export const DdosScreen: React.FC = () => {
               </Text>
               <Box flexDirection="column" marginY={1} paddingLeft={2}>
                 <Text color="gray">
-                  • Target Base URL: <Text color="cyan" bold>{targetUrl}</Text>
+                  • Target Base URL: <Text color="cyan" bold>{base_url}</Text>
+                </Text>
+                <Text color="gray">
+                  • Endpoint: <Text color="cyan" bold>{endpoint}</Text>
                 </Text>
                 <Text color="gray">
                   • Attack Pattern: <Text color="yellow" bold>{pattern}</Text>
                 </Text>
                 <Text color="gray">
-                  • Traffic Intensity: <Text color="yellow" bold>{intensity}</Text>
+                  • Concurrency Workers: <Text color="yellow" bold>{concurrencyValue} ({intensity})</Text>
                 </Text>
                 <Text color="gray">
-                  • Duration: <Text color="yellow" bold>{effectiveDuration}</Text>
+                  • Duration: <Text color="yellow" bold>{parsedDuration}s</Text>
                 </Text>
               </Box>
               <Box marginTop={1}>
                 <Select
                   items={[
-                    { label: 'Confirm & Launch Simulation', value: 'confirm' as const },
+                    { label: 'Confirm & Launch DDoS Attack', value: 'confirm' as const },
                     { label: 'Back to edit', value: 'back' as const },
                   ]}
                   onSelect={handleConfirmSelect}
@@ -238,11 +290,10 @@ export const DdosScreen: React.FC = () => {
           )}
         </>
       ) : (
-        <SimulationRunner
-          moduleName="DDoS Attack Simulation"
-          target={targetUrl}
-          params={{ pattern, intensity, duration: effectiveDuration }}
-          onDone={pop}
+        <AttackRunner
+          attackType="ddos"
+          config={ddosConfig}
+          onDone={() => pop()}
         />
       )}
     </TerminalLayout>

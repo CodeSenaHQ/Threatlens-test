@@ -23,7 +23,6 @@ import {
   GitCommit,
   ShieldAlert,
   KeyRound,
-  Container,
   Terminal,
   Users,
   Settings,
@@ -37,7 +36,6 @@ import RepositoriesTab from "./tabs/repositories/RepositoriesTab";
 import CommitsTab from "./tabs/commits/CommitsTab";
 import LiveFindingsTab from "./tabs/security/LiveFindingsTab";
 import SecretDetectionTab from "./tabs/security/SecretDetectionTab";
-import CicdDockerTab from "./tabs/security/CicdDockerTab";
 import AccountsTab from "./tabs/admin/AccountsTab";
 import SystemConfigTab from "./tabs/admin/SystemConfigTab";
 import SessionsTab from "./tabs/admin/SessionsTab";
@@ -66,7 +64,6 @@ const NAV_CATEGORIES = [
     items: [
       { id: "findings", label: "Live findings", icon: ShieldAlert },
       { id: "secrets", label: "Secret detection", icon: KeyRound },
-      { id: "cicd", label: "CI/CD & Docker", icon: Container },
     ],
   },
   {
@@ -959,8 +956,6 @@ export default function DashboardLayout() {
           {activeNav === "findings" && <LiveFindingsTab onInspectFinding={handleOpenDetail} />}
 
           {activeNav === "secrets" && <SecretDetectionTab />}
-
-          {activeNav === "cicd" && <CicdDockerTab />}
 
           {activeNav === "accounts" && <AccountsTab />}
 

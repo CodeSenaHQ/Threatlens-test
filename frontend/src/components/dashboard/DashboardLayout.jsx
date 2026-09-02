@@ -16,7 +16,6 @@ import RepositoriesTab from "./views/RepositoriesTab";
 import CommitsTab from "./views/CommitsTab";
 import LiveFindingsTab from "./views/LiveFindingsTab";
 import SecretDetectionTab from "./views/SecretDetectionTab";
-import CicdDockerTab from "./views/CicdDockerTab";
 import AccountsTab from "./views/AccountsTab";
 import SystemConfigTab from "./views/SystemConfigTab";
 import SessionsTab from "./views/SessionsTab";
@@ -707,8 +706,6 @@ export default function   DashboardLayout() {
           {activeNav === "findings" && <LiveFindingsTab onInspectFinding={handleOpenDetail} />}
 
           {activeNav === "secrets" && <SecretDetectionTab />}
-
-          {activeNav === "cicd" && <CicdDockerTab />}
 
           {activeNav === "accounts" && <AccountsTab />}
 

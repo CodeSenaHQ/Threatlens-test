@@ -1,5 +1,4 @@
 import httpx 
-from fastapi import APIRouter
 from fastapi.exceptions import HTTPException
 from config import config
 from db import save_jwt
@@ -13,9 +12,6 @@ def password_login(identifier: str, password: str) -> dict:
             "password": password,
         }
     )
-
-    print("STATUS:", response.status_code)
-    print("BODY:", repr(response.text))
 
     response.raise_for_status()
 

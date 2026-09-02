@@ -13,7 +13,15 @@ export type AgentEvent =
   | { type: 'tool_result'; toolName: string; result: any; callId: string; isError?: boolean }
   | { type: 'require_approval'; payload: DiffApprovalPayload }
   | { type: 'status'; message: string }
-  | { type: 'done'; summary: string }
+  | {
+      type: 'done';
+      summary: string;
+      usage?: { prompt_tokens: number; completion_tokens: number; total_tokens?: number };
+    }
+  | {
+      type: 'turn_complete';
+      usage?: { prompt_tokens: number; completion_tokens: number; total_tokens?: number };
+    }
   | { type: 'error'; error: string };
 
 export interface AgentController {

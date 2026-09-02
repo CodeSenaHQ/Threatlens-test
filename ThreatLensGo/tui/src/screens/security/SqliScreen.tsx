@@ -1,21 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Text, useInput } from 'ink';
 import TextInput from 'ink-text-input';
 import { useNavigation } from '../../state/navigation.js';
 import { useSecuritySession } from '../../state/securitySession.js';
-import { MultiSelect } from '../../components/MultiSelect.js';
+import { MultiSelect, MultiSelectItem } from '../../components/MultiSelect.js';
 import { TerminalLayout } from '../../components/TerminalLayout.js';
 import { Select } from '../../components/Select.js';
-import { SimulationRunner } from '../../components/SimulationRunner.js';
+import { Spinner } from '../../components/Spinner.js';
+import { AttackRunner } from '../../components/AttackRunner.js';
+import { backendClient } from '../../api/backendClient.js';
+import { formatBackendError } from '../../api/errorHandler.js';
 
-type Step = 1 | 2 | 3 | 4;
+type Step = 1 | 2 | 3;
 type HttpMethod = 'GET' | 'POST';
 type ParamSource = 'Auto-discover' | 'Specify param name';
-type InjectionCategory =
-  | 'Error-based'
-  | 'Union-based'
-  | 'Blind (boolean)'
-  | 'Blind (time-based)';
+
+function parseTargetUrl(raw: string): { base_url: string; endpoint: string } {
+  try {
+    const u = new URL(raw.startsWith('http') ? raw : `http://${raw}`);
+    return {
+      base_url: `${u.protocol}//${u.host}`,
+      endpoint: u.pathname && u.pathname !== '' ? u.pathname : '/',
+    };
+  } catch {
+    return {
+      base_url: raw,
+      endpoint: '/',
+    };
+  }
+}
 
 export const SqliScreen: React.FC = () => {
   const { pop } = useNavigation();
@@ -27,17 +40,54 @@ export const SqliScreen: React.FC = () => {
   const [paramName, setParamName] = useState('');
   const [isEnteringParamName, setIsEnteringParamName] = useState(false);
   const [paramError, setParamError] = useState('');
-  const [injectionCategories, setInjectionCategories] = useState<InjectionCategory[]>([
-    'Error-based',
-    'Union-based',
-  ]);
-  const [isSimulating, setIsSimulating] = useState(false);
+
+  // Case Management State
+  const [casesLoading, setCasesLoading] = useState(false);
+  const [casesError, setCasesError] = useState('');
+  const [casesDict, setCasesDict] = useState<Record<string, any>>({});
+  const [caseItems, setCaseItems] = useState<MultiSelectItem[]>([]);
+  const [selectedCaseNames, setSelectedCaseNames] = useState<string[]>([]);
+
+  // Execution State
+  const [isAttacking, setIsAttacking] = useState(false);
 
   const isInteractive = Boolean(process.stdin?.isTTY);
 
+  const loadCases = useCallback(async () => {
+    setCasesLoading(true);
+    setCasesError('');
+    try {
+      const data = await backendClient.getAttackCases('sqli');
+      if (data && typeof data === 'object') {
+        setCasesDict(data);
+        const keys = Object.keys(data);
+        const items = keys.map((k) => ({
+          label: `${k} ${data[k]?.description ? `(${data[k].description})` : ''}`,
+          value: k,
+        }));
+        setCaseItems(items);
+        const initial = keys.filter((k) => data[k]?.enabled !== false);
+        setSelectedCaseNames(initial.length > 0 ? initial : keys);
+      } else {
+        throw new Error('Invalid test cases structure received from backend.');
+      }
+    } catch (err: any) {
+      setCasesError(formatBackendError(err));
+    } finally {
+      setCasesLoading(false);
+    }
+  }, []);
+
+  // Fetch cases when advancing to Step 2
+  useEffect(() => {
+    if (step === 2) {
+      loadCases();
+    }
+  }, [step, loadCases]);
+
   const handleMethodSelect = (item: { value: HttpMethod }) => {
     setMethod(item.value);
-    setStep(2);
+    setStep(2); // Step 2 is now parameter / case configuration
   };
 
   const handleParamSourceSelect = (item: { value: ParamSource }) => {
@@ -47,7 +97,7 @@ export const SqliScreen: React.FC = () => {
     } else {
       setIsEnteringParamName(false);
       setParamName('');
-      setStep(3);
+      setStep(2);
     }
   };
 
@@ -60,45 +110,39 @@ export const SqliScreen: React.FC = () => {
     setParamError('');
     setParamName(trimmed);
     setIsEnteringParamName(false);
-    setStep(3);
+    setStep(2);
   };
 
-  const handleCategoriesSubmit = (selected: InjectionCategory[]) => {
-    setInjectionCategories(selected);
-    setStep(4);
-  };
-
-  const handleConfirmSelect = (item: { value: 'confirm' | 'back' }) => {
-    if (item.value === 'back') {
-      setStep(3);
+  const handleCasesSubmit = async (selected: string[]) => {
+    if (selected.length === 0) {
+      setCasesError('No test cases selected — select at least one test case.');
       return;
     }
+    setCasesError('');
+    setSelectedCaseNames(selected);
 
-    const payload = {
-      target: targetUrl,
-      category: 'sqli',
-      params: {
-        method,
-        paramSource,
-        ...(paramSource === 'Specify param name' && paramName ? { paramName } : {}),
-        injectionCategories,
-      },
-    };
+    // Prepare PATCH array
+    const patchPayload = Object.keys(casesDict).map((caseName) => ({
+      case: caseName,
+      enabled: selected.includes(caseName),
+    }));
 
-    console.log(payload);
-    setIsSimulating(true);
+    try {
+      await backendClient.patchAttackCases('sqli', patchPayload);
+    } catch (err: any) {
+      // PATCH failure: non-blocking per spec
+      console.warn('Non-blocking: Failed to update SQLi cases on backend:', err.message);
+    }
+
+    setIsAttacking(true);
   };
 
   useInput(
     (_input, key) => {
-      if (isSimulating) return;
+      if (isAttacking) return;
       if (key.escape) {
         if (isEnteringParamName) {
           setIsEnteringParamName(false);
-        } else if (step === 4) {
-          setStep(3);
-        } else if (step === 3) {
-          setStep(2);
         } else if (step === 2) {
           setStep(1);
         } else {
@@ -109,31 +153,59 @@ export const SqliScreen: React.FC = () => {
     { isActive: isInteractive }
   );
 
+  const { base_url, endpoint } = parseTargetUrl(targetUrl);
+  const sqliConfig = {
+    target: {
+      base_url,
+      endpoint,
+      method,
+      query_params: paramSource === 'Specify param name' && paramName ? { [paramName]: 'test' } : {},
+      path_params: {},
+    },
+    request: {
+      headers: {},
+      body: method === 'POST' && paramSource === 'Specify param name' && paramName ? { [paramName]: 'test' } : {},
+      auth: null,
+    },
+    attack: {
+      requests_per_case: 1,
+      delay: 0.1,
+      timeout: 5,
+      on_failure: 'continue',
+    },
+  };
+
   return (
     <TerminalLayout
       title="SQL Injection Assessment"
-      subtitle="Fuzz query and body inputs to uncover syntax errors, union leakages, and blind delays"
+      subtitle="Probe database boundaries, error heuristics, and query structure vulnerabilities"
       breadcrumb="SECURITY > SQLI"
       step={step}
-      totalSteps={4}
+      totalSteps={2}
       accentColor="yellow"
-      statusText={isSimulating ? 'INJECTION SUITE RUNNING' : `STEP ${step} OF 4`}
-      statusType={isSimulating ? 'success' : 'ready'}
-      keyHints={isSimulating ? '[Enter / Esc] Return' : `↑↓ navigate · space toggle · enter confirm · esc ${step === 1 ? 'exit' : 'back'}`}
+      statusText={isAttacking ? 'SQLI ATTACK RUNNING' : `STEP ${step} OF 2`}
+      statusType={isAttacking ? 'warning' : 'ready'}
+      keyHints={
+        isAttacking
+          ? 's / esc halt attack'
+          : step === 2
+          ? 'space toggle · enter confirm · esc back'
+          : `↑↓ navigate · enter select · esc ${step === 1 ? 'exit' : 'back'}`
+      }
     >
-      {!isSimulating ? (
+      {!isAttacking ? (
         <>
-          {/* Step 1: HTTP Method */}
+          {/* Step 1: Target Method & Parameter Configuration */}
           {step === 1 && (
             <Box flexDirection="column" marginY={1}>
               <Text bold color="white">
-                Select HTTP Request Method:
+                1. Select HTTP Method:
               </Text>
-              <Box marginTop={1}>
+              <Box marginY={1}>
                 <Select
                   items={[
-                    { label: '1. GET (Inspect query parameters & URL strings)', value: 'GET' as HttpMethod },
-                    { label: '2. POST (Inspect request bodies, form submissions & JSON payloads)', value: 'POST' as HttpMethod },
+                    { label: '1. GET (Inspect query parameters & URL heuristics)', value: 'GET' as HttpMethod },
+                    { label: '2. POST (Inspect request bodies, form submissions, & JSON payloads)', value: 'POST' as HttpMethod },
                   ]}
                   onSelect={handleMethodSelect}
                   isFocused={isInteractive}
@@ -142,119 +214,65 @@ export const SqliScreen: React.FC = () => {
             </Box>
           )}
 
-          {/* Step 2: Parameter Source */}
+          {/* Step 2: Test Case Selection (Loaded from Backend) */}
           {step === 2 && (
             <Box flexDirection="column" marginY={1}>
               <Text bold color="white">
-                Parameter Discovery Mode:
+                2. Select SQLi Attack Vectors & Test Cases:
               </Text>
-              {!isEnteringParamName ? (
-                <Box marginTop={1}>
-                  <Select
-                    items={[
-                      { label: '1. Auto-discover parameters (Extract inputs from target endpoint responses)', value: 'Auto-discover' as ParamSource },
-                      { label: '2. Specify param name (Target a specific parameter manually)', value: 'Specify param name' as ParamSource },
-                    ]}
-                    onSelect={handleParamSourceSelect}
+
+              {casesLoading ? (
+                <Box flexDirection="row" alignItems="center" marginY={1}>
+                  <Box marginRight={1}>
+                    <Spinner type="dots" color="#38BDF8" />
+                  </Box>
+                  <Text color="gray">Loading attack test cases from backend...</Text>
+                </Box>
+              ) : casesError ? (
+                <Box flexDirection="column" marginY={1}>
+                  <Text color="red" bold>
+                    ✗ {casesError}
+                  </Text>
+                  <Box marginTop={1}>
+                    <Select
+                      items={[
+                        { label: '1. Run with default cases', value: 'default' as const },
+                        { label: '2. Go back to config', value: 'back' as const },
+                      ]}
+                      onSelect={(item) => {
+                        if (item.value === 'default') {
+                          setIsAttacking(true);
+                        } else {
+                          setStep(1);
+                        }
+                      }}
+                      isFocused={isInteractive}
+                    />
+                  </Box>
+                </Box>
+              ) : caseItems.length > 0 ? (
+                <Box flexDirection="column" marginTop={1}>
+                  <MultiSelect
+                    items={caseItems}
+                    initialSelected={selectedCaseNames}
+                    minSelected={1}
+                    onSubmit={handleCasesSubmit}
                     isFocused={isInteractive}
                   />
                 </Box>
               ) : (
-                <Box flexDirection="column" marginTop={1}>
-                  <Box flexDirection="row">
-                    <Box width={26}>
-                      <Text color="yellow">› Target Param Name:</Text>
-                    </Box>
-                    <Box flexGrow={1}>
-                      <TextInput
-                        value={paramName}
-                        onChange={(val) => {
-                          setParamName(val);
-                          if (paramError) setParamError('');
-                        }}
-                        onSubmit={handleParamNameSubmit}
-                        focus={isInteractive}
-                        placeholder="e.g. id, search, user, query, token"
-                      />
-                    </Box>
-                  </Box>
-                  {paramError ? (
-                    <Box marginTop={1} paddingLeft={2}>
-                      <Text color="red" bold>✗ {paramError}</Text>
-                    </Box>
-                  ) : null}
+                <Box marginY={1}>
+                  <Text color="yellow">No cases returned by backend.</Text>
                 </Box>
               )}
             </Box>
           )}
-
-          {/* Step 3: Injection Categories Multi-Select */}
-          {step === 3 && (
-            <Box flexDirection="column" marginY={1}>
-              <Text bold color="white">
-                Select Injection Categories to Test:
-              </Text>
-              <Box marginTop={1}>
-                <MultiSelect<InjectionCategory>
-                  items={[
-                    { label: 'Error-based (Syntax error inspection & database fingerprinting)', value: 'Error-based' },
-                    { label: 'Union-based (UNION SELECT schema structure extraction)', value: 'Union-based' },
-                    { label: 'Blind (boolean) (True/False conditional diff queries)', value: 'Blind (boolean)' },
-                    { label: 'Blind (time-based) (Sleep / Benchmark latency evaluation probes)', value: 'Blind (time-based)' },
-                  ]}
-                  initialSelected={injectionCategories}
-                  onSubmit={handleCategoriesSubmit}
-                  isFocused={isInteractive}
-                  minSelected={1}
-                />
-              </Box>
-            </Box>
-          )}
-
-          {/* Step 4: Confirmation Screen */}
-          {step === 4 && (
-            <Box flexDirection="column" marginY={1}>
-              <Text bold color="white">
-                Review Configuration Summary:
-              </Text>
-              <Box flexDirection="column" marginY={1} paddingLeft={2}>
-                <Text color="gray">
-                  • Target Base URL: <Text color="cyan" bold>{targetUrl}</Text>
-                </Text>
-                <Text color="gray">
-                  • HTTP Method: <Text color="yellow" bold>{method}</Text>
-                </Text>
-                <Text color="gray">
-                  • Parameter Source: <Text color="yellow" bold>{paramSource}</Text>
-                </Text>
-                {paramSource === 'Specify param name' && (
-                  <Text color="gray">
-                    • Target Parameter: <Text color="yellow" bold>{paramName}</Text>
-                  </Text>
-                )}
-                <Text color="gray">
-                  • Injection Categories: <Text color="yellow" bold>{injectionCategories.join(', ')}</Text>
-                </Text>
-              </Box>
-              <Box marginTop={1}>
-                <Select
-                  items={[
-                    { label: 'Confirm & Run SQLi Tests', value: 'confirm' as const },
-                    { label: 'Back to edit', value: 'back' as const },
-                  ]}
-                  onSelect={handleConfirmSelect}
-                  isFocused={isInteractive}
-                />
-              </Box>
-            </Box>
-          )}
         </>
       ) : (
-        <SimulationRunner
-          moduleName="SQL Injection Assessment"
-          target={targetUrl}
-          params={{ method, paramSource, paramName, injectionCategories }}
-          onDone={pop}
+        <AttackRunner
+          attackType="sqli"
+          config={sqliConfig}
+          onDone={() => pop()}
         />
       )}
     </TerminalLayout>

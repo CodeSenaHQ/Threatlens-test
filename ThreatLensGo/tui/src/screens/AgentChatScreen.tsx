@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Box, Text, useInput } from 'ink';
 import TextInput from 'ink-text-input';
 import { TerminalLayout } from '../components/TerminalLayout.js';
@@ -10,6 +10,8 @@ import { useNavigation } from '../state/navigation.js';
 import { AgentController, AgentEvent, DiffApprovalPayload } from '../agent/types.js';
 import { ThreatLensAgentManager, AgentManagerStats } from '../agent/agentManager.js';
 import { MockAgentController } from '../agent/MockAgentController.js';
+import { backendClient } from '../api/backendClient.js';
+import type { UsageData, LimitData } from '../api/types.js';
 
 interface Message {
   id: string;
@@ -27,11 +29,13 @@ interface ToolExecution {
 
 export interface AgentChatScreenProps {
   controller?: AgentController;
+  chatId?: number;
   initialPrompt?: string;
 }
 
 export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
   controller: customController,
+  chatId: initialChatId,
   initialPrompt,
 }) => {
   const { pop } = useNavigation();
@@ -45,6 +49,55 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
   const [activeApproval, setActiveApproval] = useState<DiffApprovalPayload | null>(null);
   const [statusMessage, setStatusMessage] = useState<string>('Initializing codebase index and agent engine...');
   const [isRunning, setIsRunning] = useState<boolean>(false);
+  const [usage, setUsage] = useState<UsageData | null>(null);
+  const [limits, setLimits] = useState<LimitData | null>(null);
+
+  // Persistence Refs & State
+  const chatIdRef = useRef<number | null>(initialChatId ?? null);
+  const isSavingHistoryRef = useRef<boolean>(false);
+  const pendingSaveRef = useRef<boolean>(false);
+  const latestMessagesRef = useRef<Message[]>([]);
+
+  // Sync messages ref
+  useEffect(() => {
+    latestMessagesRef.current = messages;
+  }, [messages]);
+
+  // Restore chat history on mount if launched with existing chatId
+  useEffect(() => {
+    if (initialChatId) {
+      backendClient
+        .getChatHistory(initialChatId)
+        .then((res) => {
+          const list = Array.isArray(res) ? res : (res as any)?.data || [];
+          if (list && list.length > 0) {
+            const restored: Message[] = list.map((item: any, idx: number) => ({
+              id: `restored-${initialChatId}-${idx}`,
+              sender: item.role === 'user' ? 'user' : 'agent',
+              text: typeof item.content === 'string' ? item.content : JSON.stringify(item.content),
+            }));
+            setMessages(restored);
+            latestMessagesRef.current = restored;
+            setStatusMessage(`Restored chat session #${initialChatId} (${restored.length} messages)`);
+          }
+        })
+        .catch((err) => {
+          console.warn('Failed to restore chat history from backend:', err);
+        });
+    }
+  }, [initialChatId]);
+
+  // Fetch initial usage from backend
+  useEffect(() => {
+    backendClient
+      .getUsage()
+      .then((data) => {
+        if (data && typeof data.total_tokens === 'number') {
+          setUsage(data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // NO animation hooks here — Spinner/StreamCursor are isolated leaf components
   const managerRef = useRef<ThreatLensAgentManager | null>(null);
@@ -77,6 +130,21 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
             setStatusMessage(
               `Ready · ${stats.totalFiles} files · ${stats.totalSymbols} symbols · ${stats.totalDependencies} deps`
             );
+
+            // Fetch usage and limits after agent init
+            backendClient
+              .getUsage()
+              .then((u) => {
+                if (isMounted && u && typeof u.total_tokens === 'number') setUsage(u);
+              })
+              .catch(() => {});
+
+            backendClient
+              .getLimit()
+              .then((l) => {
+                if (isMounted && l && typeof l.total_tokens === 'number') setLimits(l);
+              })
+              .catch(() => {});
           }
         })
         .catch((err) => {
@@ -99,6 +167,39 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
       }
     };
   }, [customController]);
+
+  const triggerSaveChatHistory = useCallback(async (msgsToSave?: Message[]) => {
+    const currentChatId = chatIdRef.current;
+    if (!currentChatId) return;
+
+    const messagesToSave = msgsToSave || latestMessagesRef.current;
+    if (messagesToSave.length === 0) return;
+
+    if (isSavingHistoryRef.current) {
+      pendingSaveRef.current = true;
+      return;
+    }
+
+    isSavingHistoryRef.current = true;
+    pendingSaveRef.current = false;
+
+    const payloadMessages = messagesToSave.map((m) => ({
+      role: m.sender === 'user' ? 'user' : 'assistant',
+      content: m.text,
+    }));
+
+    try {
+      await backendClient.saveChatHistory(currentChatId, payloadMessages);
+    } catch (err) {
+      console.warn('Non-blocking: Failed to save chat history to backend:', err);
+    } finally {
+      isSavingHistoryRef.current = false;
+      if (pendingSaveRef.current) {
+        pendingSaveRef.current = false;
+        triggerSaveChatHistory();
+      }
+    }
+  }, []);
 
   // Subscribe to controller events
   useEffect(() => {
@@ -160,6 +261,20 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
           setStatusMessage('Waiting for user code modification approval');
           break;
 
+        case 'turn_complete':
+          if (event.usage && (event.usage.prompt_tokens || event.usage.completion_tokens)) {
+            backendClient
+              .patchUsage(event.usage.prompt_tokens, event.usage.completion_tokens)
+              .then(() => backendClient.getUsage())
+              .then((updated) => {
+                if (updated && typeof updated.total_tokens === 'number') {
+                  setUsage(updated);
+                }
+              })
+              .catch(() => {});
+          }
+          break;
+
         case 'done':
           if (flushTimerRef.current) {
             clearTimeout(flushTimerRef.current);
@@ -170,11 +285,27 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
           setActiveApproval(null);
           setStatusMessage(`Finished: ${event.summary}`);
           setCurrentAgentText((prev) => {
+            let nextMessages = latestMessagesRef.current;
             if (prev) {
-              setMessages((m) => [...m, { id: Date.now().toString(), sender: 'agent', text: prev }]);
+              const agentMsg: Message = { id: Date.now().toString(), sender: 'agent', text: prev };
+              nextMessages = [...latestMessagesRef.current, agentMsg];
+              setMessages(nextMessages);
+              latestMessagesRef.current = nextMessages;
             }
+            triggerSaveChatHistory(nextMessages);
             return '';
           });
+          if (event.usage && (event.usage.prompt_tokens || event.usage.completion_tokens)) {
+            backendClient
+              .patchUsage(event.usage.prompt_tokens, event.usage.completion_tokens)
+              .then(() => backendClient.getUsage())
+              .then((updated) => {
+                if (updated && typeof updated.total_tokens === 'number') {
+                  setUsage(updated);
+                }
+              })
+              .catch(() => {});
+          }
           break;
 
         case 'error':
@@ -199,18 +330,35 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
       unsubscribe();
       controller.cancel();
     };
-  }, [controller, initialPrompt]);
+  }, [controller, initialPrompt, triggerSaveChatHistory]);
 
-  const handleSend = (textToSend?: string) => {
+  const handleSend = async (textToSend?: string) => {
     const q = (textToSend ?? inputQuery).trim();
     if (!q || isRunning || activeApproval || !controller) return;
 
-    setMessages((prev) => [...prev, { id: Date.now().toString(), sender: 'user', text: q }]);
+    const userMsg: Message = { id: Date.now().toString(), sender: 'user', text: q };
+    const updatedMessages = [...latestMessagesRef.current, userMsg];
+    setMessages(updatedMessages);
+    latestMessagesRef.current = updatedMessages;
+
     setInputQuery('');
     setCurrentAgentText('');
     setTools([]);
     setActiveApproval(null);
     setIsRunning(true);
+
+    // Auto-create chat session on first send if no chatId exists yet
+    if (!chatIdRef.current) {
+      try {
+        const title = q.slice(0, 50);
+        const newChat = await backendClient.createChat(title);
+        if (newChat && typeof newChat.id === 'number') {
+          chatIdRef.current = newChat.id;
+        }
+      } catch (err) {
+        console.warn('Backend offline or createChat failed, continuing locally:', err);
+      }
+    }
 
     controller.submitQuery(q);
   };
@@ -239,19 +387,42 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
     }
   };
 
-  useInput((input, key) => {
-    if (key.escape && !activeApproval) {
-      if (isRunning && controller) {
-        controller.cancel();
-      } else {
-        pop();
+  const isInteractive = Boolean(process.stdin?.isTTY);
+
+  useInput(
+    (input, key) => {
+      if (key.escape && !activeApproval) {
+        if (isRunning && controller) {
+          controller.cancel();
+        } else {
+          pop();
+        }
       }
+    },
+    { isActive: isInteractive }
+  );
+
+  const usageTokens = usage?.total_tokens ?? 0;
+  const limitTokens = limits?.total_tokens ?? 0;
+  const hasUsage = usage && typeof usage.total_tokens === 'number';
+  const hasLimit = limits && typeof limits.total_tokens === 'number' && limits.total_tokens > 0;
+  const usageRatio = hasLimit ? usageTokens / limitTokens : 0;
+  const isNearLimit = usageRatio >= 0.8;
+
+  let usageDisplay = '';
+  if (hasUsage) {
+    if (hasLimit) {
+      usageDisplay = ` · Usage: ${usageTokens.toLocaleString()} / ${limitTokens.toLocaleString()} tokens${
+        isNearLimit ? ' ⚠ (NEAR LIMIT)' : ''
+      }`;
+    } else {
+      usageDisplay = ` · Usage: ${usageTokens.toLocaleString()} tokens`;
     }
-  });
+  }
 
   const subtitle = managerStats
-    ? `${managerStats.totalFiles} Files · ${managerStats.totalSymbols} AST Symbols · Model: ${managerStats.modelName}`
-    : 'Deterministic Codebase Intelligence, AST Analysis & Automated Patching';
+    ? `${managerStats.totalFiles} Files · ${managerStats.totalSymbols} AST Symbols · Model: ${managerStats.modelName}${usageDisplay}`
+    : `Deterministic Codebase Intelligence, AST Analysis & Automated Patching${usageDisplay}`;
 
   // Keep last 4 messages to preserve stable terminal height
   const visibleMessages = messages.slice(-4);
@@ -263,8 +434,9 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
       title="ThreatLens Autonomous Codebase Agent"
       subtitle={subtitle}
       breadcrumb="AGENT"
-      statusText={isRunning ? 'PROCESSING' : activeApproval ? 'APPROVAL REQ' : 'IDLE'}
-      statusType={activeApproval ? 'warning' : isRunning ? 'ready' : 'success'}
+      accentColor={isNearLimit ? 'yellow' : 'cyan'}
+      statusText={isRunning ? 'PROCESSING' : activeApproval ? 'APPROVAL REQ' : isNearLimit ? 'NEAR LIMIT' : 'IDLE'}
+      statusType={activeApproval || isNearLimit ? 'warning' : isRunning ? 'ready' : 'success'}
       keyHints={
         activeApproval
           ? 'a approve · r reject · c cancel'
@@ -381,6 +553,7 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
                 value={inputQuery}
                 onChange={setInputQuery}
                 onSubmit={() => handleSend()}
+                focus={!isRunning && isInteractive}
                 placeholder={
                   isRunning
                     ? 'Agent is executing tools...'

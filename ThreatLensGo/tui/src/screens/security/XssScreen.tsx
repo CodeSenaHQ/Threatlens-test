@@ -1,63 +1,116 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Text, useInput } from 'ink';
 import { useNavigation } from '../../state/navigation.js';
 import { useSecuritySession } from '../../state/securitySession.js';
-import { MultiSelect } from '../../components/MultiSelect.js';
+import { MultiSelect, MultiSelectItem } from '../../components/MultiSelect.js';
 import { TerminalLayout } from '../../components/TerminalLayout.js';
 import { Select } from '../../components/Select.js';
-import { SimulationRunner } from '../../components/SimulationRunner.js';
+import { Spinner } from '../../components/Spinner.js';
+import { AttackRunner } from '../../components/AttackRunner.js';
+import { backendClient } from '../../api/backendClient.js';
+import { formatBackendError } from '../../api/errorHandler.js';
 
-type Step = 1 | 2 | 3;
-type XssType = 'Reflected' | 'Stored' | 'DOM-based';
-type InjectionPoint = 'Query param' | 'Form field' | 'Header';
+type Step = 1 | 2;
+type HttpMethod = 'GET' | 'POST';
+
+function parseTargetUrl(raw: string): { base_url: string; endpoint: string } {
+  try {
+    const u = new URL(raw.startsWith('http') ? raw : `http://${raw}`);
+    return {
+      base_url: `${u.protocol}//${u.host}`,
+      endpoint: u.pathname && u.pathname !== '' ? u.pathname : '/',
+    };
+  } catch {
+    return {
+      base_url: raw,
+      endpoint: '/',
+    };
+  }
+}
 
 export const XssScreen: React.FC = () => {
   const { pop } = useNavigation();
   const { targetUrl } = useSecuritySession();
 
   const [step, setStep] = useState<Step>(1);
-  const [types, setTypes] = useState<XssType[]>(['Reflected']);
-  const [injectionPoint, setInjectionPoint] = useState<InjectionPoint>('Query param');
-  const [isSimulating, setIsSimulating] = useState(false);
+  const [method, setMethod] = useState<HttpMethod>('GET');
+
+  // Case Management State
+  const [casesLoading, setCasesLoading] = useState(false);
+  const [casesError, setCasesError] = useState('');
+  const [casesDict, setCasesDict] = useState<Record<string, any>>({});
+  const [caseItems, setCaseItems] = useState<MultiSelectItem[]>([]);
+  const [selectedCaseNames, setSelectedCaseNames] = useState<string[]>([]);
+
+  // Execution State
+  const [isAttacking, setIsAttacking] = useState(false);
 
   const isInteractive = Boolean(process.stdin?.isTTY);
 
-  const handleTypesSubmit = (selected: XssType[]) => {
-    setTypes(selected);
+  const loadCases = useCallback(async () => {
+    setCasesLoading(true);
+    setCasesError('');
+    try {
+      const data = await backendClient.getAttackCases('xss');
+      if (data && typeof data === 'object') {
+        setCasesDict(data);
+        const keys = Object.keys(data);
+        const items = keys.map((k) => ({
+          label: `${k} ${data[k]?.description ? `(${data[k].description})` : ''}`,
+          value: k,
+        }));
+        setCaseItems(items);
+        const initial = keys.filter((k) => data[k]?.enabled !== false);
+        setSelectedCaseNames(initial.length > 0 ? initial : keys);
+      } else {
+        throw new Error('Invalid test cases structure received from backend.');
+      }
+    } catch (err: any) {
+      setCasesError(formatBackendError(err));
+    } finally {
+      setCasesLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (step === 2) {
+      loadCases();
+    }
+  }, [step, loadCases]);
+
+  const handleMethodSelect = (item: { value: HttpMethod }) => {
+    setMethod(item.value);
     setStep(2);
   };
 
-  const handleInjectionPointSelect = (item: { value: InjectionPoint }) => {
-    setInjectionPoint(item.value);
-    setStep(3);
-  };
-
-  const handleConfirmSelect = (item: { value: 'confirm' | 'back' }) => {
-    if (item.value === 'back') {
-      setStep(2);
+  const handleCasesSubmit = async (selected: string[]) => {
+    if (selected.length === 0) {
+      setCasesError('No test cases selected — select at least one test case.');
       return;
     }
+    setCasesError('');
+    setSelectedCaseNames(selected);
 
-    const payload = {
-      target: targetUrl,
-      category: 'xss',
-      params: {
-        types,
-        injectionPoint,
-      },
-    };
+    // Prepare PATCH payload
+    const patchPayload = Object.keys(casesDict).map((caseName) => ({
+      case: caseName,
+      enabled: selected.includes(caseName),
+    }));
 
-    console.log(payload);
-    setIsSimulating(true);
+    try {
+      await backendClient.patchAttackCases('xss', patchPayload);
+    } catch (err: any) {
+      console.warn('Non-blocking: Failed to update XSS cases on backend:', err.message);
+    }
+
+    setIsAttacking(true);
   };
 
   useInput(
     (_input, key) => {
-      if (isSimulating) return;
+      if (isAttacking) return;
       if (key.escape) {
-        if (step === 3) {
-          setStep(2);
-        } else if (step === 2) {
+        if (step === 2) {
           setStep(1);
         } else {
           pop();
@@ -67,98 +120,126 @@ export const XssScreen: React.FC = () => {
     { isActive: isInteractive }
   );
 
+  const { base_url, endpoint } = parseTargetUrl(targetUrl);
+  const xssConfig = {
+    target: {
+      base_url,
+      endpoint,
+      method,
+      query_params: {},
+      path_params: {},
+    },
+    request: {
+      headers: {},
+      body: {},
+      auth: null,
+    },
+    attack: {
+      requests_per_case: 1,
+      delay: 0.1,
+      timeout: 5,
+      on_failure: 'continue',
+    },
+  };
+
   return (
     <TerminalLayout
-      title="Cross-Site Scripting (XSS) Testing"
-      subtitle="Analyze sanitization routines across reflected inputs, persistent sinks, and DOM scripts"
+      title="Cross-Site Scripting (XSS) Assessment"
+      subtitle="Analyze script reflection boundaries, escaping heuristics, and execution context risks"
       breadcrumb="SECURITY > XSS"
       step={step}
-      totalSteps={3}
+      totalSteps={2}
       accentColor="yellow"
-      statusText={isSimulating ? 'XSS SUITE DISPATCHED' : `STEP ${step} OF 3`}
-      statusType={isSimulating ? 'success' : 'ready'}
-      keyHints={isSimulating ? '[Enter / Esc] Return' : `↑↓ navigate · space toggle · enter confirm · esc ${step === 1 ? 'exit' : 'back'}`}
+      statusText={isAttacking ? 'XSS ATTACK RUNNING' : `STEP ${step} OF 2`}
+      statusType={isAttacking ? 'warning' : 'ready'}
+      keyHints={
+        isAttacking
+          ? 's / esc halt attack'
+          : step === 2
+          ? 'space toggle · enter confirm · esc back'
+          : `↑↓ navigate · enter select · esc ${step === 1 ? 'exit' : 'back'}`
+      }
     >
-      {!isSimulating ? (
+      {!isAttacking ? (
         <>
-          {/* Step 1: XSS Types MultiSelect */}
+          {/* Step 1: HTTP Method Selection */}
           {step === 1 && (
             <Box flexDirection="column" marginY={1}>
               <Text bold color="white">
-                Select XSS Types to Test:
+                1. Select Target HTTP Method:
               </Text>
-              <Box marginTop={1}>
-                <MultiSelect<XssType>
+              <Box marginY={1}>
+                <Select
                   items={[
-                    { label: 'Reflected (Non-persistent immediate server-side reflection)', value: 'Reflected' },
-                    { label: 'Stored (Persistent payload execution rendered from backend storage)', value: 'Stored' },
-                    { label: 'DOM-based (Client-side execution inside browser script sinks)', value: 'DOM-based' },
+                    { label: '1. GET (Inspect reflected scripts in query parameters & URL fields)', value: 'GET' as HttpMethod },
+                    { label: '2. POST (Inspect stored & reflected payloads in form bodies)', value: 'POST' as HttpMethod },
                   ]}
-                  initialSelected={types}
-                  onSubmit={handleTypesSubmit}
+                  onSelect={handleMethodSelect}
                   isFocused={isInteractive}
-                  minSelected={1}
                 />
               </Box>
             </Box>
           )}
 
-          {/* Step 2: Injection Point Select */}
+          {/* Step 2: Test Cases Selection */}
           {step === 2 && (
             <Box flexDirection="column" marginY={1}>
               <Text bold color="white">
-                Select Primary Injection Point:
+                2. Select XSS Attack Vectors & Test Cases:
               </Text>
-              <Box marginTop={1}>
-                <Select
-                  items={[
-                    { label: '1. Query param (URL parameters & search query inputs)', value: 'Query param' as InjectionPoint },
-                    { label: '2. Form field (Request body inputs & multipart form values)', value: 'Form field' as InjectionPoint },
-                    { label: '3. Header (Custom HTTP request headers, User-Agent, Referer)', value: 'Header' as InjectionPoint },
-                  ]}
-                  onSelect={handleInjectionPointSelect}
-                  isFocused={isInteractive}
-                />
-              </Box>
-            </Box>
-          )}
 
-          {/* Step 3: Confirmation Screen */}
-          {step === 3 && (
-            <Box flexDirection="column" marginY={1}>
-              <Text bold color="white">
-                Review Configuration Summary:
-              </Text>
-              <Box flexDirection="column" marginY={1} paddingLeft={2}>
-                <Text color="gray">
-                  • Target Base URL: <Text color="cyan" bold>{targetUrl}</Text>
-                </Text>
-                <Text color="gray">
-                  • XSS Categories: <Text color="yellow" bold>{types.join(', ')}</Text>
-                </Text>
-                <Text color="gray">
-                  • Injection Point: <Text color="yellow" bold>{injectionPoint}</Text>
-                </Text>
-              </Box>
-              <Box marginTop={1}>
-                <Select
-                  items={[
-                    { label: 'Confirm & Run XSS Tests', value: 'confirm' as const },
-                    { label: 'Back to edit', value: 'back' as const },
-                  ]}
-                  onSelect={handleConfirmSelect}
-                  isFocused={isInteractive}
-                />
-              </Box>
+              {casesLoading ? (
+                <Box flexDirection="row" alignItems="center" marginY={1}>
+                  <Box marginRight={1}>
+                    <Spinner type="dots" color="#38BDF8" />
+                  </Box>
+                  <Text color="gray">Loading XSS test cases from backend...</Text>
+                </Box>
+              ) : casesError ? (
+                <Box flexDirection="column" marginY={1}>
+                  <Text color="red" bold>
+                    ✗ {casesError}
+                  </Text>
+                  <Box marginTop={1}>
+                    <Select
+                      items={[
+                        { label: '1. Run with default cases', value: 'default' as const },
+                        { label: '2. Go back to config', value: 'back' as const },
+                      ]}
+                      onSelect={(item) => {
+                        if (item.value === 'default') {
+                          setIsAttacking(true);
+                        } else {
+                          setStep(1);
+                        }
+                      }}
+                      isFocused={isInteractive}
+                    />
+                  </Box>
+                </Box>
+              ) : caseItems.length > 0 ? (
+                <Box flexDirection="column" marginTop={1}>
+                  <MultiSelect
+                    items={caseItems}
+                    initialSelected={selectedCaseNames}
+                    minSelected={1}
+                    onSubmit={handleCasesSubmit}
+                    isFocused={isInteractive}
+                  />
+                </Box>
+              ) : (
+                <Box marginY={1}>
+                  <Text color="yellow">No cases returned by backend.</Text>
+                </Box>
+              )}
             </Box>
           )}
         </>
       ) : (
-        <SimulationRunner
-          moduleName="Cross-Site Scripting (XSS) Assessment"
-          target={targetUrl}
-          params={{ types, injectionPoint }}
-          onDone={pop}
+        <AttackRunner
+          attackType="xss"
+          config={xssConfig}
+          onDone={() => pop()}
         />
       )}
     </TerminalLayout>

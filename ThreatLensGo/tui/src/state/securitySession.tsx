@@ -42,7 +42,11 @@ export const SecuritySessionProvider: React.FC<SecuritySessionProviderProps> = (
 export const useSecuritySession = (): SecuritySessionContextType => {
   const context = useContext(SecuritySessionContext);
   if (!context) {
-    throw new Error('useSecuritySession must be used within a SecuritySessionProvider');
+    return {
+      targetUrl: '',
+      setTargetUrl: () => {},
+      clearTargetUrl: () => {},
+    };
   }
   return context;
 };

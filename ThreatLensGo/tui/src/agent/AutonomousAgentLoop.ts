@@ -81,12 +81,20 @@ export class AutonomousAgentLoop implements AgentController {
 
         this.messages.push(responseMessage);
 
+        if (responseMessage.usage) {
+          this.emit({
+            type: 'turn_complete',
+            usage: responseMessage.usage,
+          });
+        }
+
         // Check if LLM decided to conclude without calling further tools
         if (!responseMessage.tool_calls || responseMessage.tool_calls.length === 0) {
           this.isRunning = false;
           this.emit({
             type: 'done',
             summary: responseMessage.content || 'Task completed successfully.',
+            usage: responseMessage.usage,
           });
           return;
         }

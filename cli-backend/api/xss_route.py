@@ -5,19 +5,14 @@ from fastapi.responses import StreamingResponse
 
 from attack.xss import XSSAttack, CASES_FILE, save_xss
 from schema.xss import XSSConfig, XSSCaseStatus
+from attack.store import add_attack, get_attack
+
 
 
 router = APIRouter(
     prefix="/attack/xss",
     tags=["XSS Attack"],
 )
-
-
-# ------------------------------------------------------------
-# In-memory attack registry
-# ------------------------------------------------------------
-
-attacks: dict[str, XSSAttack] = {}
 
 
 # ------------------------------------------------------------
@@ -139,7 +134,13 @@ async def start_xss(
 
     attack_id = await attack.start()
 
-    attacks[attack_id] = attack
+    add_attack(
+        attack_id,
+        attack,
+        "xss",
+    )
+
+
 
     background_tasks.add_task(
         save_xss,
@@ -162,16 +163,7 @@ async def start_xss(
 async def get_xss_attack(
     attack_id: str,
 ):
-
-    attack = attacks.get(attack_id)
-
-    if attack is None:
-
-        raise HTTPException(
-            status_code=404,
-            detail="Attack not found",
-        )
-
+    attack = get_attack(attack_id)
     return attack.get_status()
 
 
@@ -183,16 +175,7 @@ async def get_xss_attack(
 async def stop_xss_attack(
     attack_id: str,
 ):
-
-    attack = attacks.get(attack_id)
-
-    if attack is None:
-
-        raise HTTPException(
-            status_code=404,
-            detail="Attack not found",
-        )
-
+    attack = get_attack(attack_id)
     attack.stop()
 
     return {
@@ -209,18 +192,9 @@ async def stop_xss_attack(
 async def stream_xss_attack(
     attack_id: str,
 ):
-
-    attack = attacks.get(attack_id)
-
-    if attack is None:
-
-        raise HTTPException(
-            status_code=404,
-            detail="Attack not found",
-        )
+    attack = get_attack(attack_id)
 
     async def event_generator():
-
         async for status in attack.stream(
             interval=1.0
         ):

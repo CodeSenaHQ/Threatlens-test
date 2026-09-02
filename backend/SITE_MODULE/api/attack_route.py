@@ -42,11 +42,3 @@ def get_attack_route(
         page=page,
         limit=limit,
     )
-
-
-import inspect
-
-print("ROUTE FILE:", __file__)
-print("GET_ATTACK:", get_attack)
-print("GET_ATTACK FILE:", inspect.getsourcefile(get_attack))
-print("GET_ATTACK SIGNATURE:", inspect.signature(get_attack))

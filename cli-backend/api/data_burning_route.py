@@ -2,9 +2,10 @@
 
 import json
 
-from fastapi import APIRouter, HTTPException , BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks
 from fastapi.responses import StreamingResponse
 from attack.data_burning.execute import save_data_burn
+from attack.store import add_attack, get_attack
 
 from attack.ddos import DDoSAttack
 from schema.data_burning import DataBurningConfig
@@ -15,12 +16,6 @@ router = APIRouter(
     tags=["Data Burning Attack"],
 )
 
-
-# ------------------------------------------------------------
-# In-memory attack registry
-# ------------------------------------------------------------
-
-attacks: dict[str, DDoSAttack] = {}
 
 
 # ------------------------------------------------------------
@@ -39,7 +34,11 @@ async def start_data_burning(
 
     attack_id = await attack.start()
 
-    attacks[attack_id] = attack
+    add_attack(
+        attack_id,
+        attack,
+        "data_burning",
+    )
 
     background_tasks.add_task(
         save_data_burn,
@@ -63,14 +62,7 @@ async def get_data_burning_attack(
     attack_id: str,
 ):
 
-    attack = attacks.get(attack_id)
-
-    if attack is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Attack not found",
-        )
-
+    attack = get_attack(attack_id)
     return attack.get_status()
 
 
@@ -83,13 +75,7 @@ async def stop_data_burning_attack(
     attack_id: str,
 ):
 
-    attack = attacks.get(attack_id)
-
-    if attack is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Attack not found",
-        )
+    attack = get_attack(attack_id)
 
     attack.stop()
 
@@ -107,21 +93,12 @@ async def stop_data_burning_attack(
 async def stream_data_burning_attack(
     attack_id: str,
 ):
-
-    attack = attacks.get(attack_id)
-
-    if attack is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Attack not found",
-        )
+    attack = get_attack(attack_id)
 
     async def event_generator():
-
         async for status in attack.stream(
             interval=1.0
         ):
-
             yield (
                 f"data: "
                 f"{json.dumps(status)}"

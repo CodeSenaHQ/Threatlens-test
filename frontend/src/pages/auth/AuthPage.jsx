@@ -199,12 +199,9 @@ export default function AuthPage({ initialMode = "signup" }) {
           </Link>
         </div>
 
-        {/* Centre content */}
-        <div className="relative z-10 flex-1 flex flex-col justify-center px-10 xl:px-14 py-12">
+        {/* Left content */}
+        <div className="relative z-10 flex-1 flex flex-col justify-start px-10 xl:px-14 pt-14 xl:pt-16 pb-12">
           <motion.div initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.7 }}>
-            <p className="text-[11px] font-mono uppercase tracking-widest text-[#4d8eff] mb-4">
-              Autonomous API Security Intelligence
-            </p>
             <h1 className="text-4xl xl:text-5xl font-extrabold leading-[1.1] tracking-tight text-white mb-4">
               Security that<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#4facfe] via-[#00f2fe] to-[#4facfe]">

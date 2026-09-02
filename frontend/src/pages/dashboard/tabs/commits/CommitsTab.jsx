@@ -373,35 +373,47 @@ export default function CommitsTab({ onInspectCommit }) {
                     </div>
 
                     {/* AI Analysis Receipt if generated */}
-                    {aiResult && (
-                      <div className="p-4 rounded-lg bg-[#10151a] border border-[#38bdf8]/40 space-y-3 shadow-[0_0_15px_rgba(56,189,248,0.15)]">
-                        <div className="flex items-center gap-2 font-mono text-xs font-bold text-[#38bdf8]">
-                          <Sparkles className="w-4 h-4" />
-                          <span>ThreatLens AI Security Review</span>
-                        </div>
-                        {aiResult.ai_response?.summary && (
-                          <p className="text-xs text-[#d8e2e8] leading-relaxed font-mono">{aiResult.ai_response.summary}</p>
-                        )}
-                        {aiResult.ai_response?.overview && (
-                          <p className="text-[11px] text-[#8a99ad] leading-relaxed font-mono">{aiResult.ai_response.overview}</p>
-                        )}
-                        {aiResult.ai_response?.recommendations?.length > 0 && (
-                          <div className="space-y-1">
-                            <span className="font-mono text-[10px] uppercase text-[#38bdf8] font-bold">Recommendations:</span>
-                            <ul className="list-disc list-inside text-[11px] text-[#d8e2e8] font-mono space-y-0.5">
-                              {aiResult.ai_response.recommendations.map((r, ri) => (
-                                <li key={ri}>{r}</li>
-                              ))}
-                            </ul>
+                    {aiResult && (() => {
+                      const ai = aiResult.response || aiResult.ai_response || aiResult;
+                      const hasContent = ai?.summary || ai?.overview || (Array.isArray(ai?.recommendations) && ai.recommendations.length > 0) || ai?.security_assessment;
+                      return (
+                        <div className="p-4 rounded-lg bg-[#10151a] border border-[#38bdf8]/40 space-y-3 shadow-[0_0_15px_rgba(56,189,248,0.15)]">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 font-mono text-xs font-bold text-[#38bdf8]">
+                              <Sparkles className="w-4 h-4" />
+                              <span>ThreatLens AI Security Review</span>
+                            </div>
+                            <span className="text-[10px] font-mono text-[#38bdf8] bg-[#38bdf8]/10 px-2 py-0.5 rounded border border-[#38bdf8]/20">
+                              Gemini Intelligence
+                            </span>
                           </div>
-                        )}
-                        {aiResult.ai_response?.security_assessment && (
-                          <p className="text-xs text-white p-3 rounded-lg bg-[#38bdf8]/10 border border-[#38bdf8]/30 font-mono">
-                            {aiResult.ai_response.security_assessment}
-                          </p>
-                        )}
-                      </div>
-                    )}
+                          {ai?.summary && (
+                            <p className="text-xs text-[#d8e2e8] leading-relaxed font-mono">{ai.summary}</p>
+                          )}
+                          {ai?.overview && (
+                            <p className="text-[11px] text-[#8a99ad] leading-relaxed font-mono">{ai.overview}</p>
+                          )}
+                          {Array.isArray(ai?.recommendations) && ai.recommendations.length > 0 && (
+                            <div className="space-y-1">
+                              <span className="font-mono text-[10px] uppercase text-[#38bdf8] font-bold">Recommendations:</span>
+                              <ul className="list-disc list-inside text-[11px] text-[#d8e2e8] font-mono space-y-0.5">
+                                {ai.recommendations.map((r, ri) => (
+                                  <li key={ri}>{typeof r === "string" ? r : JSON.stringify(r)}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          {ai?.security_assessment && (
+                            <p className="text-xs text-white p-3 rounded-lg bg-[#38bdf8]/10 border border-[#38bdf8]/30 font-mono">
+                              {ai.security_assessment}
+                            </p>
+                          )}
+                          {!hasContent && typeof ai === "string" && (
+                            <p className="text-xs text-[#d8e2e8] font-mono leading-relaxed">{ai}</p>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
               </div>

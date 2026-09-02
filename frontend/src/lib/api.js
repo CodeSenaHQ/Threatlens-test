@@ -292,7 +292,13 @@ export const repoApi = {
       body: JSON.stringify({ url: repoUrl, analysis }),
     });
     if (!res.ok) throw new Error(`AI analysis failed: ${res.status}`);
-    return await res.json();
+    const data = await res.json();
+    const payload = data.response || data.ai_response || data;
+    return {
+      ...data,
+      response: payload,
+      ai_response: payload,
+    };
   },
 };
 

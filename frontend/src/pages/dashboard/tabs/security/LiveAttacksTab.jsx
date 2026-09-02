@@ -341,20 +341,17 @@ export default function LiveAttacksTab() {
               <div
                 key={attack.id}
                 onClick={() => handleOpenDetail(attack)}
-                className="group relative bg-[#10151a] border border-[#263544] hover:border-[#38bdf8]/60 rounded-2xl p-5 shadow-[0_4px_24px_rgba(0,0,0,0.4)] transition-all cursor-pointer flex flex-col justify-between space-y-4 hover:shadow-[0_0_24px_rgba(56,189,248,0.12)]"
+                className="group relative bg-[#10151a] border border-[#263544] hover:border-[#3a4d62] rounded-xl p-5 transition-all cursor-pointer flex flex-col justify-between space-y-4 shadow-sm"
               >
-                {/* Glowing Active Border Pip */}
-                <div className="absolute top-0 left-6 right-6 h-[2px] bg-gradient-to-r from-transparent via-rose-500/80 to-transparent" />
-
                 {/* Card Header */}
                 <div className="space-y-2">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/30 flex items-center justify-center shrink-0">
-                        <Flame className="w-4 h-4 text-rose-400" />
+                      <div className="w-8 h-8 rounded-lg bg-[#182330] border border-[#263544] flex items-center justify-center shrink-0">
+                        <Flame className="w-4 h-4 text-[#8a99ad]" />
                       </div>
                       <div>
-                        <h3 className="text-sm font-bold text-white group-hover:text-[#38bdf8] transition-colors leading-tight">
+                        <h3 className="text-sm font-semibold text-white group-hover:text-white transition-colors leading-tight">
                           {attack.name}
                         </h3>
                         <div className="flex items-center gap-1.5 mt-0.5">
@@ -375,16 +372,16 @@ export default function LiveAttacksTab() {
                     </div>
 
                     {/* LIVE Status Badge */}
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-500/15 border border-rose-500/40 text-rose-400 text-[10.5px] font-mono font-bold shrink-0">
-                      <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                    <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#182330] border border-[#283849] text-[#8a99ad] text-[10.5px] font-mono font-medium shrink-0">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                       <span>LIVE</span>
                     </div>
                   </div>
 
                   {/* Target Endpoint */}
                   <div className="p-2.5 rounded-lg bg-[#0a0d10] border border-[#202c38] font-mono text-[11px] text-[#8a99ad] truncate">
-                    <span className="text-[#38bdf8] font-bold mr-1.5">TARGET:</span>
-                    <span className="text-zinc-300">{attack.target}</span>
+                    <span className="text-[#8a99ad] font-semibold mr-1.5">TARGET:</span>
+                    <span className="text-[#d8e2e8]">{attack.target}</span>
                   </div>
                 </div>
 
@@ -392,45 +389,45 @@ export default function LiveAttacksTab() {
                 <div className="space-y-2.5 py-1 border-y border-[#202c38]">
                   <div className="flex items-center justify-between text-[11px] font-mono">
                     <span className="text-[#8a99ad]">Progress</span>
-                    <span className="text-white font-bold">
+                    <span className="text-white font-medium">
                       {attack.progress.attempted} / {attack.progress.planned} reqs ({progressPct}%)
                     </span>
                   </div>
 
-                  {/* Animated Bar */}
+                  {/* Flat Progress Bar */}
                   <div className="h-1.5 w-full bg-[#18232e] rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-[#2962FF] to-[#38bdf8] transition-all duration-300"
+                      className="h-full bg-[#3b82f6] rounded-full transition-all duration-300"
                       style={{ width: `${progressPct}%` }}
                     />
                   </div>
 
                   {/* 3 Metric Pills */}
                   <div className="grid grid-cols-3 gap-2 pt-1 font-mono text-center">
-                    <div className="p-1.5 rounded bg-[#131a22] border border-[#233140]">
+                    <div className="p-1.5 rounded bg-[#0d1217] border border-[#202c38]">
                       <div className="text-[9px] text-[#8a99ad] uppercase">RPS</div>
-                      <div className="text-xs font-bold text-white mt-0.5">{attack.performance.rps}</div>
+                      <div className="text-xs font-semibold text-white mt-0.5">{attack.performance.rps}</div>
                     </div>
-                    <div className="p-1.5 rounded bg-[#131a22] border border-[#233140]">
+                    <div className="p-1.5 rounded bg-[#0d1217] border border-[#202c38]">
                       <div className="text-[9px] text-[#8a99ad] uppercase">Latency</div>
-                      <div className="text-xs font-bold text-white mt-0.5">{attack.performance.avgLatency}ms</div>
+                      <div className="text-xs font-semibold text-white mt-0.5">{attack.performance.avgLatency}ms</div>
                     </div>
-                    <div className="p-1.5 rounded bg-[#131a22] border border-[#233140]">
+                    <div className="p-1.5 rounded bg-[#0d1217] border border-[#202c38]">
                       <div className="text-[9px] text-[#8a99ad] uppercase">Elapsed</div>
-                      <div className="text-xs font-bold text-rose-400 mt-0.5">{attack.elapsed}s</div>
+                      <div className="text-xs font-semibold text-[#d8e2e8] mt-0.5">{attack.elapsed}s</div>
                     </div>
                   </div>
                 </div>
 
                 {/* Card Footer Actions */}
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-xs font-semibold text-[#38bdf8] group-hover:translate-x-1 transition-transform flex items-center gap-1 font-sans">
+                  <span className="text-xs font-medium text-[#8a99ad] group-hover:text-white transition-colors flex items-center gap-1 font-sans">
                     View Details →
                   </span>
 
                   <button
                     onClick={(e) => handleStopAttack(attack.id, attack.type, e)}
-                    className="px-2.5 py-1 rounded-md bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[11px] font-mono font-bold transition-all cursor-pointer flex items-center gap-1"
+                    className="px-2.5 py-1 rounded-md bg-[#182330] hover:bg-[#223042] text-[#8a99ad] hover:text-white border border-[#283849] text-[11px] font-mono font-medium transition-all cursor-pointer flex items-center gap-1"
                   >
                     <Square className="w-2.5 h-2.5 fill-current" />
                     <span>Stop</span>
@@ -457,10 +454,10 @@ export default function LiveAttacksTab() {
                 <div className="flex items-start justify-between pb-4 border-b border-[#253240]">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-[10.5px] uppercase tracking-wider text-[#38bdf8] font-bold">
+                      <span className="font-mono text-[10.5px] uppercase tracking-wider text-[#8a99ad] font-semibold">
                         {selectedAttack.type.toUpperCase()} ATTACK TELEMETRY
                       </span>
-                      <span className="px-2 py-0.5 rounded-full bg-rose-500/15 border border-rose-500/40 text-rose-400 text-[10px] font-mono font-bold animate-pulse">
+                      <span className="px-2 py-0.5 rounded-full bg-[#182330] border border-[#283849] text-[#8a99ad] text-[10px] font-mono font-medium">
                         LIVE
                       </span>
                     </div>
@@ -491,7 +488,7 @@ export default function LiveAttacksTab() {
                     </div>
                     <div className="text-zinc-400 text-[11px]">
                       <span className="text-[#8a99ad]">Method: </span>
-                      <span className="text-[#38bdf8] font-bold">{selectedAttack.method || "POST"}</span>
+                      <span className="text-white font-semibold">{selectedAttack.method || "POST"}</span>
                       <span className="mx-2 text-[#8a99ad]">·</span>
                       <span className="text-[#8a99ad]">Concurrency: </span>
                       <span className="text-white">{selectedAttack.progress.active || 10} workers</span>
@@ -507,23 +504,23 @@ export default function LiveAttacksTab() {
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 font-mono">
                     <div className="p-3 rounded-xl bg-[#080b0e] border border-[#222e3b]">
                       <div className="text-[10px] text-[#8a99ad]">RPS</div>
-                      <div className="text-sm font-bold text-white mt-0.5">{selectedAttack.performance.rps}</div>
+                      <div className="text-sm font-semibold text-white mt-0.5">{selectedAttack.performance.rps}</div>
                     </div>
                     <div className="p-3 rounded-xl bg-[#080b0e] border border-[#222e3b]">
                       <div className="text-[10px] text-[#8a99ad]">AVG LATENCY</div>
-                      <div className="text-sm font-bold text-[#38bdf8] mt-0.5">
+                      <div className="text-sm font-semibold text-white mt-0.5">
                         {selectedAttack.performance.avgLatency}ms
                       </div>
                     </div>
                     <div className="p-3 rounded-xl bg-[#080b0e] border border-[#222e3b]">
                       <div className="text-[10px] text-[#8a99ad]">P95 LATENCY</div>
-                      <div className="text-sm font-bold text-amber-400 mt-0.5">
+                      <div className="text-sm font-semibold text-white mt-0.5">
                         {selectedAttack.performance.p95}ms
                       </div>
                     </div>
                     <div className="p-3 rounded-xl bg-[#080b0e] border border-[#222e3b]">
                       <div className="text-[10px] text-[#8a99ad]">ELAPSED</div>
-                      <div className="text-sm font-bold text-rose-400 mt-0.5">{selectedAttack.elapsed}s</div>
+                      <div className="text-sm font-semibold text-[#d8e2e8] mt-0.5">{selectedAttack.elapsed}s</div>
                     </div>
                   </div>
                 </div>
@@ -537,17 +534,17 @@ export default function LiveAttacksTab() {
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-emerald-400" />
                       <span className="text-[#8a99ad]">200 OK:</span>
-                      <span className="text-white font-bold">{selectedAttack.statusCodes[200] || 0}</span>
+                      <span className="text-white font-semibold">{selectedAttack.statusCodes[200] || 0}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-amber-400" />
                       <span className="text-[#8a99ad]">429 Rate Limited:</span>
-                      <span className="text-white font-bold">{selectedAttack.statusCodes[429] || 0}</span>
+                      <span className="text-white font-semibold">{selectedAttack.statusCodes[429] || 0}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-rose-400" />
                       <span className="text-[#8a99ad]">5xx Errors:</span>
-                      <span className="text-white font-bold">{selectedAttack.statusCodes[500] || 0}</span>
+                      <span className="text-white font-semibold">{selectedAttack.statusCodes[500] || 0}</span>
                     </div>
                   </div>
                 </div>
@@ -557,11 +554,11 @@ export default function LiveAttacksTab() {
                   <span className="text-[10px] uppercase font-mono text-[#8a99ad] tracking-wider font-semibold">
                     Batch Execution Stream
                   </span>
-                  <div className="p-3 rounded-xl bg-[#080b0e] border border-[#222e3b] font-mono text-[11px] text-[#38bdf8] space-y-1 max-h-36 overflow-y-auto">
-                    <div>[stream-event] Worker pool #1 executing payload injection batch...</div>
+                  <div className="p-3 rounded-xl bg-[#080b0e] border border-[#222e3b] font-mono text-[11px] text-[#8a99ad] space-y-1 max-h-36 overflow-y-auto">
+                    <div>[stream-event] Worker pool executing payload batch...</div>
                     <div>[stream-event] Target responded with 200 OK ({selectedAttack.performance.avgLatency}ms)</div>
                     <div>[stream-event] Attempted {selectedAttack.progress.attempted} of {selectedAttack.progress.planned} requests</div>
-                    <div className="text-emerald-400">[stream-event] ThreatLens AST guardrails monitoring active thread</div>
+                    <div className="text-[#d8e2e8]">[stream-event] ThreatLens AST guardrails active</div>
                   </div>
                 </div>
               </div>
@@ -570,7 +567,7 @@ export default function LiveAttacksTab() {
               <div className="pt-4 border-t border-[#253240] flex items-center justify-between gap-3">
                 <button
                   onClick={() => handleStopAttack(selectedAttack.id, selectedAttack.type)}
-                  className="px-4 py-2 rounded-lg font-mono text-xs bg-rose-500/15 border border-rose-500/40 text-rose-300 hover:bg-rose-500/25 flex items-center gap-2 transition-all cursor-pointer font-bold"
+                  className="px-4 py-2 rounded-lg font-mono text-xs bg-[#182330] hover:bg-[#223042] border border-[#283849] text-[#d8e2e8] hover:text-white flex items-center gap-2 transition-all cursor-pointer font-medium"
                 >
                   <Square className="w-3.5 h-3.5 fill-current" />
                   <span>Terminate Attack</span>
@@ -578,7 +575,7 @@ export default function LiveAttacksTab() {
 
                 <button
                   onClick={() => setIsDrawerOpen(false)}
-                  className="px-5 py-2 rounded-lg font-mono text-xs bg-[#2962FF] hover:bg-[#1e4ed8] text-white font-bold shadow-[0_0_15px_rgba(41,98,255,0.35)] transition-all cursor-pointer"
+                  className="px-5 py-2 rounded-lg font-mono text-xs bg-[#2962FF] hover:bg-[#1e4ed8] text-white font-bold shadow-sm transition-all cursor-pointer"
                 >
                   Close Inspector
                 </button>
@@ -611,10 +608,6 @@ export default function LiveAttacksTab() {
                 <X className="w-4 h-4" />
               </button>
             </div>
-
-            <p className="text-xs text-[#8a99ad] font-sans">
-              Choose an attack vector preset to start a live active session and monitor its telemetry in real-time.
-            </p>
 
             <div className="space-y-2.5">
               {DEMO_ATTACK_PRESETS.map((preset) => {

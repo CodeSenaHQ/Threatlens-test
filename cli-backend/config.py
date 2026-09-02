@@ -11,7 +11,7 @@ candidates = [
 ]
 for p in candidates:
     if p.exists():
-        load_dotenv(p, override=False)
+        load_dotenv(p, override=True)
 
 class Config :
     BASE_URL = os.getenv("THREATLENS_REMOTE_URL", "https://api.codesena.me")
@@ -20,9 +20,17 @@ class Config :
     DB_PATH = os.getenv("THREATLENS_DB_PATH", str(Path(__file__).resolve().parent / "local.db"))
     SQLITE_TIMEOUT = 30.0
 
-    LLM_PROVIDER_BASE_URL = os.getenv("LLM_BASE_URL") or os.getenv("LLM_PROVIDER_BASE_URL") or "https://openrouter.ai/api/v1"
-    LLM_PROVIDER_API_KEY = os.getenv("OPENROUTER_API_KEY") or os.getenv("LLM_PROVIDER_API_KEY") or ""
-    DEFAULT_MODEL = os.getenv("LLM_MODEL") or os.getenv("DEFAULT_MODEL") or "anthropic/claude-3.5-sonnet"
+    @property
+    def LLM_PROVIDER_BASE_URL(self):
+        return os.getenv("LLM_BASE_URL") or os.getenv("LLM_PROVIDER_BASE_URL") or "https://openrouter.ai/api/v1"
+
+    @property
+    def LLM_PROVIDER_API_KEY(self):
+        return os.getenv("OPENROUTER_API_KEY") or os.getenv("LLM_PROVIDER_API_KEY") or ""
+
+    @property
+    def DEFAULT_MODEL(self):
+        return os.getenv("LLM_MODEL") or os.getenv("DEFAULT_MODEL") or "anthropic/claude-3.5-sonnet"
 
     PLAN = {
         "free": 1,

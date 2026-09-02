@@ -9,4 +9,5 @@ export { XssScreen } from './security/XssScreen.js';
 export { ExfilScreen } from './security/ExfilScreen.js';
 export { RateLimitScreen } from './RateLimitScreen.js';
 export { ProxyScreen } from './ProxyScreen.js';
+export { ChatHistoryScreen } from './ChatHistoryScreen.js';
 export { AgentChatScreen } from './AgentChatScreen.js';

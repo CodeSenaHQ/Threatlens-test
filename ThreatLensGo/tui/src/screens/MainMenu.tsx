@@ -11,6 +11,7 @@ import { PulsingBox } from '../components/PulsingBox.js';
 
 type CommandAction =
   | 'agentChat'
+  | 'chatHistory'
   | 'gitAnalysis'
   | 'securityMenu'
   | 'ddos'
@@ -33,6 +34,11 @@ const COMMANDS: CommandItem[] = [
     label: '0. 🤖 ThreatLens Agent (Interactive Codebase Intelligence & Auto-Patching)',
     value: 'agentChat',
     shortcut: '0',
+  },
+  {
+    label: 'H. 📜 Chat History (Restore or review previous agent conversations)',
+    value: 'chatHistory',
+    shortcut: 'h',
   },
   {
     label: '1. Git Repository Analysis (Audit public repos for leaked secrets & CVEs)',
@@ -105,6 +111,8 @@ export const MainMenu: React.FC = () => {
     }
     if (item.value === 'agentChat') {
       push({ type: 'agentChat' });
+    } else if (item.value === 'chatHistory') {
+      push({ type: 'chatHistory' });
     } else if (item.value === 'gitAnalysis') {
       push({ type: 'gitAnalysis' });
     } else if (item.value === 'securityMenu') {
@@ -135,6 +143,8 @@ export const MainMenu: React.FC = () => {
 
     if (trimmed.includes('agent') || trimmed === '/agent' || trimmed.startsWith('fix') || trimmed.startsWith('audit') || trimmed.startsWith('search')) {
       push({ type: 'agentChat', initialPrompt: value.trim() });
+    } else if (trimmed.includes('history') || trimmed === '/history') {
+      push({ type: 'chatHistory' });
     } else if (trimmed.includes('git') || trimmed === '/git') {
       push({ type: 'gitAnalysis' });
     } else if (trimmed.includes('ddos') || trimmed === '/ddos') {
@@ -172,6 +182,8 @@ export const MainMenu: React.FC = () => {
         // Direct single-key shortcuts when menu is active
         if (input === '0') {
           handleSelect(COMMANDS[0]);
+        } else if (input === 'h' || input === 'H') {
+          push({ type: 'chatHistory' });
         } else if (input === '1') {
           handleSelect(COMMANDS[1]);
         } else if (input === '2') {

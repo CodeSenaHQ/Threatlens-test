@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Text } from 'ink';
 import { useTerminalSize } from '../hooks/useTerminalSize.js';
 import { useSecuritySession } from '../state/securitySession.js';
+import { useBackend } from '../state/backendState.js';
 import { StatusDot, StatusType } from './StatusDot.js';
 
 export interface TerminalLayoutProps {
@@ -39,6 +40,7 @@ export const TerminalLayout: React.FC<TerminalLayoutProps> = ({
 }) => {
   const { columns } = useTerminalSize();
   const { targetUrl } = useSecuritySession();
+  const { isOnline } = useBackend();
 
   // NO animation hooks here — StatusDot handles its own re-renders in isolation
   const width = Math.max(60, columns > 2 ? columns - 2 : 78);
@@ -60,6 +62,9 @@ export const TerminalLayout: React.FC<TerminalLayoutProps> = ({
           <Text color="white" bold>{'['}</Text>
           <Text color={accentColor} bold>{breadcrumb.toLowerCase()}</Text>
           <Text color="white" bold>{']'}</Text>
+          {!isOnline && (
+            <Text color="red" bold> ⚠ Backend Offline</Text>
+          )}
         </Box>
         <Box flexDirection="row">
           {targetUrl ? (

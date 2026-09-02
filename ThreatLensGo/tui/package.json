@@ -8,8 +8,9 @@
   },
   "scripts": {
     "dev": "tsx src/index.tsx",
+    "dev:tui-only": "tsx src/index.tsx",
     "watch": "tsx watch src/index.tsx",
-    "start": "tsx src/index.tsx",
+    "start": "tsx src/launcher.ts",
     "build": "tsc"
   },
   "keywords": [

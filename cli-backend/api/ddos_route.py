@@ -1,28 +1,19 @@
 # attack/ddos/router.py
 
 import json
-
-from fastapi import BackgroundTasks
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, BackgroundTasks
 from fastapi.responses import StreamingResponse
 
 from attack.ddos import DDoSAttack
 from attack.ddos.execute import save_ddos
 from schema.ddos import DDoSConfig
+from attack.store import add_attack, get_attack
 
 
 router = APIRouter(
     prefix="/attack/ddos",
     tags=["DDoS Attack"],
 )
-
-
-# ------------------------------------------------------------
-# In-memory attack registry
-# ------------------------------------------------------------
-
-attacks: dict[str, DDoSAttack] = {}
-
 
 # ------------------------------------------------------------
 # Start DDoS Attack
@@ -40,7 +31,11 @@ async def start_ddos(
 
     attack_id = await attack.start()
 
-    attacks[attack_id] = attack
+    add_attack(
+        attack_id,
+        attack,
+        "ddos"
+    )
 
     background_tasks.add_task(
         save_ddos,
@@ -63,15 +58,7 @@ async def start_ddos(
 async def get_ddos_attack(
     attack_id: str,
 ):
-
-    attack = attacks.get(attack_id)
-
-    if attack is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Attack not found",
-        )
-
+    attack = get_attack(attack_id)
     return attack.get_status()
 
 
@@ -83,15 +70,7 @@ async def get_ddos_attack(
 async def stop_ddos_attack(
     attack_id: str,
 ):
-
-    attack = attacks.get(attack_id)
-
-    if attack is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Attack not found",
-        )
-
+    attack = get_attack(attack_id)
     attack.stop()
 
     return {
@@ -108,15 +87,7 @@ async def stop_ddos_attack(
 async def stream_ddos_attack(
     attack_id: str,
 ):
-
-    attack = attacks.get(attack_id)
-
-    if attack is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Attack not found",
-        )
-
+    attack = get_attack(attack_id)
     async def event_generator():
 
         async for status in attack.stream(

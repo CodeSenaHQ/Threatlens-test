@@ -5,7 +5,6 @@ import { TerminalLayout } from '../components/TerminalLayout.js';
 import { ToolBadge } from '../components/ToolBadge.js';
 import { DiffApprovalModal } from '../components/DiffApprovalModal.js';
 import { Spinner } from '../components/Spinner.js';
-import { StreamCursor } from '../components/StreamCursor.js';
 import { useNavigation } from '../state/navigation.js';
 import { AgentController, AgentEvent, DiffApprovalPayload } from '../agent/types.js';
 import { ThreatLensAgentManager, AgentManagerStats } from '../agent/agentManager.js';
@@ -57,11 +56,24 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
   const isSavingHistoryRef = useRef<boolean>(false);
   const pendingSaveRef = useRef<boolean>(false);
   const latestMessagesRef = useRef<Message[]>([]);
+  const initialPromptSentRef = useRef<boolean>(false);
+  const controllerRef = useRef<AgentController | null>(null);
 
   // Sync messages ref
   useEffect(() => {
     latestMessagesRef.current = messages;
   }, [messages]);
+
+  useEffect(() => {
+    controllerRef.current = controller;
+  }, [controller]);
+
+  // Cancel controller only on full component unmount
+  useEffect(() => {
+    return () => {
+      controllerRef.current?.cancel();
+    };
+  }, []);
 
   // Restore chat history on mount if launched with existing chatId
   useEffect(() => {
@@ -81,8 +93,8 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
             setStatusMessage(`Restored chat session #${initialChatId} (${restored.length} messages)`);
           }
         })
-        .catch((err) => {
-          console.warn('Failed to restore chat history from backend:', err);
+        .catch(() => {
+          // Silently fail restore on backend offline without clobbering Ink stdout
         });
     }
   }, [initialChatId]);
@@ -148,12 +160,9 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
           }
         })
         .catch((err) => {
-          if (isMounted) {
-            console.error('Failed to init agent manager:', err);
             const fallback = new MockAgentController();
             setController(fallback);
-            setStatusMessage('Ready (Fallback Mock Mode)');
-          }
+            setStatusMessage(`Ready (Fallback Mock Mode: ${err?.message || 'Agent Init Error'})`);
         });
     }
 
@@ -286,8 +295,9 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
           setStatusMessage(`Finished: ${event.summary}`);
           setCurrentAgentText((prev) => {
             let nextMessages = latestMessagesRef.current;
-            if (prev) {
-              const agentMsg: Message = { id: Date.now().toString(), sender: 'agent', text: prev };
+            const textToSave = prev.trim() || (event.summary && event.summary !== 'Operation cancelled.' ? event.summary : '');
+            if (textToSave) {
+              const agentMsg: Message = { id: Date.now().toString(), sender: 'agent', text: textToSave };
               nextMessages = [...latestMessagesRef.current, agentMsg];
               setMessages(nextMessages);
               latestMessagesRef.current = nextMessages;
@@ -295,17 +305,6 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
             triggerSaveChatHistory(nextMessages);
             return '';
           });
-          if (event.usage && (event.usage.prompt_tokens || event.usage.completion_tokens)) {
-            backendClient
-              .patchUsage(event.usage.prompt_tokens, event.usage.completion_tokens)
-              .then(() => backendClient.getUsage())
-              .then((updated) => {
-                if (updated && typeof updated.total_tokens === 'number') {
-                  setUsage(updated);
-                }
-              })
-              .catch(() => {});
-          }
           break;
 
         case 'error':
@@ -317,18 +316,29 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
           setIsRunning(false);
           setActiveApproval(null);
           setStatusMessage(`Error: ${event.error}`);
+          setCurrentAgentText((prev) => {
+            const errorText = prev.trim()
+              ? `${prev.trim()}\n\n⚠ Error: ${event.error}`
+              : `⚠ Error: ${event.error}`;
+            const agentMsg: Message = { id: Date.now().toString(), sender: 'agent', text: errorText };
+            const nextMessages = [...latestMessagesRef.current, agentMsg];
+            setMessages(nextMessages);
+            latestMessagesRef.current = nextMessages;
+            triggerSaveChatHistory(nextMessages);
+            return '';
+          });
           break;
       }
     });
 
-    // Handle initial prompt if provided
-    if (initialPrompt && initialPrompt.trim()) {
+    // Handle initial prompt once if provided
+    if (initialPrompt && initialPrompt.trim() && !initialPromptSentRef.current) {
+      initialPromptSentRef.current = true;
       handleSend(initialPrompt);
     }
 
     return () => {
       unsubscribe();
-      controller.cancel();
     };
   }, [controller, initialPrompt, triggerSaveChatHistory]);
 

@@ -34,7 +34,14 @@ export class BackendGatewayLLMClient implements LLMClient {
 
     if (!res.ok) {
       const errorText = await res.text();
-      throw new Error(`Backend LLM Gateway Error (${res.status}): ${errorText}`);
+      let msg = errorText;
+      try {
+        const parsed = JSON.parse(errorText);
+        msg = parsed.detail || parsed.error?.message || parsed.message || errorText;
+      } catch {
+        // retain raw text
+      }
+      throw new Error(`Backend LLM Gateway Error (${res.status}): ${msg}`);
     }
     if (!res.body) {
       throw new Error('Backend LLM Gateway returned empty body');

@@ -70,5 +70,4 @@ def save_attack(
     )
 
     response.raise_for_status()
-    print(response.json())
     return response.json()

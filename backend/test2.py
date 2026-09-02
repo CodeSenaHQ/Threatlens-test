@@ -41,5 +41,3 @@ user = {
 # chain.commit()
 # print(chain.verify_chain(mode="full")) 
 
-
-auth.account.update_role(account_id=1, role="superadmin")

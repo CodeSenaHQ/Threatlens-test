@@ -10,14 +10,6 @@ The endpoint supports normal JSON retrieval and Server-Sent Events (SSE) streami
 GET /attack
 ```
 
-## Authentication
-
-The endpoint requires a valid JWT.
-
-```http
-Authorization: Bearer <JWT_TOKEN>
-```
-
 ## Query Parameters
 
 | Parameter | Type | Required | Default | Description |
@@ -225,13 +217,10 @@ The event contains metadata about the newly created attack, not the complete att
 # JavaScript Fetch — Normal Request
 
 ```javascript
-const jwt = "YOUR_JWT_TOKEN";
-
 const response = await fetch("http://localhost:1234/attack", {
   method: "GET",
   headers: {
-    "Accept": "application/json",
-    "Authorization": `Bearer ${jwt}`
+    "Accept": "application/json"
   }
 });
 
@@ -247,7 +236,6 @@ console.log(attacks);
 ## Filtered Request
 
 ```javascript
-const jwt = "YOUR_JWT_TOKEN";
 const attackType = "ddos";
 
 const url =
@@ -256,8 +244,7 @@ const url =
 const response = await fetch(url, {
   method: "GET",
   headers: {
-    "Accept": "application/json",
-    "Authorization": `Bearer ${jwt}`
+    "Accept": "application/json"
   }
 });
 
@@ -308,7 +295,7 @@ events.addEventListener("attack_created", (event) => {
 });
 ```
 
-> Native browser `EventSource` does not allow setting a custom `Authorization` header. If this endpoint requires Bearer authentication, use the authentication mechanism configured by the application or an SSE client that supports custom headers.
+> This endpoint does not require authentication, so the native browser `EventSource` API can be used directly.
 
 ---
 

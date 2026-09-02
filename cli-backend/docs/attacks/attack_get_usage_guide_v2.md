@@ -10,14 +10,6 @@ The endpoint supports normal JSON retrieval and Server-Sent Events (SSE) streami
 GET /attack
 ```
 
-## Authentication
-
-The endpoint requires a valid JWT.
-
-```http
-Authorization: Bearer <JWT_TOKEN>
-```
-
 ## Query Parameters
 
 | Parameter | Type | Required | Default | Description |

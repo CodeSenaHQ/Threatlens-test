@@ -59,20 +59,33 @@ export function saveSession(session: { token: string; provider?: string }): void
 export function loadSession(): PersistedSession | null {
   try {
     const filePath = getSessionFilePath();
-    if (!fs.existsSync(filePath)) {
-      return null;
+    if (fs.existsSync(filePath)) {
+      const content = fs.readFileSync(filePath, 'utf-8');
+      const parsed = JSON.parse(content) as PersistedSession;
+      if (parsed && typeof parsed.token === 'string' && parsed.token.trim()) {
+        return parsed;
+      }
     }
-    const content = fs.readFileSync(filePath, 'utf-8');
-    const parsed = JSON.parse(content) as PersistedSession;
-    if (parsed && typeof parsed.token === 'string') {
-      return parsed;
-    }
-    clearSession();
-    return null;
   } catch {
     clearSession();
-    return null;
   }
+
+  try {
+    const localToken = getBackendLocalJwt();
+    if (localToken) {
+      const localSession: PersistedSession = {
+        token: localToken,
+        provider: 'cli-backend',
+        savedAt: new Date().toISOString(),
+      };
+      saveSession(localSession);
+      return localSession;
+    }
+  } catch {
+    // Ignore fallback failure
+  }
+
+  return null;
 }
 
 export function clearSession(): void {
@@ -84,6 +97,16 @@ export function clearSession(): void {
   } catch {
     // Fail gracefully
   }
+}
+
+// Pre-seed backendClient with boot token if available
+try {
+  const initialBootSession = loadSession();
+  if (initialBootSession?.token) {
+    backendClient.setAuthToken(initialBootSession.token);
+  }
+} catch {
+  // Ignore pre-seed failure
 }
 
 export interface BackendStateContextType {

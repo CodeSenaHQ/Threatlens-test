@@ -190,8 +190,8 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
 
     try {
       await backendClient.saveChatHistory(currentChatId, payloadMessages);
-    } catch (err) {
-      console.warn('Non-blocking: Failed to save chat history to backend:', err);
+    } catch {
+      // Non-blocking: background save failures must never disrupt terminal UI
     } finally {
       isSavingHistoryRef.current = false;
       if (pendingSaveRef.current) {
@@ -355,8 +355,8 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
         if (newChat && typeof newChat.id === 'number') {
           chatIdRef.current = newChat.id;
         }
-      } catch (err) {
-        console.warn('Backend offline or createChat failed, continuing locally:', err);
+      } catch {
+        // Backend offline or createChat failed: silently continue locally without disrupting TUI layout
       }
     }
 

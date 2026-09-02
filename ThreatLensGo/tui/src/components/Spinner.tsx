@@ -16,7 +16,7 @@ export interface SpinnerProps {
  */
 export const Spinner: React.FC<SpinnerProps> = ({
   type = 'dots',
-  intervalMs = 80,
+  intervalMs = 140,
   color = 'cyan',
   bold = true,
 }) => {

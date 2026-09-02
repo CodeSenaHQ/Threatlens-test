@@ -210,12 +210,12 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
         case 'token':
           setIsRunning(true);
           textBufferRef.current += event.delta;
-          // 120ms buffer — large enough to batch token events without creating visual stutter
+          // 80ms batch buffer — optimal balance between responsiveness and terminal redraw frequency
           if (!flushTimerRef.current) {
             flushTimerRef.current = setTimeout(() => {
               flushTimerRef.current = null;
               flushTextBuffer();
-            }, 120);
+            }, 80);
           }
           break;
 
@@ -424,8 +424,17 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
     ? `${managerStats.totalFiles} Files · ${managerStats.totalSymbols} AST Symbols · Model: ${managerStats.modelName}${usageDisplay}`
     : `Deterministic Codebase Intelligence, AST Analysis & Automated Patching${usageDisplay}`;
 
-  // Keep last 4 messages to preserve stable terminal height
-  const visibleMessages = messages.slice(-4);
+  const formatSnippet = (text: string, isLatest: boolean): string => {
+    if (!text) return '';
+    const lines = text.split('\n');
+    if (!isLatest && lines.length > 4) {
+      return lines.slice(0, 4).join('\n') + `\n... (+${lines.length - 4} lines)`;
+    }
+    return text;
+  };
+
+  // Keep visible messages bounded to avoid vertical terminal overflow and scroll jitter
+  const visibleMessages = isRunning ? messages.slice(-2) : messages.slice(-3);
   const runningTools = tools.filter((t) => t.status === 'running');
   const doneTools = tools.filter((t) => t.status !== 'running');
 
@@ -446,35 +455,40 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
       }
     >
       <Box flexDirection="column" paddingY={0}>
-        {/* Status Bar — Spinner is an isolated leaf: only IT re-renders every 80ms */}
+        {/* Status Bar */}
         <Box flexDirection="row" alignItems="center" marginBottom={1}>
-          {isRunning ? (
+          {isRunning && !currentAgentText ? (
             <Box marginRight={1}>
-              <Spinner type="dots" intervalMs={80} color="#38BDF8" bold />
+              <Spinner type="dots" intervalMs={140} color="#38BDF8" bold />
             </Box>
+          ) : isRunning ? (
+            <Text color="#38BDF8" bold>⚡ </Text>
           ) : (
             <Text color="green" bold>✓ </Text>
           )}
           <Text color="gray" italic>{statusMessage}</Text>
         </Box>
 
-        {/* Message History — static text, no animation */}
+        {/* Message History — compact, bounded lines */}
         <Box flexDirection="column" marginBottom={0}>
-          {visibleMessages.map((msg) => (
-            <Box
-              key={msg.id}
-              flexDirection="column"
-              marginY={0}
-              paddingX={1}
-              borderStyle="round"
-              borderColor={msg.sender === 'user' ? 'cyan' : '#34D399'}
-            >
-              <Text bold color={msg.sender === 'user' ? 'cyan' : '#34D399'}>
-                {msg.sender === 'user' ? '◈ You:' : '⬡ Agent:'}
-              </Text>
-              <Text color="white">{msg.text}</Text>
-            </Box>
-          ))}
+          {visibleMessages.map((msg, idx) => {
+            const isLatest = idx === visibleMessages.length - 1;
+            return (
+              <Box
+                key={msg.id}
+                flexDirection="column"
+                marginY={0}
+                paddingX={1}
+                borderStyle="round"
+                borderColor={msg.sender === 'user' ? 'cyan' : '#34D399'}
+              >
+                <Text bold color={msg.sender === 'user' ? 'cyan' : '#34D399'}>
+                  {msg.sender === 'user' ? '◈ You:' : '⬡ Agent:'}
+                </Text>
+                <Text color="white">{formatSnippet(msg.text, isLatest)}</Text>
+              </Box>
+            );
+          })}
         </Box>
 
         {/* Running Tool Invocations */}
@@ -522,7 +536,7 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
           </Box>
         ) : null}
 
-        {/* Agent Streaming Response — StreamCursor is isolated, text is stable */}
+        {/* Agent Streaming Response — inline cursor to eliminate flex layout re-wrapping */}
         {currentAgentText ? (
           <Box
             flexDirection="column"
@@ -532,10 +546,10 @@ export const AgentChatScreen: React.FC<AgentChatScreenProps> = ({
             borderColor="#34D399"
           >
             <Text bold color="#34D399">⬡ Agent:</Text>
-            <Box flexDirection="row">
-              <Text color="white">{currentAgentText}</Text>
-              {isRunning ? <StreamCursor /> : null}
-            </Box>
+            <Text color="white">
+              {currentAgentText}
+              {isRunning ? <Text color="#38BDF8" bold> ▌</Text> : null}
+            </Text>
           </Box>
         ) : null}
 

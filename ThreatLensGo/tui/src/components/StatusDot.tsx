@@ -14,10 +14,12 @@ interface StatusDotProps {
  * TerminalLayout (and all its children) stay completely still.
  */
 export const StatusDot: React.FC<StatusDotProps> = ({ statusType, statusText }) => {
-  // Only animate when actively processing — use slower interval for ready
   const isProcessing = statusText.toUpperCase().includes('PROCESS');
-  const dotsFrame = useSpinnerFrame('dots', 80);
-  const pulseFrame = useSpinnerFrame('pulse', 600);
+  const needsDots = statusType === 'ready' && isProcessing;
+  const needsPulse = statusType === 'ready' && !isProcessing;
+
+  const dotsFrame = useSpinnerFrame('dots', 160, needsDots);
+  const pulseFrame = useSpinnerFrame('pulse', 800, needsPulse);
 
   const getColor = () => {
     switch (statusType) {

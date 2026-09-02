@@ -33,14 +33,17 @@ const SPINNER_SETS: Record<SpinnerType, string[]> = {
  */
 export function useSpinnerFrame(
   type: SpinnerType = 'dots',
-  intervalMs: number = 80
+  intervalMs: number = 80,
+  enabled: boolean = true
 ): string {
   const frames = SPINNER_SETS[type];
   const [frameIndex, setFrameIndex] = useState(0);
 
   useStableInterval(() => {
-    setFrameIndex((prev) => (prev + 1) % frames.length);
-  }, intervalMs);
+    if (enabled) {
+      setFrameIndex((prev) => (prev + 1) % frames.length);
+    }
+  }, enabled ? intervalMs : 0);
 
   return frames[frameIndex] ?? frames[0] ?? '⠋';
 }

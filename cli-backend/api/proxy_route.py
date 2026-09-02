@@ -3,6 +3,7 @@ import json
 from fastapi import APIRouter, HTTPException, BackgroundTasks
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
+from attack.store import add_attack, get_attack
 
 from attack.proxy import (
     OriginProxyAttack,
@@ -30,12 +31,6 @@ router = APIRouter(
     tags=["Origin & Proxy Attack"],
 )
 
-
-# ------------------------------------------------------------
-# In-memory attack registry
-# ------------------------------------------------------------
-
-attacks: dict[str, OriginProxyAttack] = {}
 
 
 
@@ -176,7 +171,11 @@ async def start_origin_proxy(
 
     attack_id = await attack.start()
 
-    attacks[attack_id] = attack
+    add_attack(
+        attack_id,
+        attack,
+       "origin_proxy",
+    )
 
     background_tasks.add_task(
         save_origin_proxy,
@@ -199,16 +198,7 @@ async def start_origin_proxy(
 async def get_origin_proxy_attack(
     attack_id: str,
 ):
-
-    attack = attacks.get(attack_id)
-
-    if attack is None:
-
-        raise HTTPException(
-            status_code=404,
-            detail="Attack not found",
-        )
-
+    attack = get_attack(attack_id)
     return attack.get_status()
 
 
@@ -220,16 +210,7 @@ async def get_origin_proxy_attack(
 async def stop_origin_proxy_attack(
     attack_id: str,
 ):
-
-    attack = attacks.get(attack_id)
-
-    if attack is None:
-
-        raise HTTPException(
-            status_code=404,
-            detail="Attack not found",
-        )
-
+    attack = get_attack(attack_id)
     await attack.stop()
 
     return {
@@ -246,16 +227,7 @@ async def stop_origin_proxy_attack(
 async def stream_origin_proxy_attack(
     attack_id: str,
 ):
-
-    attack = attacks.get(attack_id)
-
-    if attack is None:
-
-        raise HTTPException(
-            status_code=404,
-            detail="Attack not found",
-        )
-
+    attack = get_attack(attack_id)
     async def event_generator():
 
         async for status in attack.stream(

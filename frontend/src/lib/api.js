@@ -312,6 +312,68 @@ export const secTestApi = {
   },
 };
 
+// ── Live Attacks & Penetration Testing API ──
+export const attackApi = {
+  // Check backend pulse
+  async checkHealth() {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 3000);
+      const res = await fetch(`${API_BASE_URL}/tc-auth/config/pulse`, { signal: controller.signal });
+      clearTimeout(timeout);
+      return res.ok;
+    } catch {
+      return false;
+    }
+  },
+
+  // Get live running attacks
+  async getLiveAttacks() {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 3000);
+      const res = await fetch(`${API_BASE_URL}/api/attacks/live`, { signal: controller.signal });
+      clearTimeout(timeout);
+      if (!res.ok) {
+        // Optional fallback endpoint
+        const fallback = await fetch(`${API_BASE_URL}/attack`, { signal: controller.signal });
+        if (fallback.ok) return await fallback.json();
+        return null;
+      }
+      return await res.json();
+    } catch {
+      return null;
+    }
+  },
+
+  // Get specific attack status
+  async getAttackStatus(attackType, attackId) {
+    try {
+      const endpoint = attackType
+        ? `${API_BASE_URL}/attack/${attackType}/${attackId}`
+        : `${API_BASE_URL}/attack/${attackId}`;
+      const res = await fetch(endpoint);
+      if (!res.ok) throw new Error(`Attack status returned ${res.status}`);
+      return await res.json();
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  // Stop a running attack
+  async stopAttack(attackType, attackId) {
+    try {
+      const endpoint = attackType
+        ? `${API_BASE_URL}/attack/${attackType}/${attackId}/stop`
+        : `${API_BASE_URL}/attack/${attackId}/stop`;
+      const res = await fetch(endpoint, { method: "POST" });
+      return await res.json();
+    } catch (err) {
+      throw err;
+    }
+  },
+};
+
 // ── Utility Helpers ──
 export function formatBytes(bytes) {
   if (!bytes || bytes === 0) return "0 B";

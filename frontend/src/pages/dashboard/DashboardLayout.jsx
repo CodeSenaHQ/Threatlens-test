@@ -23,6 +23,7 @@ import {
   GitCommit,
   ShieldAlert,
   KeyRound,
+  Flame,
   Terminal,
   Users,
   Settings,
@@ -35,6 +36,7 @@ import {
 import RepositoriesTab from "./tabs/repositories/RepositoriesTab";
 import CommitsTab from "./tabs/commits/CommitsTab";
 import LiveFindingsTab from "./tabs/security/LiveFindingsTab";
+import LiveAttacksTab from "./tabs/security/LiveAttacksTab";
 import SecretDetectionTab from "./tabs/security/SecretDetectionTab";
 import AccountsTab from "./tabs/admin/AccountsTab";
 import SystemConfigTab from "./tabs/admin/SystemConfigTab";
@@ -63,6 +65,7 @@ const NAV_CATEGORIES = [
     title: "Security",
     items: [
       { id: "findings", label: "Live findings", icon: ShieldAlert },
+      { id: "live-attacks", label: "Live attacks", icon: Flame },
       { id: "secrets", label: "Secret detection", icon: KeyRound },
     ],
   },
@@ -954,6 +957,8 @@ export default function DashboardLayout() {
           {activeNav === "commits" && <CommitsTab onInspectCommit={handleOpenDetail} />}
 
           {activeNav === "findings" && <LiveFindingsTab onInspectFinding={handleOpenDetail} />}
+
+          {activeNav === "live-attacks" && <LiveAttacksTab />}
 
           {activeNav === "secrets" && <SecretDetectionTab />}
 

@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Query
+from typing import Literal
 
+from db.usage import sync_usage
 from schema.llm_chat import (
     CreateChatRequest,
     ChatHistoryRequest,
@@ -49,6 +51,10 @@ def remove_chat(
 def save_history(
     data: ChatHistoryRequest,
 ):
+    try :
+        sync_usage()
+    except :
+        pass
     return save_chat_history(
         chat_id=data.chat_id,
         messages=data.messages,
@@ -60,9 +66,11 @@ def get_chat_history(
     chat_id: int,
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
+    format: Literal["default", "message", "table"] = Query("default"),
 ):
     return get_history(
         chat_id=chat_id,
         page=page,
         limit=limit,
+        format=format,
     )

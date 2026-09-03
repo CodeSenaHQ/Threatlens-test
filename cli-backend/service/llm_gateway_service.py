@@ -1,27 +1,21 @@
 import json
 import httpx
-from config import config 
 
+from config import config
 from fastapi import HTTPException
+from db.usage import patch_usage
 from fastapi.responses import StreamingResponse
 
-def update_usage(prompt_tokens, completion_tokens, total_tokens):
-    pass
 
+async def chat_completion(body):
+    upstream_payload = body.model_dump(exclude_none=True)
 
-async def chat_completion(
-    body,
-):
-    upstream_payload = {
-        "model": body.model or config.DEFAULT_MODEL,
-        "messages": body.messages,
-        "temperature": body.temperature,
-        "max_tokens": body.max_tokens,
-        "stream": body.stream,
-    }
+    upstream_payload["model"] = (
+        body.model or config.DEFAULT_MODEL
+    )
 
-    if body.tools:
-        upstream_payload["tools"] = body.tools
+    if body.tools is None:
+        upstream_payload.pop("tools", None)
 
     headers = {
         "Authorization": f"Bearer {config.LLM_PROVIDER_API_KEY}",
@@ -38,7 +32,6 @@ async def chat_completion(
         upstream_payload=upstream_payload,
         headers=headers,
     )
-
 
 
 async def _normal_completion(
@@ -64,7 +57,7 @@ async def _normal_completion(
         usage = data.get("usage")
 
         if usage:
-            update_usage(
+            patch_usage(
                 prompt_tokens=usage.get("prompt_tokens", 0),
                 completion_tokens=usage.get("completion_tokens", 0),
                 total_tokens=usage.get("total_tokens", 0),
@@ -116,10 +109,8 @@ async def _stream_completion(
                             yield "\n"
                             continue
 
-                        # Forward SSE exactly as received
                         yield f"{line}\n"
 
-                        # Check usage without interfering with the stream
                         if line.startswith("data: "):
                             data = line[6:]
 
@@ -134,7 +125,7 @@ async def _stream_completion(
                             usage = chunk.get("usage")
 
                             if usage:
-                                update_usage(
+                                patch_usage(
                                     prompt_tokens=usage.get(
                                         "prompt_tokens", 0
                                     ),
@@ -163,4 +154,3 @@ async def _stream_completion(
             "X-Accel-Buffering": "no",
         },
     )
-

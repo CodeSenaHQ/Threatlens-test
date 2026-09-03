@@ -40,3 +40,21 @@ class Block(BaseModel):
 
 class ChainData(RootModel[list[Block]]):
     pass
+
+
+from pydantic import BaseModel
+
+
+class CreateEthereumAnchorRequest(BaseModel):
+    account_id: int
+    anchor_id: int
+    chain_id: str
+    chain_height: int
+    chain_hash: str
+    wallet_address: str
+    transaction_hash: str
+    block_no: int
+
+
+class UpdateIntegrityStatusRequest(BaseModel):
+    integrity_status: str

@@ -6,7 +6,7 @@ def build_chain(
 ):
     account_id = user["account"]["id"]
     chain = InternalChain(
-        chain_name=config["chain"],
+        chain_name=config["chain_id"],
         user=user,
     )
 
@@ -69,3 +69,50 @@ def build_chain(
     chain.commit()
 
     return chain
+
+
+
+def get_chain_ids(user: dict) -> list[str]:
+    account_id = user["account"]["id"]
+
+    chain_dir = (
+        blockchain_dir
+        / "chains"
+        / str(account_id)
+    )
+
+    if not chain_dir.exists():
+        return []
+
+    return sorted(
+        path.stem
+        for path in chain_dir.glob("*.json")
+        if path.is_file()
+    )
+
+
+def destroy_chain(chain_id: str, user: dict) -> dict:
+    account_id = user["account"]["id"]
+
+    chain_dir = (
+        blockchain_dir
+        / "chains"
+        / str(account_id)
+    )
+
+    chain_file = chain_dir / f"{chain_id}.json"
+
+    if not chain_file.exists():
+        return {
+            "status": False,
+            "message": "Chain does not exist",
+            "chain_id": chain_id,
+        }
+
+    chain_file.unlink()
+
+    return {
+        "status": True,
+        "message": "Chain destroyed successfully",
+        "chain_id": chain_id,
+    }

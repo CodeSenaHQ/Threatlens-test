@@ -1,5 +1,4 @@
 import httpx
-
 from config import config
 
 
@@ -105,6 +104,7 @@ def get_history(
     chat_id: int,
     page: int = 1,
     limit: int = 10,
+    format: str = "default",
 ):
     return _request(
         "GET",
@@ -112,5 +112,6 @@ def get_history(
         params={
             "page": page,
             "limit": limit,
+            "format": format,
         },
     )

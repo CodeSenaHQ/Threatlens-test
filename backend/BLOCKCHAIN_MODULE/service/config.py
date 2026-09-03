@@ -2,7 +2,7 @@ true = True
 
 
 config={
-    "chain": "atharv",
+    "chain_name": "atharv",
     "usage": true,
 
     "repos": [

@@ -9,3 +9,5 @@ from SITE_MODULE import (
 )
 
 from BLOCKCHAIN_MODULE.service.chain_service import InternalChain
+from pathlib import Path
+blockchain_dir = Path("BLOCKCHAIN_MODULE")
